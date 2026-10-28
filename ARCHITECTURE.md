@@ -27,13 +27,13 @@
 | กราฟ | `fl_chart` | สรุปรายรับ/รายจ่ายพื้นฐาน |
 | กล้อง/เลือกภาพ | Flutter camera หรือ `image_picker` หลังทบทวนความสามารถ | เลือกหนึ่งการทำงานที่รองรับต่อหนึ่ง use case หลีกเลี่ยง abstraction ซ้ำซ้อนที่ไม่จำเป็น |
 | OCR | ทดลอง ML Kit และตัวเลือก OCR อื่นที่เหมาะสม | เทียบกับตัวอย่างสลิปไทยและสลิปที่รองรับซึ่งเป็นตัวแทนก่อนตัดสินใจ |
-| Extraction | Deterministic parsing ก่อนเมื่อทำได้ และ backend/AI provider (ไม่บังคับ) หลัง interface | ถือว่าข้อมูลที่สกัดได้ยังเชื่อถือไม่ได้จนกว่าจะ validate |
+| Extraction | Deterministic parsing ก่อนเมื่อทำได้ และ AI provider ผ่าน backend (Supabase Edge Functions, ไม่บังคับ) หลัง interface | ถือว่าข้อมูลที่สกัดได้ยังเชื่อถือไม่ได้จนกว่าจะ validate |
 | Secret ในเครื่อง | `flutter_secure_storage` หรือ secure storage ที่เหมาะกับแพลตฟอร์ม | ห้ามเก็บ secret ใน source control หรือ preferences ทั่วไป |
 | การยืนยันตัวตนในเครื่อง | Biometrics/local auth ของแพลตฟอร์ม, P1 | ต้องมี fallback และต้องไม่ใช้แทนความปลอดภัยของฐานข้อมูล |
 | Localization | เครื่องมือ localization ของ Flutter | ไทยเป็นภาษาหลักหากยังเป็นภาษาตอนเปิดตัว หลีกเลี่ยงการฝังข้อความที่ผู้ใช้เห็นในโค้ด |
 | การทดสอบ | Dart unit test, Flutter widget test, integration/device test | รวม migration, flow นำเข้า และการจัดการรายการซ้ำ |
 | CI | format, analyze, test และ build check อัตโนมัติ | ไม่เก็บ secret สำหรับ signing ใน repository และ CI log |
-| Backend ในอนาคต | Supabase/PostgreSQL หรือบริการอื่นที่ผ่านการทบทวน (ไม่บังคับ) | ไม่จำเป็นสำหรับ MVP ในเครื่อง ไม่ทำ cloud sync จนกว่าจะออกแบบพฤติกรรมและความปลอดภัย |
+| Backend (ตัดสินใจแล้ว) | **Supabase** (PostgreSQL + Auth + Storage + Edge Functions) | ไม่จำเป็นสำหรับ MVP ในเครื่อง: Drift ยังเป็นฐานข้อมูลหลักและแอปยังใช้งานได้ offline เต็มรูปแบบ ไม่ทำ cloud sync จนกว่าจะออกแบบพฤติกรรมเมื่อข้อมูลขัดแย้งและความปลอดภัย (เปิด Row Level Security ทุกตาราง และไม่ใส่ `service_role` key ในแอป ใช้เฉพาะ anon key ร่วมกับสิทธิ์ของผู้ใช้) |
 
 การเลือกแพ็กเกจเป็นข้อเสนอ ไม่ใช่หลักฐานว่าทุกแพ็กเกจรองรับพฤติกรรม OS ที่ต้องการ ให้ยืนยันการดูแลรักษา ไลเซนส์ การรองรับแพลตฟอร์ม และข้อจำกัดของ API ปัจจุบันใน prototype แรก
 
@@ -301,7 +301,7 @@ Camera / Gallery / Share Sheet / การค้นพบที่ตรวจ�
 ## 11. ความปลอดภัยและความเป็นส่วนตัว
 
 - เก็บ credential ของ provider ใน secure storage หรือที่เก็บ secret ฝั่งเซิร์ฟเวอร์ที่ผ่านการทบทวนเท่านั้น
-- ห้ามส่ง secret ของ backend API ที่มีสิทธิ์สูงไปกับแอปมือถือ
+- ห้ามส่ง secret ของ backend API ที่มีสิทธิ์สูงไปกับแอปมือถือ เช่น `service_role` key ของ Supabase ต้องอยู่ฝั่ง Edge Functions เท่านั้น
 - ใช้ HTTPS สำหรับบริการสกัดข้อมูลระยะไกลทุกชนิด
 - ส่งเฉพาะข้อมูลขั้นต่ำที่จำเป็นไปยังบริการระยะไกล และแจ้งผู้ใช้ให้ทราบ
 - ให้ฟังก์ชัน local-first ใช้งานได้แม้บริการระยะไกลออฟไลน์
