@@ -96,7 +96,7 @@ Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|load
 
 ## Sign-in (Google)
 
-Sign-in is required before the app can be used: onboarding → sign-in → birth date → permissions → Home. Google opens the browser and returns through `com.moneylens.app://login-callback/`. (The design in `design/mockups` still shows the earlier phone-OTP screens and has not been updated.)
+Sign-in is required before the app can be used: onboarding → sign-in → birth date → permissions → Home. Google opens the browser and returns through `com.moneylens.app://login-callback/`. The design in `design/mockups` (board "Sign in & Profile" and the clickable `prototype.html`) matches this.
 
 **Without a Supabase key the app uses an in-memory fake**: "Continue with Google" signs in a demo user and nothing is saved. That is what `flutter run`, the tests and the simulator smoke test use.
 

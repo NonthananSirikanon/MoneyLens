@@ -122,9 +122,20 @@ lib/
       data/
       application/
       presentation/
+    auth/            # Google sign-in, session, birth date (Supabase Auth)
+      domain/
+      data/
+      application/
+      presentation/
+    sync/            # outbox sync with Supabase (SYNC.md)
+      domain/
+      data/
+      application/
   infrastructure/
     database/
       app_database.dart
+      sync.drift     # outbox tables and the triggers that fill them
+      user_database_files.dart  # one database file per account
       migrations/
       tables/
     platform/
@@ -307,6 +318,9 @@ Camera / Gallery / Share Sheet / การค้นพบที่ตรวจ�
 - ให้ฟังก์ชัน local-first ใช้งานได้แม้บริการระยะไกลออฟไลน์
 - เพิ่ม biometric/app lock เป็นเกราะเสริม ไม่ใช่สิ่งทดแทน secure storage และการจัดการข้อมูลที่เหมาะสม
 - กำหนดวิธีส่งออก ลบ สำรอง และกู้คืนข้อมูลผู้ใช้ก่อนเพิ่มฟีเจอร์ cloud
+- ข้อมูลในเครื่องแยกไฟล์ตามบัญชี (`moneylens_<user id>.sqlite`) และบนคลาวด์ป้องกันด้วย RLS ตาม `user_id` ทุกตาราง ขณะยังไม่เข้าสู่ระบบแอปใช้ฐานข้อมูลว่างในหน่วยความจำ
+- รายการเงินถูกซิงก์ขึ้น Supabase (เก็บบนเซิร์ฟเวอร์) ต้องสื่อสารกับผู้ใช้ให้ตรง ส่วนรูปสลิปและข้อความ OCR ดิบยังไม่ออกจากเครื่อง
+- ยังขาด: ลบบัญชีพร้อมข้อมูลบนคลาวด์ (PR-11) และการเข้ารหัสไฟล์ฐานข้อมูลในเครื่อง
 
 ## 12. กลยุทธ์การทดสอบ
 
