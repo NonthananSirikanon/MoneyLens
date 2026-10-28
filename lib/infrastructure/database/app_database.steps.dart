@@ -562,8 +562,303 @@ i1.GeneratedColumn<String> _column_34(String aliasedName) =>
       type: i1.DriftSqlType.string,
       $customConstraints: 'NULL',
     );
+
+final class Schema3 extends i0.VersionedSchema {
+  Schema3({required super.database}) : super(version: 3);
+  @override
+  late final List<i1.DatabaseSchemaEntity> entities = [
+    syncMeta,
+    syncOutbox,
+    accounts,
+    accountsSyncInsert,
+    accountsSyncUpdate,
+    accountsSyncDelete,
+    categories,
+    categoriesSyncInsert,
+    categoriesSyncUpdate,
+    categoriesSyncDelete,
+    scanRecords,
+    transactions,
+    transactionsSyncInsert,
+    transactionsSyncUpdate,
+    transactionsSyncDelete,
+    idxTransactionsOccurredAt,
+    idxTransactionsTypeOccurredAt,
+    idxTransactionsAccountOccurredAt,
+    idxTransactionsCategoryOccurredAt,
+    idxScanRecordsStatusCreatedAt,
+    idxScanRecordsImageFingerprint,
+  ];
+  late final Shape4 syncMeta = Shape4(
+    source: i0.VersionedTable(
+      entityName: 'sync_meta',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [],
+      columns: [_column_35, _column_36],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape5 syncOutbox = Shape5(
+    source: i0.VersionedTable(
+      entityName: 'sync_outbox',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: ['PRIMARY KEY(entity, row_id)'],
+      columns: [_column_37, _column_38, _column_39, _column_40],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape0 accounts = Shape0(
+    source: i0.VersionedTable(
+      entityName: 'accounts',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(kind IN (\'cash\', \'bank\', \'ewallet\', \'other\'))',
+      ],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_2,
+        _column_3,
+        _column_4,
+        _column_5,
+        _column_6,
+        _column_7,
+        _column_8,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger accountsSyncInsert = i1.Trigger(
+    'CREATE TRIGGER accounts_sync_insert AFTER INSERT ON accounts WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'accounts\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'accounts\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'accounts_sync_insert',
+  );
+  final i1.Trigger accountsSyncUpdate = i1.Trigger(
+    'CREATE TRIGGER accounts_sync_update AFTER UPDATE ON accounts WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'accounts\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'accounts\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'accounts_sync_update',
+  );
+  final i1.Trigger accountsSyncDelete = i1.Trigger(
+    'CREATE TRIGGER accounts_sync_delete AFTER DELETE ON accounts WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'accounts\' AND row_id = OLD.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'accounts\', OLD.id, \'delete\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'accounts_sync_delete',
+  );
+  late final Shape1 categories = Shape1(
+    source: i0.VersionedTable(
+      entityName: 'categories',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(kind IN (\'income\', \'expense\'))',
+      ],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_2,
+        _column_9,
+        _column_10,
+        _column_11,
+        _column_6,
+        _column_7,
+        _column_8,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger categoriesSyncInsert = i1.Trigger(
+    'CREATE TRIGGER categories_sync_insert AFTER INSERT ON categories WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'categories\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'categories\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'categories_sync_insert',
+  );
+  final i1.Trigger categoriesSyncUpdate = i1.Trigger(
+    'CREATE TRIGGER categories_sync_update AFTER UPDATE ON categories WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'categories\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'categories\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'categories_sync_update',
+  );
+  final i1.Trigger categoriesSyncDelete = i1.Trigger(
+    'CREATE TRIGGER categories_sync_delete AFTER DELETE ON categories WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'categories\' AND row_id = OLD.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'categories\', OLD.id, \'delete\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'categories_sync_delete',
+  );
+  late final Shape2 scanRecords = Shape2(
+    source: i0.VersionedTable(
+      entityName: 'scan_records',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(source IN (\'camera\', \'gallery\', \'share_sheet\', \'discovery\'))',
+        'CHECK(status IN (\'queued\', \'processing\', \'needs_review\', \'confirmed\', \'duplicate\', \'failed\', \'discarded\'))',
+      ],
+      columns: [
+        _column_0,
+        _column_12,
+        _column_13,
+        _column_14,
+        _column_15,
+        _column_16,
+        _column_17,
+        _column_18,
+        _column_19,
+        _column_20,
+        _column_21,
+        _column_22,
+        _column_7,
+        _column_8,
+        _column_23,
+        _column_24,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape3 transactions = Shape3(
+    source: i0.VersionedTable(
+      entityName: 'transactions',
+      withoutRowId: false,
+      isStrict: false,
+      tableConstraints: [
+        'PRIMARY KEY(id)',
+        'CHECK(type IN (\'income\', \'expense\', \'transfer\'))',
+        'CHECK(amount_minor > 0)',
+        'CHECK(source IN (\'manual\', \'ocr\', \'import\', \'recurring\'))',
+        'CHECK((type = \'transfer\' AND destination_account_id IS NOT NULL AND destination_account_id <> account_id AND category_id IS NULL)OR(type <> \'transfer\' AND destination_account_id IS NULL))',
+      ],
+      columns: [
+        _column_0,
+        _column_25,
+        _column_26,
+        _column_3,
+        _column_27,
+        _column_28,
+        _column_29,
+        _column_30,
+        _column_31,
+        _column_32,
+        _column_12,
+        _column_33,
+        _column_13,
+        _column_34,
+        _column_7,
+        _column_8,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  final i1.Trigger transactionsSyncInsert = i1.Trigger(
+    'CREATE TRIGGER transactions_sync_insert AFTER INSERT ON transactions WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'transactions\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'transactions\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'transactions_sync_insert',
+  );
+  final i1.Trigger transactionsSyncUpdate = i1.Trigger(
+    'CREATE TRIGGER transactions_sync_update AFTER UPDATE ON transactions WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'transactions\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'transactions\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'transactions_sync_update',
+  );
+  final i1.Trigger transactionsSyncDelete = i1.Trigger(
+    'CREATE TRIGGER transactions_sync_delete AFTER DELETE ON transactions WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'transactions\' AND row_id = OLD.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'transactions\', OLD.id, \'delete\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'transactions_sync_delete',
+  );
+  final i1.Index idxTransactionsOccurredAt = i1.Index(
+    'idx_transactions_occurred_at',
+    'CREATE INDEX idx_transactions_occurred_at ON transactions (occurred_at)',
+  );
+  final i1.Index idxTransactionsTypeOccurredAt = i1.Index(
+    'idx_transactions_type_occurred_at',
+    'CREATE INDEX idx_transactions_type_occurred_at ON transactions (type, occurred_at)',
+  );
+  final i1.Index idxTransactionsAccountOccurredAt = i1.Index(
+    'idx_transactions_account_occurred_at',
+    'CREATE INDEX idx_transactions_account_occurred_at ON transactions (account_id, occurred_at)',
+  );
+  final i1.Index idxTransactionsCategoryOccurredAt = i1.Index(
+    'idx_transactions_category_occurred_at',
+    'CREATE INDEX idx_transactions_category_occurred_at ON transactions (category_id, occurred_at)',
+  );
+  final i1.Index idxScanRecordsStatusCreatedAt = i1.Index(
+    'idx_scan_records_status_created_at',
+    'CREATE INDEX idx_scan_records_status_created_at ON scan_records (status, created_at)',
+  );
+  final i1.Index idxScanRecordsImageFingerprint = i1.Index(
+    'idx_scan_records_image_fingerprint',
+    'CREATE INDEX idx_scan_records_image_fingerprint ON scan_records (image_fingerprint)',
+  );
+}
+
+class Shape4 extends i0.VersionedTable {
+  Shape4({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get name =>
+      columnsByName['name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get value =>
+      columnsByName['value']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<String> _column_35(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'name',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL PRIMARY KEY',
+    );
+i1.GeneratedColumn<String> _column_36(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'value',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+
+class Shape5 extends i0.VersionedTable {
+  Shape5({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get entity =>
+      columnsByName['entity']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get rowId =>
+      columnsByName['row_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get op =>
+      columnsByName['op']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<int> get seq =>
+      columnsByName['seq']! as i1.GeneratedColumn<int>;
+}
+
+i1.GeneratedColumn<String> _column_37(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'entity',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_38(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'row_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL',
+    );
+i1.GeneratedColumn<String> _column_39(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'op',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+      $customConstraints: 'NOT NULL CHECK (op IN (\'upsert\', \'delete\'))',
+    );
+i1.GeneratedColumn<int> _column_40(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'seq',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      $customConstraints: 'NOT NULL',
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
+  required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
 }) {
   return (currentVersion, database) async {
     switch (currentVersion) {
@@ -572,6 +867,11 @@ i0.MigrationStepWithVersion migrationSteps({
         final migrator = i1.Migrator(database, schema);
         await from1To2(migrator, schema);
         return 2;
+      case 2:
+        final schema = Schema3(database: database);
+        final migrator = i1.Migrator(database, schema);
+        await from2To3(migrator, schema);
+        return 3;
       default:
         throw ArgumentError.value('Unknown migration from $currentVersion');
     }
@@ -580,6 +880,7 @@ i0.MigrationStepWithVersion migrationSteps({
 
 i1.OnUpgrade stepByStep({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
+  required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
 }) => i0.VersionedSchema.stepByStepHelper(
-  step: migrationSteps(from1To2: from1To2),
+  step: migrationSteps(from1To2: from1To2, from2To3: from2To3),
 );

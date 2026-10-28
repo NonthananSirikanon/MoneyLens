@@ -1122,7 +1122,7 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get securityLocalNote =>
-      'ข้อมูลอยู่ในเครื่องนี้เท่านั้น · ไม่มีการเขียนเนื้อหาสลิปหรือเลขบัญชีลง log';
+      'รายการเงินสำรองไว้ในบัญชีของคุณ ส่วนรูปสลิปอยู่ในเครื่องนี้เท่านั้น · ไม่มีการเขียนเนื้อหาสลิปหรือเลขบัญชีลง log';
 
   @override
   String get authLoginTitle => 'เริ่มต้นกับ\nMoneyLens';
@@ -1131,7 +1131,8 @@ class AppLocalizationsTh extends AppLocalizations {
   String get authLoginBody => 'เข้าสู่ระบบเพื่อเก็บข้อมูลของคุณให้ปลอดภัย';
 
   @override
-  String get authLocalNote => 'ข้อมูลการเงินและรูปสลิปเก็บในเครื่องของคุณ';
+  String get authLocalNote =>
+      'รายการเงินสำรองในบัญชีของคุณ รูปสลิปเก็บในเครื่องเท่านั้น';
 
   @override
   String get authWithGoogle => 'ดำเนินการต่อด้วย Google';
@@ -1251,4 +1252,30 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get profileFallbackName => 'คุณ';
+
+  @override
+  String get syncTitle => 'ซิงก์ข้อมูล';
+
+  @override
+  String get syncRunning => 'กำลังซิงก์…';
+
+  @override
+  String get syncNever => 'ยังไม่เคยซิงก์ · แตะเพื่อซิงก์ตอนนี้';
+
+  @override
+  String syncDone(String time) {
+    return 'ซิงก์ล่าสุด $time · แตะเพื่อซิงก์ตอนนี้';
+  }
+
+  @override
+  String syncPending(int count) {
+    return 'รอส่ง $count รายการ · แตะเพื่อซิงก์ตอนนี้';
+  }
+
+  @override
+  String get syncOffline => 'ไม่มีอินเทอร์เน็ต จะลองใหม่อัตโนมัติ';
+
+  @override
+  String get syncFailed =>
+      'ซิงก์ไม่สำเร็จ จะลองใหม่อัตโนมัติ · แตะเพื่อลองเดี๋ยวนี้';
 }

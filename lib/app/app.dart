@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 
 import '../core/widgets/async_states.dart';
+import '../features/sync/application/sync_controller.dart';
 import '../core/widgets/ml_overlays.dart';
 import '../l10n/app_localizations.dart';
 import 'app_preferences.dart';
@@ -17,6 +18,9 @@ class MoneyLensApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(appPreferencesProvider.select((p) => p.locale));
+    // Keeps sync running for the whole session (it does nothing without a
+    // signed-in user and a configured project).
+    ref.listen(syncControllerProvider, (_, _) {});
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,

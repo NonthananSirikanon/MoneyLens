@@ -9,6 +9,7 @@ import 'generated/schema.dart';
 
 import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
+import 'generated/schema_v3.dart' as v3;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -121,4 +122,63 @@ void main() {
       );
     },
   );
+
+  // v2 -> v3 adds the sync outbox. Data written before sync existed has to be
+  // uploaded once, so every existing row must end up queued.
+  test('migration from v2 to v3 queues existing data for sync', () async {
+    const t = 1760000000;
+    await verifier.testWithDataIntegrity(
+      oldVersion: 2,
+      newVersion: 3,
+      createOld: v2.DatabaseAtV2.new,
+      createNew: v3.DatabaseAtV3.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch.insert(
+          oldDb.accounts,
+          const v2.AccountsData(
+            id: 'acc-1',
+            name: 'My bank',
+            kind: 'bank',
+            currencyCode: 'THB',
+            isArchived: 0,
+            createdAt: t,
+            updatedAt: t,
+          ),
+        );
+        batch.insert(
+          oldDb.transactions,
+          const v2.TransactionsData(
+            id: 'tx-1',
+            type: 'expense',
+            amountMinor: 4500,
+            currencyCode: 'THB',
+            accountId: 'acc-1',
+            merchant: 'Shop',
+            occurredAt: t,
+            source: 'manual',
+            createdAt: t,
+            updatedAt: t,
+          ),
+        );
+      },
+      validateItems: (newDb) async {
+        final queued = [
+          for (final r in await newDb.select(newDb.syncOutbox).get())
+            '${r.entity}/${r.rowId}/${r.op}',
+        ];
+        expect(queued, contains('accounts/acc-1/upsert'));
+        expect(queued, contains('transactions/tx-1/upsert'));
+        // From now on changes are queued by the triggers.
+        await newDb.customStatement(
+          "UPDATE accounts SET name = 'Renamed' WHERE id = 'acc-1'",
+        );
+        final seqs = {
+          for (final r in await newDb.select(newDb.syncOutbox).get())
+            '${r.entity}/${r.rowId}': r.seq,
+        };
+        expect(seqs['accounts/acc-1'], greaterThan(seqs['transactions/tx-1']!));
+      },
+    );
+  });
 }

@@ -1137,7 +1137,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get securityLocalNote =>
-      'Data stays on this device only · slip content and account numbers are never written to logs';
+      'Your entries are backed up to your account; slip images stay on this device only · slip content and account numbers are never written to logs';
 
   @override
   String get authLoginTitle => 'Get started with\nMoneyLens';
@@ -1147,7 +1147,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authLocalNote =>
-      'Your financial data and slip images stay on your phone';
+      'Your entries are backed up to your account; slip images stay on your phone';
 
   @override
   String get authWithGoogle => 'Continue with Google';
@@ -1268,4 +1268,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileFallbackName => 'there';
+
+  @override
+  String get syncTitle => 'Sync';
+
+  @override
+  String get syncRunning => 'Syncing…';
+
+  @override
+  String get syncNever => 'Never synced · tap to sync now';
+
+  @override
+  String syncDone(String time) {
+    return 'Last synced $time · tap to sync now';
+  }
+
+  @override
+  String syncPending(int count) {
+    return '$count changes waiting · tap to sync now';
+  }
+
+  @override
+  String get syncOffline => 'No internet. Will retry automatically';
+
+  @override
+  String get syncFailed =>
+      'Sync failed. Will retry automatically · tap to try now';
 }

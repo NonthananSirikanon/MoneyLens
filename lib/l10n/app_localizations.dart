@@ -2171,7 +2171,7 @@ abstract class AppLocalizations {
   /// No description provided for @securityLocalNote.
   ///
   /// In en, this message translates to:
-  /// **'Data stays on this device only · slip content and account numbers are never written to logs'**
+  /// **'Your entries are backed up to your account; slip images stay on this device only · slip content and account numbers are never written to logs'**
   String get securityLocalNote;
 
   /// No description provided for @authLoginTitle.
@@ -2189,7 +2189,7 @@ abstract class AppLocalizations {
   /// No description provided for @authLocalNote.
   ///
   /// In en, this message translates to:
-  /// **'Your financial data and slip images stay on your phone'**
+  /// **'Your entries are backed up to your account; slip images stay on your phone'**
   String get authLocalNote;
 
   /// No description provided for @authWithGoogle.
@@ -2413,6 +2413,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'there'**
   String get profileFallbackName;
+
+  /// No description provided for @syncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get syncTitle;
+
+  /// No description provided for @syncRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get syncRunning;
+
+  /// No description provided for @syncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never synced · tap to sync now'**
+  String get syncNever;
+
+  /// No description provided for @syncDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {time} · tap to sync now'**
+  String syncDone(String time);
+
+  /// No description provided for @syncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} changes waiting · tap to sync now'**
+  String syncPending(int count);
+
+  /// No description provided for @syncOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Will retry automatically'**
+  String get syncOffline;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Will retry automatically · tap to try now'**
+  String get syncFailed;
 }
 
 class _AppLocalizationsDelegate

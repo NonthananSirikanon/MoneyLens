@@ -549,10 +549,10 @@
   "permissionDenied": "Not allowed",
   "permissionLimited": "Selected photos",
   "toastPermissionRevoked": "Access turned off (simulated)",
-  "securityLocalNote": "Data stays on this device only · slip content and account numbers are never written to logs",
+  "securityLocalNote": "Your entries are backed up to your account; slip images stay on this device only · slip content and account numbers are never written to logs",
   "authLoginTitle": "Get started with\nMoneyLens",
   "authLoginBody": "Sign in to keep your data safe",
-  "authLocalNote": "Your financial data and slip images stay on your phone",
+  "authLocalNote": "Your entries are backed up to your account; slip images stay on your phone",
   "authWithGoogle": "Continue with Google",
   "authTerms": "By continuing, you accept the Terms of Use and Privacy Policy",
   "authErrTooMany": "Too many requests. Please try again later",
@@ -609,5 +609,26 @@
   "signOutBody": "Your data on this device stays, but you'll need to sign in again to keep using the app.",
   "toastSignedOut": "Signed out",
   "settingsAccountSub": "Account and profile",
-  "profileFallbackName": "there"
+  "profileFallbackName": "there",
+  "syncTitle": "Sync",
+  "syncRunning": "Syncing…",
+  "syncNever": "Never synced · tap to sync now",
+  "syncDone": "Last synced {time} · tap to sync now",
+  "@syncDone": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncPending": "{count} changes waiting · tap to sync now",
+  "@syncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncOffline": "No internet. Will retry automatically",
+  "syncFailed": "Sync failed. Will retry automatically · tap to try now"
 }

@@ -61,7 +61,15 @@ const _defaults =
 /// transaction can be recorded before the user adds any account.
 const defaultCashAccountId = 'default-cash';
 
-/// Inserts any missing default categories and the default cash account.
+/// Timestamp for defaults created by a fresh install or an upgrade. It is
+/// deliberately old: when the account already has the same defaults in the
+/// cloud (possibly renamed or archived), the cloud copy is newer and wins at
+/// the first sync instead of being overwritten by a brand-new default.
+final seedTimestamp = DateTime.utc(2000);
+
+/// Inserts any missing default categories and the default cash account,
+/// stamped [nowUtc] (use [seedTimestamp] unless the user just wiped their
+/// data, where a current time makes the cloud take the defaults back).
 /// Existing rows, including ones the user archived or renamed, are left
 /// untouched.
 Future<void> seedDefaults(AppDatabase db, DateTime nowUtc) async {

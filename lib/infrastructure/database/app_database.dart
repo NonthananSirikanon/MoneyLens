@@ -16,7 +16,10 @@ import 'user_database_files.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Accounts, Categories, Transactions, ScanRecords])
+@DriftDatabase(
+  tables: [Accounts, Categories, Transactions, ScanRecords],
+  include: {'sync.drift'},
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
@@ -41,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   /// Bump on every schema change, add a step in `migrations/`, and dump the
   /// new schema (see README "Database migrations").
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   /// Deletes everything the user entered: transactions, slip records,
   /// accounts and custom categories. Default categories and the default
@@ -61,13 +64,38 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
-      await seedDefaults(this, DateTime.now().toUtc());
+      await seedDefaults(this, seedTimestamp);
     },
     onUpgrade: stepByStep(
       from1To2: (m, schema) async {
         await m.addColumn(schema.accounts, schema.accounts.lastFour);
         // New default categories and the default cash account (idempotent).
-        await seedDefaults(this, DateTime.now().toUtc());
+        await seedDefaults(this, seedTimestamp);
+      },
+      from2To3: (m, schema) async {
+        // Sync bookkeeping (SYNC.md). Everything already on the device is
+        // queued once, so the first sync uploads it.
+        await m.create(schema.syncMeta);
+        await m.create(schema.syncOutbox);
+        await m.create(schema.accountsSyncInsert);
+        await m.create(schema.accountsSyncUpdate);
+        await m.create(schema.accountsSyncDelete);
+        await m.create(schema.categoriesSyncInsert);
+        await m.create(schema.categoriesSyncUpdate);
+        await m.create(schema.categoriesSyncDelete);
+        await m.create(schema.transactionsSyncInsert);
+        await m.create(schema.transactionsSyncUpdate);
+        await m.create(schema.transactionsSyncDelete);
+        var seq = 0;
+        for (final table in ['accounts', 'categories', 'transactions']) {
+          await customStatement(
+            "INSERT OR REPLACE INTO sync_outbox (entity, row_id, op, seq) "
+            "SELECT '$table', id, 'upsert', ${seq++} FROM $table",
+          );
+        }
+        await customStatement(
+          "INSERT OR REPLACE INTO sync_meta (name, value) VALUES ('seq', '$seq')",
+        );
       },
     ),
     beforeOpen: (details) async {

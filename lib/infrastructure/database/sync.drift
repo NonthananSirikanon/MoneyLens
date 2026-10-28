@@ -1,0 +1,115 @@
+-- Sync bookkeeping (SYNC.md). Triggers record every local change in
+-- `sync_outbox`, so no repository has to remember to do it. While a pull is
+-- being applied `sync_meta.applying` is '1' and the triggers stay quiet, so
+-- changes that came from the server are not sent back.
+import 'tables/accounts.dart';
+import 'tables/categories.dart';
+import 'tables/transactions.dart';
+
+-- Small key/value store: per-table pull cursors ('cursor:<table>'), the
+-- change counter ('seq') and the 'applying' flag.
+CREATE TABLE sync_meta (
+  name TEXT NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+-- One row per record that still has to reach the server. Later changes to
+-- the same record replace the row (`seq` grows), so the queue never holds
+-- more than one entry per record.
+CREATE TABLE sync_outbox (
+  entity TEXT NOT NULL,
+  row_id TEXT NOT NULL,
+  op TEXT NOT NULL CHECK (op IN ('upsert', 'delete')),
+  seq INTEGER NOT NULL,
+  PRIMARY KEY (entity, row_id)
+);
+
+CREATE TRIGGER accounts_sync_insert AFTER INSERT ON accounts
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'accounts' AND row_id = NEW.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('accounts', NEW.id, 'upsert', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER accounts_sync_update AFTER UPDATE ON accounts
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'accounts' AND row_id = NEW.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('accounts', NEW.id, 'upsert', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER accounts_sync_delete AFTER DELETE ON accounts
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'accounts' AND row_id = OLD.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('accounts', OLD.id, 'delete', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER categories_sync_insert AFTER INSERT ON categories
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'categories' AND row_id = NEW.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('categories', NEW.id, 'upsert', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER categories_sync_update AFTER UPDATE ON categories
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'categories' AND row_id = NEW.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('categories', NEW.id, 'upsert', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER categories_sync_delete AFTER DELETE ON categories
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'categories' AND row_id = OLD.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('categories', OLD.id, 'delete', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER transactions_sync_insert AFTER INSERT ON transactions
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'transactions' AND row_id = NEW.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('transactions', NEW.id, 'upsert', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER transactions_sync_update AFTER UPDATE ON transactions
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'transactions' AND row_id = NEW.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('transactions', NEW.id, 'upsert', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;
+
+CREATE TRIGGER transactions_sync_delete AFTER DELETE ON transactions
+WHEN COALESCE((SELECT value FROM sync_meta WHERE name = 'applying'), '0') <> '1'
+BEGIN
+  INSERT INTO sync_meta (name, value) SELECT 'seq', '0' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = 'seq');
+  UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = 'seq';
+  DELETE FROM sync_outbox WHERE entity = 'transactions' AND row_id = OLD.id;
+  INSERT INTO sync_outbox (entity, row_id, op, seq)
+  VALUES ('transactions', OLD.id, 'delete', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = 'seq'));
+END;

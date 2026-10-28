@@ -117,9 +117,13 @@ Notes and limits:
 - If the profile cannot be read (offline), a returning user is let in so that data on the device stays reachable; the birth-date check repeats on the next start.
 - **Data on the device is per account.** Each user has their own database file (`moneylens_<user id>.sqlite`), so signing in as someone else shows none of the previous account's data; signing out keeps the file. The shared database from before accounts existed goes to the first account that signs in after the update. While signed out the app uses an empty in-memory database. Files are not encrypted, and "delete all data" only clears the signed-in account.
 
+## Sync
+
+Entries (accounts, categories, transactions) are backed up to Supabase and shared between a user's devices while signed in; see [SYNC.md](SYNC.md). The device database stays the primary one, so the app works offline and syncs when it can. Slip images and scan records are not synced yet. Status and a "sync now" button are on Settings → profile card. Sync is off when no `SUPABASE_PUBLISHABLE_KEY` is passed.
+
 ## Database migrations
 
-The schema is at version 1, and its snapshot is in `drift_schemas/`. See [lib/infrastructure/database/migrations/README.md](lib/infrastructure/database/migrations/README.md). In short: bump `schemaVersion`, run `dart run drift_dev make-migrations`, write the step, and test it.
+The schema is at version 3, and its snapshots are in `drift_schemas/`. See [lib/infrastructure/database/migrations/README.md](lib/infrastructure/database/migrations/README.md). In short: bump `schemaVersion`, run `dart run drift_dev make-migrations`, write the step, and test it.
 
 ## Dependencies
 

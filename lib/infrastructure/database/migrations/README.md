@@ -1,6 +1,6 @@
 # Database migrations
 
-Schema version: **2** (`AppDatabase.schemaVersion`). Snapshots live in
+Schema version: **3** (`AppDatabase.schemaVersion`). Snapshots live in
 `drift_schemas/moneylens/`.
 
 To change the schema:
@@ -14,7 +14,9 @@ To change the schema:
 4. Fill in the generated migration tests with data checks, then run
    `flutter test`.
 
-History: v2 adds `accounts.last_four` (step `from1To2` in
+History: v3 adds the sync outbox (`sync_outbox`, `sync_meta`) and the triggers
+that fill it, defined in `../sync.drift` (see SYNC.md); the upgrade queues all
+existing rows once. v2 adds `accounts.last_four` (step `from1To2` in
 `app_database.dart`) and seeds the extra default categories and the default
 cash account.
 

@@ -3,6 +3,524 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
+class SyncMeta extends Table with TableInfo<SyncMeta, SyncMetaData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  SyncMeta(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL PRIMARY KEY',
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [name, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_meta';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncMetaData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {name};
+  @override
+  SyncMetaData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncMetaData(
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      )!,
+    );
+  }
+
+  @override
+  SyncMeta createAlias(String alias) {
+    return SyncMeta(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class SyncMetaData extends DataClass implements Insertable<SyncMetaData> {
+  final String name;
+  final String value;
+  const SyncMetaData({required this.name, required this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['name'] = Variable<String>(name);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  SyncMetaCompanion toCompanion(bool nullToAbsent) {
+    return SyncMetaCompanion(name: Value(name), value: Value(value));
+  }
+
+  factory SyncMetaData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncMetaData(
+      name: serializer.fromJson<String>(json['name']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'name': serializer.toJson<String>(name),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  SyncMetaData copyWith({String? name, String? value}) =>
+      SyncMetaData(name: name ?? this.name, value: value ?? this.value);
+  SyncMetaData copyWithCompanion(SyncMetaCompanion data) {
+    return SyncMetaData(
+      name: data.name.present ? data.name.value : this.name,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetaData(')
+          ..write('name: $name, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(name, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncMetaData &&
+          other.name == this.name &&
+          other.value == this.value);
+}
+
+class SyncMetaCompanion extends UpdateCompanion<SyncMetaData> {
+  final Value<String> name;
+  final Value<String> value;
+  final Value<int> rowid;
+  const SyncMetaCompanion({
+    this.name = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncMetaCompanion.insert({
+    required String name,
+    required String value,
+    this.rowid = const Value.absent(),
+  }) : name = Value(name),
+       value = Value(value);
+  static Insertable<SyncMetaData> custom({
+    Expression<String>? name,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (name != null) 'name': name,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncMetaCompanion copyWith({
+    Value<String>? name,
+    Value<String>? value,
+    Value<int>? rowid,
+  }) {
+    return SyncMetaCompanion(
+      name: name ?? this.name,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetaCompanion(')
+          ..write('name: $name, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class SyncOutbox extends Table with TableInfo<SyncOutbox, SyncOutboxData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  SyncOutbox(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _entityMeta = const VerificationMeta('entity');
+  late final GeneratedColumn<String> entity = GeneratedColumn<String>(
+    'entity',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _rowIdMeta = const VerificationMeta('rowId');
+  late final GeneratedColumn<String> rowId = GeneratedColumn<String>(
+    'row_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _opMeta = const VerificationMeta('op');
+  late final GeneratedColumn<String> op = GeneratedColumn<String>(
+    'op',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (op IN (\'upsert\', \'delete\'))',
+  );
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [entity, rowId, op, seq];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_outbox';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncOutboxData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('entity')) {
+      context.handle(
+        _entityMeta,
+        entity.isAcceptableOrUnknown(data['entity']!, _entityMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityMeta);
+    }
+    if (data.containsKey('row_id')) {
+      context.handle(
+        _rowIdMeta,
+        rowId.isAcceptableOrUnknown(data['row_id']!, _rowIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rowIdMeta);
+    }
+    if (data.containsKey('op')) {
+      context.handle(_opMeta, op.isAcceptableOrUnknown(data['op']!, _opMeta));
+    } else if (isInserting) {
+      context.missing(_opMeta);
+    }
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seqMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {entity, rowId};
+  @override
+  SyncOutboxData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncOutboxData(
+      entity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity'],
+      )!,
+      rowId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}row_id'],
+      )!,
+      op: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}op'],
+      )!,
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+    );
+  }
+
+  @override
+  SyncOutbox createAlias(String alias) {
+    return SyncOutbox(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints => const ['PRIMARY KEY(entity, row_id)'];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class SyncOutboxData extends DataClass implements Insertable<SyncOutboxData> {
+  final String entity;
+  final String rowId;
+  final String op;
+  final int seq;
+  const SyncOutboxData({
+    required this.entity,
+    required this.rowId,
+    required this.op,
+    required this.seq,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['entity'] = Variable<String>(entity);
+    map['row_id'] = Variable<String>(rowId);
+    map['op'] = Variable<String>(op);
+    map['seq'] = Variable<int>(seq);
+    return map;
+  }
+
+  SyncOutboxCompanion toCompanion(bool nullToAbsent) {
+    return SyncOutboxCompanion(
+      entity: Value(entity),
+      rowId: Value(rowId),
+      op: Value(op),
+      seq: Value(seq),
+    );
+  }
+
+  factory SyncOutboxData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncOutboxData(
+      entity: serializer.fromJson<String>(json['entity']),
+      rowId: serializer.fromJson<String>(json['row_id']),
+      op: serializer.fromJson<String>(json['op']),
+      seq: serializer.fromJson<int>(json['seq']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'entity': serializer.toJson<String>(entity),
+      'row_id': serializer.toJson<String>(rowId),
+      'op': serializer.toJson<String>(op),
+      'seq': serializer.toJson<int>(seq),
+    };
+  }
+
+  SyncOutboxData copyWith({
+    String? entity,
+    String? rowId,
+    String? op,
+    int? seq,
+  }) => SyncOutboxData(
+    entity: entity ?? this.entity,
+    rowId: rowId ?? this.rowId,
+    op: op ?? this.op,
+    seq: seq ?? this.seq,
+  );
+  SyncOutboxData copyWithCompanion(SyncOutboxCompanion data) {
+    return SyncOutboxData(
+      entity: data.entity.present ? data.entity.value : this.entity,
+      rowId: data.rowId.present ? data.rowId.value : this.rowId,
+      op: data.op.present ? data.op.value : this.op,
+      seq: data.seq.present ? data.seq.value : this.seq,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncOutboxData(')
+          ..write('entity: $entity, ')
+          ..write('rowId: $rowId, ')
+          ..write('op: $op, ')
+          ..write('seq: $seq')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(entity, rowId, op, seq);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncOutboxData &&
+          other.entity == this.entity &&
+          other.rowId == this.rowId &&
+          other.op == this.op &&
+          other.seq == this.seq);
+}
+
+class SyncOutboxCompanion extends UpdateCompanion<SyncOutboxData> {
+  final Value<String> entity;
+  final Value<String> rowId;
+  final Value<String> op;
+  final Value<int> seq;
+  final Value<int> rowid;
+  const SyncOutboxCompanion({
+    this.entity = const Value.absent(),
+    this.rowId = const Value.absent(),
+    this.op = const Value.absent(),
+    this.seq = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncOutboxCompanion.insert({
+    required String entity,
+    required String rowId,
+    required String op,
+    required int seq,
+    this.rowid = const Value.absent(),
+  }) : entity = Value(entity),
+       rowId = Value(rowId),
+       op = Value(op),
+       seq = Value(seq);
+  static Insertable<SyncOutboxData> custom({
+    Expression<String>? entity,
+    Expression<String>? rowId,
+    Expression<String>? op,
+    Expression<int>? seq,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (entity != null) 'entity': entity,
+      if (rowId != null) 'row_id': rowId,
+      if (op != null) 'op': op,
+      if (seq != null) 'seq': seq,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncOutboxCompanion copyWith({
+    Value<String>? entity,
+    Value<String>? rowId,
+    Value<String>? op,
+    Value<int>? seq,
+    Value<int>? rowid,
+  }) {
+    return SyncOutboxCompanion(
+      entity: entity ?? this.entity,
+      rowId: rowId ?? this.rowId,
+      op: op ?? this.op,
+      seq: seq ?? this.seq,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (entity.present) {
+      map['entity'] = Variable<String>(entity.value);
+    }
+    if (rowId.present) {
+      map['row_id'] = Variable<String>(rowId.value);
+    }
+    if (op.present) {
+      map['op'] = Variable<String>(op.value);
+    }
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncOutboxCompanion(')
+          ..write('entity: $entity, ')
+          ..write('rowId: $rowId, ')
+          ..write('op: $op, ')
+          ..write('seq: $seq, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $AccountsTable extends Accounts
     with TableInfo<$AccountsTable, AccountRow> {
   @override
@@ -3089,10 +3607,48 @@ class TransactionsCompanion extends UpdateCompanion<TransactionRow> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final SyncMeta syncMeta = SyncMeta(this);
+  late final SyncOutbox syncOutbox = SyncOutbox(this);
   late final $AccountsTable accounts = $AccountsTable(this);
+  late final Trigger accountsSyncInsert = Trigger(
+    'CREATE TRIGGER accounts_sync_insert AFTER INSERT ON accounts WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'accounts\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'accounts\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'accounts_sync_insert',
+  );
+  late final Trigger accountsSyncUpdate = Trigger(
+    'CREATE TRIGGER accounts_sync_update AFTER UPDATE ON accounts WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'accounts\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'accounts\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'accounts_sync_update',
+  );
+  late final Trigger accountsSyncDelete = Trigger(
+    'CREATE TRIGGER accounts_sync_delete AFTER DELETE ON accounts WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'accounts\' AND row_id = OLD.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'accounts\', OLD.id, \'delete\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'accounts_sync_delete',
+  );
   late final $CategoriesTable categories = $CategoriesTable(this);
+  late final Trigger categoriesSyncInsert = Trigger(
+    'CREATE TRIGGER categories_sync_insert AFTER INSERT ON categories WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'categories\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'categories\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'categories_sync_insert',
+  );
+  late final Trigger categoriesSyncUpdate = Trigger(
+    'CREATE TRIGGER categories_sync_update AFTER UPDATE ON categories WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'categories\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'categories\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'categories_sync_update',
+  );
+  late final Trigger categoriesSyncDelete = Trigger(
+    'CREATE TRIGGER categories_sync_delete AFTER DELETE ON categories WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'categories\' AND row_id = OLD.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'categories\', OLD.id, \'delete\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'categories_sync_delete',
+  );
   late final $ScanRecordsTable scanRecords = $ScanRecordsTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final Trigger transactionsSyncInsert = Trigger(
+    'CREATE TRIGGER transactions_sync_insert AFTER INSERT ON transactions WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'transactions\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'transactions\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'transactions_sync_insert',
+  );
+  late final Trigger transactionsSyncUpdate = Trigger(
+    'CREATE TRIGGER transactions_sync_update AFTER UPDATE ON transactions WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'transactions\' AND row_id = NEW.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'transactions\', NEW.id, \'upsert\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'transactions_sync_update',
+  );
+  late final Trigger transactionsSyncDelete = Trigger(
+    'CREATE TRIGGER transactions_sync_delete AFTER DELETE ON transactions WHEN COALESCE((SELECT value FROM sync_meta WHERE name = \'applying\'), \'0\') <> \'1\' BEGIN INSERT INTO sync_meta (name, value) SELECT \'seq\', \'0\' WHERE NOT EXISTS (SELECT 1 FROM sync_meta WHERE name = \'seq\');UPDATE sync_meta SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT) WHERE name = \'seq\';DELETE FROM sync_outbox WHERE entity = \'transactions\' AND row_id = OLD.id;INSERT INTO sync_outbox (entity, row_id, op, seq) VALUES (\'transactions\', OLD.id, \'delete\', (SELECT CAST(value AS INTEGER) FROM sync_meta WHERE name = \'seq\'));END',
+    'transactions_sync_delete',
+  );
   late final Index idxTransactionsOccurredAt = Index(
     'idx_transactions_occurred_at',
     'CREATE INDEX idx_transactions_occurred_at ON transactions (occurred_at)',
@@ -3122,10 +3678,21 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
+    syncMeta,
+    syncOutbox,
     accounts,
+    accountsSyncInsert,
+    accountsSyncUpdate,
+    accountsSyncDelete,
     categories,
+    categoriesSyncInsert,
+    categoriesSyncUpdate,
+    categoriesSyncDelete,
     scanRecords,
     transactions,
+    transactionsSyncInsert,
+    transactionsSyncUpdate,
+    transactionsSyncDelete,
     idxTransactionsOccurredAt,
     idxTransactionsTypeOccurredAt,
     idxTransactionsAccountOccurredAt,
@@ -3135,6 +3702,78 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'accounts',
+        limitUpdateKind: UpdateKind.insert,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'accounts',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'accounts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'categories',
+        limitUpdateKind: UpdateKind.insert,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'categories',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'categories',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'scan_records',
@@ -3156,9 +3795,367 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('transactions', kind: UpdateKind.update)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'transactions',
+        limitUpdateKind: UpdateKind.insert,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'transactions',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'transactions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [
+        TableUpdate('sync_meta', kind: UpdateKind.insert),
+        TableUpdate('sync_meta', kind: UpdateKind.update),
+        TableUpdate('sync_outbox', kind: UpdateKind.delete),
+        TableUpdate('sync_outbox', kind: UpdateKind.insert),
+      ],
+    ),
   ]);
 }
 
+typedef $SyncMetaCreateCompanionBuilder = SyncMetaCompanion Function({
+  required String name,
+  required String value,
+  Value<int> rowid,
+});
+typedef $SyncMetaUpdateCompanionBuilder = SyncMetaCompanion Function({
+  Value<String> name,
+  Value<String> value,
+  Value<int> rowid,
+});
+
+class $SyncMetaFilterComposer extends Composer<_$AppDatabase, SyncMeta> {
+  $SyncMetaFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $SyncMetaOrderingComposer extends Composer<_$AppDatabase, SyncMeta> {
+  $SyncMetaOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $SyncMetaAnnotationComposer extends Composer<_$AppDatabase, SyncMeta> {
+  $SyncMetaAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $SyncMetaTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          SyncMeta,
+          SyncMetaData,
+          $SyncMetaFilterComposer,
+          $SyncMetaOrderingComposer,
+          $SyncMetaAnnotationComposer,
+          $SyncMetaCreateCompanionBuilder,
+          $SyncMetaUpdateCompanionBuilder,
+          (SyncMetaData, BaseReferences<_$AppDatabase, SyncMeta, SyncMetaData>),
+          SyncMetaData,
+          PrefetchHooks Function()
+        > {
+  $SyncMetaTableManager(_$AppDatabase db, SyncMeta table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $SyncMetaFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $SyncMetaOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $SyncMetaAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> name = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) => SyncMetaCompanion(name: name, value: value, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String name,
+                required String value,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncMetaCompanion.insert(
+                name: name,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<SyncMeta, SyncMetaData>(table),
+                  BaseReferences<_$AppDatabase, SyncMeta, SyncMetaData>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $SyncMetaProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      SyncMeta,
+      SyncMetaData,
+      $SyncMetaFilterComposer,
+      $SyncMetaOrderingComposer,
+      $SyncMetaAnnotationComposer,
+      $SyncMetaCreateCompanionBuilder,
+      $SyncMetaUpdateCompanionBuilder,
+      (SyncMetaData, BaseReferences<_$AppDatabase, SyncMeta, SyncMetaData>),
+      SyncMetaData,
+      PrefetchHooks Function()
+    >;
+typedef $SyncOutboxCreateCompanionBuilder = SyncOutboxCompanion Function({
+  required String entity,
+  required String rowId,
+  required String op,
+  required int seq,
+  Value<int> rowid,
+});
+typedef $SyncOutboxUpdateCompanionBuilder = SyncOutboxCompanion Function({
+  Value<String> entity,
+  Value<String> rowId,
+  Value<String> op,
+  Value<int> seq,
+  Value<int> rowid,
+});
+
+class $SyncOutboxFilterComposer extends Composer<_$AppDatabase, SyncOutbox> {
+  $SyncOutboxFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rowId => $composableBuilder(
+    column: $table.rowId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get op => $composableBuilder(
+    column: $table.op,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $SyncOutboxOrderingComposer extends Composer<_$AppDatabase, SyncOutbox> {
+  $SyncOutboxOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get entity => $composableBuilder(
+    column: $table.entity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rowId => $composableBuilder(
+    column: $table.rowId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get op => $composableBuilder(
+    column: $table.op,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $SyncOutboxAnnotationComposer
+    extends Composer<_$AppDatabase, SyncOutbox> {
+  $SyncOutboxAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get entity =>
+      $composableBuilder(column: $table.entity, builder: (column) => column);
+
+  GeneratedColumn<String> get rowId =>
+      $composableBuilder(column: $table.rowId, builder: (column) => column);
+
+  GeneratedColumn<String> get op =>
+      $composableBuilder(column: $table.op, builder: (column) => column);
+
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+}
+
+class $SyncOutboxTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          SyncOutbox,
+          SyncOutboxData,
+          $SyncOutboxFilterComposer,
+          $SyncOutboxOrderingComposer,
+          $SyncOutboxAnnotationComposer,
+          $SyncOutboxCreateCompanionBuilder,
+          $SyncOutboxUpdateCompanionBuilder,
+          (
+            SyncOutboxData,
+            BaseReferences<_$AppDatabase, SyncOutbox, SyncOutboxData>,
+          ),
+          SyncOutboxData,
+          PrefetchHooks Function()
+        > {
+  $SyncOutboxTableManager(_$AppDatabase db, SyncOutbox table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $SyncOutboxFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $SyncOutboxOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $SyncOutboxAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> entity = const Value.absent(),
+                Value<String> rowId = const Value.absent(),
+                Value<String> op = const Value.absent(),
+                Value<int> seq = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncOutboxCompanion(
+                entity: entity,
+                rowId: rowId,
+                op: op,
+                seq: seq,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String entity,
+                required String rowId,
+                required String op,
+                required int seq,
+                Value<int> rowid = const Value.absent(),
+              }) => SyncOutboxCompanion.insert(
+                entity: entity,
+                rowId: rowId,
+                op: op,
+                seq: seq,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<SyncOutbox, SyncOutboxData>(table),
+                  BaseReferences<_$AppDatabase, SyncOutbox, SyncOutboxData>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $SyncOutboxProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      SyncOutbox,
+      SyncOutboxData,
+      $SyncOutboxFilterComposer,
+      $SyncOutboxOrderingComposer,
+      $SyncOutboxAnnotationComposer,
+      $SyncOutboxCreateCompanionBuilder,
+      $SyncOutboxUpdateCompanionBuilder,
+      (
+        SyncOutboxData,
+        BaseReferences<_$AppDatabase, SyncOutbox, SyncOutboxData>,
+      ),
+      SyncOutboxData,
+      PrefetchHooks Function()
+    >;
 typedef $$AccountsTableCreateCompanionBuilder = AccountsCompanion Function({
   required String id,
   required String name,
@@ -3576,10 +4573,11 @@ class $$AccountsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (sourceTransactions)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           AccountRow,
                           $AccountsTable,
-                          TransactionRow
+                          TransactionRow,
+                          $TransactionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$AccountsTableReferences
@@ -3590,17 +4588,16 @@ class $$AccountsTableTableManager
                                 table,
                                 p0,
                               ).sourceTransactions,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.accountId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'account_id',
                           typedResults: items,
                         ),
                       if (incomingTransfers)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           AccountRow,
                           $AccountsTable,
-                          TransactionRow
+                          TransactionRow,
+                          $TransactionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$AccountsTableReferences
@@ -3611,10 +4608,8 @@ class $$AccountsTableTableManager
                                 table,
                                 p0,
                               ).incomingTransfers,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.destinationAccountId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'destination_account_id',
                           typedResults: items,
                         ),
                     ];
@@ -3978,10 +4973,11 @@ class $$CategoriesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (transactionsRefs)
-                    await $_getPrefetchedData<
+                    await $_getPrefetchedDataByColumns<
                       CategoryRow,
                       $CategoriesTable,
-                      TransactionRow
+                      TransactionRow,
+                      $TransactionsTable
                     >(
                       currentTable: table,
                       referencedTable: $$CategoriesTableReferences
@@ -3992,8 +4988,8 @@ class $$CategoriesTableTableManager
                             table,
                             p0,
                           ).transactionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.categoryId == item.id),
+                      currentColumn: 'id',
+                      referencedColumn: 'category_id',
                       typedResults: items,
                     ),
                 ];
@@ -4701,10 +5697,11 @@ class $$ScanRecordsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (transactionsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           ScanRecordRow,
                           $ScanRecordsTable,
-                          TransactionRow
+                          TransactionRow,
+                          $TransactionsTable
                         >(
                           currentTable: table,
                           referencedTable: $$ScanRecordsTableReferences
@@ -4715,10 +5712,8 @@ class $$ScanRecordsTableTableManager
                                 table,
                                 p0,
                               ).transactionsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.scanRecordId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'scan_record_id',
                           typedResults: items,
                         ),
                     ];
@@ -5600,10 +6595,11 @@ class $$TransactionsTableTableManager
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (scanRecordsRefs)
-                        await $_getPrefetchedData<
+                        await $_getPrefetchedDataByColumns<
                           TransactionRow,
                           $TransactionsTable,
-                          ScanRecordRow
+                          ScanRecordRow,
+                          $ScanRecordsTable
                         >(
                           currentTable: table,
                           referencedTable: $$TransactionsTableReferences
@@ -5614,10 +6610,8 @@ class $$TransactionsTableTableManager
                                 table,
                                 p0,
                               ).scanRecordsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.transactionId == item.id,
-                              ),
+                          currentColumn: 'id',
+                          referencedColumn: 'transaction_id',
                           typedResults: items,
                         ),
                     ];
@@ -5652,6 +6646,10 @@ typedef $$TransactionsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
+  $SyncMetaTableManager get syncMeta =>
+      $SyncMetaTableManager(_db, _db.syncMeta);
+  $SyncOutboxTableManager get syncOutbox =>
+      $SyncOutboxTableManager(_db, _db.syncOutbox);
   $$AccountsTableTableManager get accounts =>
       $$AccountsTableTableManager(_db, _db.accounts);
   $$CategoriesTableTableManager get categories =>

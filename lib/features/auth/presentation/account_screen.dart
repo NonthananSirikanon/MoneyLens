@@ -11,6 +11,7 @@ import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
+import '../../sync/application/sync_controller.dart';
 import '../application/session.dart';
 import '../domain/auth_models.dart';
 import 'auth_widgets.dart';
@@ -105,6 +106,8 @@ class AccountScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
+          const _SyncRow(),
+          const SizedBox(height: 12),
           MlListGroup(
             children: [
               MlListRow(
@@ -119,6 +122,45 @@ class AccountScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Sync status with a "sync now" tap. Hidden when sync is not running (no
+/// server configured).
+class _SyncRow extends ConsumerWidget {
+  const _SyncRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final sync = ref.watch(syncControllerProvider);
+    if (sync.phase == SyncPhase.disabled) return const SizedBox.shrink();
+
+    String two(int n) => n.toString().padLeft(2, '0');
+    final last = sync.lastSyncedAt?.toLocal();
+    final text = switch (sync.phase) {
+      SyncPhase.syncing => l10n.syncRunning,
+      SyncPhase.offline => l10n.syncOffline,
+      SyncPhase.failed => l10n.syncFailed,
+      _ when sync.pending > 0 => l10n.syncPending(sync.pending),
+      _ when last != null => l10n.syncDone(
+        '${two(last.hour)}:${two(last.minute)}',
+      ),
+      _ => l10n.syncNever,
+    };
+    return MlListGroup(
+      children: [
+        MlListRow(
+          icon: MlIcons.refreshCw,
+          label: l10n.syncTitle,
+          sub: text,
+          chevron: false,
+          onPressed: sync.phase == SyncPhase.syncing
+              ? null
+              : () => ref.read(syncControllerProvider.notifier).syncNow(),
+        ),
+      ],
     );
   }
 }
