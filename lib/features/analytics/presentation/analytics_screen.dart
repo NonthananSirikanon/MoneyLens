@@ -53,6 +53,10 @@ class AnalyticsScreen extends ConsumerWidget {
   }
 }
 
+/// `2569` in Thai (Buddhist Era), `2026` otherwise.
+String _yearText(BuildContext context, int year) =>
+    context.localeTag.startsWith('th') ? '${year + 543}' : '$year';
+
 class _BreakdownView extends ConsumerWidget {
   const _BreakdownView();
 
@@ -73,16 +77,20 @@ class _BreakdownView extends ConsumerWidget {
           runSpacing: MlSpace.xs,
           children: [
             MlPeriodButton(
-              label: context.dateFormat.monthYear(b.month),
+              label: b.isWholeYear
+                  ? l10n.analyticsWholeYear(_yearText(context, b.month.year))
+                  : context.dateFormat.monthYear(b.month),
               leadingIcon: MlIcons.calendar,
               onPressed: () => showMonthPickerSheet(
                 context,
                 ref,
                 selected: b.month,
-                onSelected: controller.selectMonth,
+                wholeYear: b.isWholeYear,
+                onMonth: controller.selectMonth,
+                onYear: controller.selectYear,
               ),
             ),
-            if (!b.isEmpty || ui.periodIndex == 0)
+            if (!b.isEmpty || ui.isCurrentMonth)
               MlSegmented<AnalyticsMode>(
                 style: MlSegmentedStyle.white,
                 expand: false,

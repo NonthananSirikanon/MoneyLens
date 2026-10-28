@@ -661,5 +661,14 @@
   "csvColSource": "Source",
   "analyticsPickMonthTitle": "Choose month and year",
   "analyticsPreviousYear": "Previous year",
-  "analyticsNextYear": "Next year"
+  "analyticsNextYear": "Next year",
+  "analyticsAllYear": "Whole year",
+  "analyticsWholeYear": "All of {year}",
+  "@analyticsWholeYear": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  }
 }

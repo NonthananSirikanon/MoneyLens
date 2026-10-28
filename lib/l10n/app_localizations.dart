@@ -2641,6 +2641,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next year'**
   String get analyticsNextYear;
+
+  /// No description provided for @analyticsAllYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole year'**
+  String get analyticsAllYear;
+
+  /// No description provided for @analyticsWholeYear.
+  ///
+  /// In en, this message translates to:
+  /// **'All of {year}'**
+  String analyticsWholeYear(String year);
 }
 
 class _AppLocalizationsDelegate

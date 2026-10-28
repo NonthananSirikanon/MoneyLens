@@ -177,6 +177,9 @@ class SyncEngine {
       await _setMeta('applying', '0');
       await _setMeta('cursor:${table.name}', nextCursor);
     });
+    // Raw statements do not tell Drift's watchers that rows changed, so the
+    // screens would keep showing the old data until the app restarted.
+    if (applied > 0) _db.notifyUpdates({TableUpdate(table.name)});
     return (applied: applied, skipped: skipped);
   }
 

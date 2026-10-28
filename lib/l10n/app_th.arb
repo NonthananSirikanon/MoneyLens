@@ -423,5 +423,7 @@
   "csvColSource": "แหล่งที่มา",
   "analyticsPickMonthTitle": "เลือกเดือนและปี",
   "analyticsPreviousYear": "ปีก่อนหน้า",
-  "analyticsNextYear": "ปีถัดไป"
+  "analyticsNextYear": "ปีถัดไป",
+  "analyticsAllYear": "ทั้งปี",
+  "analyticsWholeYear": "ทั้งปี {year}"
 }

@@ -1375,4 +1375,12 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get analyticsNextYear => 'ปีถัดไป';
+
+  @override
+  String get analyticsAllYear => 'ทั้งปี';
+
+  @override
+  String analyticsWholeYear(String year) {
+    return 'ทั้งปี $year';
+  }
 }

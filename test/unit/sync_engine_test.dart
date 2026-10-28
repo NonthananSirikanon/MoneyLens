@@ -134,6 +134,28 @@ void main() {
   });
 
   test(
+    'screens watching the ledger see pulled changes without a restart',
+    () async {
+      await addAccount(a, 'acc-1', 'Bank', t1);
+      await addExpense(a, 'tx-1', 'acc-1', t1, merchant: 'Noodles');
+      await syncA.run();
+
+      final seen = <List<String>>[];
+      final sub = b
+          .select(b.transactions)
+          .watch()
+          .listen((rows) => seen.add([for (final r in rows) r.id]));
+      await pumpEventQueue();
+      expect(seen.last, isEmpty);
+
+      await syncB.pull();
+      await pumpEventQueue();
+      expect(seen.last, ['tx-1']);
+      await sub.cancel();
+    },
+  );
+
+  test(
     'a second device receives everything and does not echo it back',
     () async {
       await addAccount(a, 'acc-1', 'Bank', t1);

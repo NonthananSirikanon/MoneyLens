@@ -1391,4 +1391,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analyticsNextYear => 'Next year';
+
+  @override
+  String get analyticsAllYear => 'Whole year';
+
+  @override
+  String analyticsWholeYear(String year) {
+    return 'All of $year';
+  }
 }

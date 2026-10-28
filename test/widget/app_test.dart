@@ -469,6 +469,22 @@ void main() {
     expect(find.text('Oct 2026'), findsOneWidget);
     expect(find.text('Total expenses'), findsOneWidget);
     expect(container.read(analyticsProvider).periodIndex, 0);
+
+    // The whole year is one choice, and it is marked in the picker.
+    await tapOn(tester, find.text('Oct 2026'));
+    await settle(tester);
+    await tapOn(tester, find.text('Whole year'));
+    await settle(tester);
+    expect(find.text('All of 2026'), findsOneWidget);
+    expect(find.text('Total expenses'), findsOneWidget);
+    expect(container.read(analyticsProvider).wholeYear, 2026);
+    // Picking a month leaves the whole-year view.
+    await tapOn(tester, find.text('All of 2026'));
+    await settle(tester);
+    await tapOn(tester, find.text('Oct'));
+    await settle(tester);
+    expect(find.text('Oct 2026'), findsOneWidget);
+    expect(container.read(analyticsProvider).wholeYear, isNull);
   });
 
   testWidgets('analytics: the picker can go back to an earlier year', (
@@ -500,6 +516,22 @@ void main() {
     expect(find.text('Dec 2025'), findsOneWidget);
     expect(find.text('฿555'), findsWidgets);
     expect(container.read(analyticsProvider).periodIndex, 10);
+
+    // The whole of 2025 holds just that expense; 2026 holds the sample data.
+    await tapOn(tester, find.text('Dec 2025'));
+    await settle(tester);
+    await tapOn(tester, find.text('Whole year'));
+    await settle(tester);
+    expect(find.text('All of 2025'), findsOneWidget);
+    expect(find.text('฿555'), findsWidgets);
+    await tapOn(tester, find.text('All of 2025'));
+    await settle(tester);
+    await tapOn(tester, find.byIcon(MlIcons.chevronRight));
+    await settle(tester);
+    await tapOn(tester, find.text('Whole year'));
+    await settle(tester);
+    expect(find.text('All of 2026'), findsOneWidget);
+    expect(find.text('฿555'), findsNothing);
   });
 
   testWidgets('settings language row switches to Thai', (tester) async {

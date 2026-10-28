@@ -12,15 +12,17 @@ import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../../demo/demo_store.dart';
 
-/// Sheet for choosing the month the analytics breakdown shows: a year row
-/// with arrows and a grid of the twelve months. Months after the current one
-/// are disabled, and the earliest year is the year of the oldest transaction
-/// (or this year when there are none).
+/// Sheet for choosing what the analytics breakdown shows: a year row with
+/// arrows, an "all year" choice for that year, and a grid of its twelve
+/// months. Months after the current one are disabled, and the earliest year
+/// is the year of the oldest transaction (or this year when there are none).
 Future<void> showMonthPickerSheet(
   BuildContext context,
   WidgetRef ref, {
   required DateTime selected,
-  required void Function(int year, int month) onSelected,
+  required bool wholeYear,
+  required void Function(int year, int month) onMonth,
+  required void Function(int year) onYear,
 }) {
   final now = ReportingTimeZone.bangkok.wallClock(
     ref.read(clockProvider).nowUtc(),
@@ -36,11 +38,16 @@ Future<void> showMonthPickerSheet(
     context,
     builder: (sheetContext) => _MonthPickerSheet(
       selected: selected,
+      wholeYear: wholeYear,
       now: now,
       minYear: minYear,
-      onSelected: (year, month) {
+      onMonth: (year, month) {
         Navigator.of(sheetContext).pop();
-        onSelected(year, month);
+        onMonth(year, month);
+      },
+      onYear: (year) {
+        Navigator.of(sheetContext).pop();
+        onYear(year);
       },
     ),
   );
@@ -49,17 +56,23 @@ Future<void> showMonthPickerSheet(
 class _MonthPickerSheet extends StatefulWidget {
   const _MonthPickerSheet({
     required this.selected,
+    required this.wholeYear,
     required this.now,
     required this.minYear,
-    required this.onSelected,
+    required this.onMonth,
+    required this.onYear,
   });
 
   final DateTime selected;
 
+  /// The current choice is a whole year ([selected]'s year).
+  final bool wholeYear;
+
   /// Wall-clock "now"; the latest month that can be chosen.
   final DateTime now;
   final int minYear;
-  final void Function(int year, int month) onSelected;
+  final void Function(int year, int month) onMonth;
+  final void Function(int year) onYear;
 
   @override
   State<_MonthPickerSheet> createState() => _MonthPickerSheetState();
@@ -108,6 +121,14 @@ class _MonthPickerSheetState extends State<_MonthPickerSheet> {
             ),
           ],
         ),
+        SizedBox(
+          height: 44,
+          child: MlChip(
+            label: l10n.analyticsAllYear,
+            selected: widget.wholeYear && _year == widget.selected.year,
+            onPressed: () => widget.onYear(_year),
+          ),
+        ),
         GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,
@@ -120,11 +141,13 @@ class _MonthPickerSheetState extends State<_MonthPickerSheet> {
               _MonthCell(
                 label: fmt.monthShort(DateTime.utc(_year, m)),
                 selected:
-                    _year == widget.selected.year && m == widget.selected.month,
+                    !widget.wholeYear &&
+                    _year == widget.selected.year &&
+                    m == widget.selected.month,
                 enabled:
                     (_year * 12 + m) <=
                     (widget.now.year * 12 + widget.now.month),
-                onPressed: () => widget.onSelected(_year, m),
+                onPressed: () => widget.onMonth(_year, m),
               ),
           ],
         ),
