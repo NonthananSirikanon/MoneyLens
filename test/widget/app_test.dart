@@ -7,7 +7,12 @@ import 'package:moneylens/app/providers.dart';
 import 'package:moneylens/app/theme/icons.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
+import 'package:moneylens/demo/demo_config.dart';
+import 'package:moneylens/features/accounts/application/account_providers.dart';
+import 'package:moneylens/features/categories/application/category_providers.dart';
+import 'package:moneylens/features/transactions/application/transaction_providers.dart';
 import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/infrastructure/database/app_database.dart';
 
 import '../support/test_support.dart';
 
@@ -30,14 +35,37 @@ void main() {
     bool onboarded = true,
     Locale locale = const Locale('en'),
     Future<void> Function()? startup,
+    bool sample = true,
   }) async {
     tester.view.physicalSize = const Size(390 * 3, 844 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
+    final db = openTestDatabase();
     final container = ProviderContainer(
       retry: (_, _) => null,
       overrides: [
-        appStartupProvider.overrideWith((ref) => (startup ?? () async {})()),
+        appDatabaseProvider.overrideWithValue(db),
+        sampleDataEnabledProvider.overrideWithValue(sample),
+        // Drift stream queries and writes deadlock under the fake clock of
+        // widget tests, so the ledger streams emit one-shot reads instead.
+        // The store re-reads after every write, so the UI still updates.
+        allTransactionsProvider.overrideWith(
+          (ref) => Stream.fromFuture(
+            ref.watch(transactionRepositoryProvider).findAll(),
+          ),
+        ),
+        activeAccountsProvider.overrideWith(
+          (ref) => Stream.fromFuture(
+            ref.watch(accountRepositoryProvider).findActive(),
+          ),
+        ),
+        activeCategoriesProvider.overrideWith(
+          (ref) => Stream.fromFuture(
+            ref.watch(categoryRepositoryProvider).findActive(),
+          ),
+        ),
+        if (startup != null)
+          appStartupProvider.overrideWith((ref) => startup()),
         clockProvider.overrideWithValue(FixedClock(now)),
         appPreferencesProvider.overrideWith(
           () =>
@@ -45,7 +73,14 @@ void main() {
         ),
       ],
     );
-    addTearDown(container.dispose);
+    addTearDown(() async {
+      container.dispose();
+      await tester.runAsync(db.close);
+    });
+    if (startup == null) {
+      // Drift does real I/O, which fake time in widget tests does not drive.
+      await tester.runAsync(() => container.read(appStartupProvider.future));
+    }
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -260,6 +295,34 @@ void main() {
     await drain(tester);
   });
 
+  testWidgets('a fresh install is empty and records a first transaction', (
+    tester,
+  ) async {
+    final container = await pumpApp(tester, sample: false);
+    expect(find.text('Total balance'), findsOneWidget);
+    expect(find.textContaining('slips waiting'), findsNothing);
+    expect(container.read(demoStoreProvider).transactions, isEmpty);
+    expect(container.read(demoStoreProvider).scans, isEmpty);
+
+    // Slip import is not available without a real OCR engine.
+    await tapOn(tester, find.text('Scan slip'));
+    await settle(tester);
+    expect(find.text('This feature is being tested'), findsOneWidget);
+    await drain(tester);
+
+    await tapOn(tester, find.text('Add manually').first);
+    await settle(tester);
+    await tester.enterText(input('Amount'), '150');
+    await tester.enterText(input('Merchant / payee'), 'Noodle shop');
+    await tapOn(tester, find.text('Save transaction'));
+    await settle(tester);
+
+    expect(find.text('Saved'), findsOneWidget);
+    final s = container.read(demoStoreProvider);
+    expect(s.transactions.single.accountId, 'default-cash');
+    expect(s.balanceOf('default-cash'), -15000);
+  });
+
   testWidgets('startup failure shows a retryable error', (tester) async {
     await pumpApp(tester, startup: () async => throw StateError('db'));
     expect(
@@ -273,8 +336,12 @@ void main() {
 /// Pumps frames without waiting for settle; some views animate forever
 /// (skeleton shimmer, camera scan line).
 Future<void> settle(WidgetTester tester) async {
-  for (var i = 0; i < 10; i++) {
-    await tester.pump(const Duration(milliseconds: 60));
+  for (var i = 0; i < 40; i++) {
+    // Let pending database work finish in real time, then advance the clock.
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 2)),
+    );
+    await tester.pump(const Duration(milliseconds: 16));
   }
 }
 

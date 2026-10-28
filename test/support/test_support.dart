@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:moneylens/app/providers.dart';
+import 'package:moneylens/demo/demo_config.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/dates/date_range.dart';
 import 'package:moneylens/core/errors/app_failure.dart';
@@ -109,6 +113,9 @@ class FakeTransactionRepository implements TransactionRepository {
   Stream<List<MoneyTransaction>> watchAll() => Stream.value([..._items]);
 
   @override
+  Future<List<MoneyTransaction>> findAll() async => [..._items];
+
+  @override
   Future<MoneyTransaction?> findById(String id) async =>
       _items.where((t) => t.id == id).firstOrNull;
 
@@ -132,4 +139,23 @@ class FakeTransactionRepository implements TransactionRepository {
     required String scanRecordId,
     required TransactionDraft draft,
   }) => throw UnimplementedError();
+}
+
+/// A container backed by an in-memory database seeded with the prototype's
+/// sample data (sample mode), with startup already finished.
+Future<ProviderContainer> sampleContainer(DateTime now) async {
+  final db = openTestDatabase();
+  final container = ProviderContainer(
+    overrides: [
+      appDatabaseProvider.overrideWithValue(db),
+      clockProvider.overrideWithValue(FixedClock(now)),
+      sampleDataEnabledProvider.overrideWithValue(true),
+    ],
+  );
+  addTearDown(() async {
+    container.dispose();
+    await db.close();
+  });
+  await container.read(appStartupProvider.future);
+  return container;
 }

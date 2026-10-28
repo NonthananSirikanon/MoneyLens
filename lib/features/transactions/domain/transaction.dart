@@ -14,6 +14,7 @@ class TransactionDraft {
     required this.occurredAt,
     this.source = TransactionSource.manual,
     this.providerReference,
+    this.attachmentPath,
   });
 
   final TransactionType type;
@@ -23,6 +24,9 @@ class TransactionDraft {
   final String? categoryId;
   final String? merchant;
   final String? note;
+
+  /// Relative path to an app-owned slip image, if any.
+  final String? attachmentPath;
 
   /// The instant the transaction happened, in UTC.
   final DateTime occurredAt;

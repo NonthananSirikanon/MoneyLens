@@ -8,6 +8,9 @@ abstract interface class TransactionRepository {
   /// Every transaction, newest first. Used for balances and reports.
   Stream<List<MoneyTransaction>> watchAll();
 
+  /// One-shot read of every transaction, newest first.
+  Future<List<MoneyTransaction>> findAll();
+
   Future<MoneyTransaction?> findById(String id);
 
   /// Transactions whose `occurredAt` falls within [range].

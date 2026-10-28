@@ -44,6 +44,7 @@ Scan record แทนวงจรการนำเข้า/ประมวล�
 | `kind` | TEXT | ค่าควบคุม เช่น `cash`, `bank`, `ewallet` หรือ `other` |
 | `currency_code` | TEXT | รหัสสกุลเงิน ISO ต้องตัดสินใจว่า MVP เป็น THB เท่านั้นหรือหลายสกุล |
 | `opening_balance_minor` | INTEGER | ไม่บังคับ หากรองรับยอดคงเหลือของบัญชี เป็นหน่วยย่อยจำนวนเต็ม |
+| `last_four` | TEXT | ไม่บังคับ เลขท้าย 4 หลักของบัญชีเพื่อช่วยจับคู่สลิป ห้ามเก็บเลขบัญชีเต็ม (เพิ่มใน schema v2) |
 | `is_archived` | BOOLEAN/INTEGER | ซ่อนจากตัวเลือกตอนเพิ่มรายการใหม่โดยไม่ลบประวัติ |
 | `created_at` | INTEGER/TEXT timestamp | เวลาสร้าง (จำเป็น) |
 | `updated_at` | INTEGER/TEXT timestamp | เวลาอัปเดต (จำเป็น) |

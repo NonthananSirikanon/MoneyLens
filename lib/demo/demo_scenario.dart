@@ -2,8 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Demo states that the prototype exposes as preview props rather than
 /// through visible UI. Choose one at launch with
-/// `flutter run --dart-define=ML_SCENARIO=offline` (or `dbError`, `emptyTx`,
-/// `loading`), so no debug-only controls are added to the design.
+/// `flutter run --dart-define=ML_SCENARIO=offline` (or `dbError`, `loading`), so no debug-only controls are added to the design.
 enum DemoScenario {
   normal,
 
@@ -12,9 +11,6 @@ enum DemoScenario {
 
   /// The transaction list fails to load (DB_READ_FAILED) until retried.
   dbError,
-
-  /// Starts with no transactions (empty states).
-  emptyTx,
 
   /// The transaction list stays on its skeleton.
   loading;

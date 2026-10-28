@@ -47,7 +47,8 @@ class TransactionDetailScreen extends ConsumerWidget {
       ),
     );
     if (!confirmed || !context.mounted) return;
-    ref.read(demoStoreProvider.notifier).deleteTransaction(v.id);
+    await ref.read(demoStoreProvider.notifier).deleteTransaction(v.id);
+    if (!context.mounted) return;
     context.pop();
     showMlToast(l10n.toastDeleted);
   }

@@ -78,13 +78,21 @@ lib/
 - **Raw OCR text** is not persisted (`scan_records.raw_text` stays null) until a retention policy exists (DATABASE.md §9).
 - **Default categories** are seeded with stable IDs using `INSERT OR IGNORE`, so seeding is idempotent.
 
-## UI and demo data
+## UI and data
 
 The screens implement `design/mockups/prototype.html` using the design system in `design/mockups/index.html`, built on Forui. Tokens and text styles are in `lib/app/theme/`, and the shared widgets (`Ml*`) are in `lib/core/widgets/`.
 
-**The UI currently runs on mock data.** `lib/demo/` holds an in-memory store seeded with the prototype's data, plus simulated OCR, camera, gallery, permissions and CSV export. The Drift repositories and `SlipImportPipeline` are unchanged, but no screen uses them yet. To connect real data, point the feature `application/*_view_providers.dart` files and `EntryFormController` at the repositories (the data layer now supports update/delete transaction, create category, `AccountBalanceCalculator` and `ReportCalculator`; only the wiring is left).
+**Transactions, accounts, categories, balances and reports use the real Drift database.** `DemoStore` (`lib/demo/demo_store.dart`) mirrors the database for the UI and writes every change back through the repositories. A fresh install starts empty with a default cash account and the default categories. Balances are `opening balance + transactions` (`AccountBalanceCalculator`), and reports come from `ReportCalculator`.
 
-Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|emptyTx|loading>`. Strings live in `lib/l10n/app_th.arb` (Thai, copied from the prototype) and `app_en.arb`; Settings → ภาษา switches the language.
+**Slip import is still simulated.** There is no OCR engine or camera/gallery adapter wired to the screens yet, so a normal run shows camera and gallery as "soon" and never invents a reading. To try the whole slip flow, run in sample mode, which loads the prototype's sample accounts and transactions into the database and enables the simulated slip queue, camera and gallery:
+
+```sh
+flutter run --dart-define=ML_SAMPLE_DATA=true
+```
+
+Also simulated: permissions, Face ID and CSV export (toast only).
+
+Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|loading>`. Strings live in `lib/l10n/app_th.arb` (Thai, copied from the prototype) and `app_en.arb`; Settings → ภาษา switches the language.
 
 ## Database migrations
 
@@ -113,6 +121,6 @@ The following are deliberately **not added yet**. `fl_chart` waits until a chart
 - **Extraction:** `EmptyExtractionService` returns no fields, so the review step will ask the user to fill in everything.
 - **Share Sheet:** not wired. Android needs an `ACTION_SEND` intent filter. iOS needs a Share Extension target and an App Group. `UnavailableShareSheetSource` emits nothing, but the app already sends whatever it emits through the shared pipeline.
 - **Automatic photo discovery:** not attempted. It is a validation gate (PROJECT.md SL-12), and `ImportSource.discovery` is reserved.
-- **Review/confirm screen, manual-entry form, account and category management, period picker, CSV:** not built. The use cases behind them (`CreateTransaction`, `ConfirmScan`, validators) exist and are tested.
+- **Review screen on real slips, CSV export, period picker:** the screens exist but work on simulated slips (sample mode) or only show a toast. Manual entry, edit, delete, accounts and categories are real. `ConfirmScan` is not yet used by the review screen, which confirms mock slips through the same transaction use cases.
 - **Duplicate detection:** only exact image fingerprints are checked. Provider-reference and transaction-fingerprint layers are planned for week 8.
 - **Camera and gallery** have been built but not exercised on a physical device. Only the simulator smoke test has run.

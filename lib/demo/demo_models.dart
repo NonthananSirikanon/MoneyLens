@@ -107,6 +107,19 @@ class AccountDetails {
   final String? last4;
   final Color tint;
 
+  /// Derives display details from a stored account: the first word of the
+  /// name as the short label, and a tint by kind.
+  factory AccountDetails.of(Account a) => AccountDetails(
+    shortName: a.name.trim().split(RegExp(r'\s+')).first,
+    last4: a.lastFour,
+    tint: switch (a.kind) {
+      AccountKind.bank => const Color(0xFFE3EFE7),
+      AccountKind.ewallet => const Color(0xFFF7EDD6),
+      AccountKind.cash => const Color(0xFFE6EBDF),
+      AccountKind.other => const Color(0xFFF0F0EC),
+    },
+  );
+
   /// `•••• 1234`, or empty when no digits were given.
   String get mask => last4 == null || last4!.isEmpty ? '' : '•••• $last4';
 }
@@ -119,66 +132,19 @@ class CategoryStyle {
 
   final Color tint;
   final Color chart;
-}
 
-/// Month aggregates for transactions that exist before the visible seed
-/// list (the prototype's `BASE`). Session additions are added on top.
-@immutable
-class MonthBaseline {
-  const MonthBaseline({
-    required this.income,
-    required this.expense,
-    required this.transfers,
-    required this.expenseByCategory,
-    required this.incomeByCategory,
-  });
+  /// [colorValue] is the stored accent colour. The tint behind the icon is
+  /// that colour at 22% over white.
+  factory CategoryStyle.of(Category c) =>
+      CategoryStyle.fromAccent(Color(c.colorValue ?? 0xFFC9C8C2));
 
-  static const empty = MonthBaseline(
-    income: 0,
-    expense: 0,
-    transfers: 0,
-    expenseByCategory: {},
-    incomeByCategory: {},
+  factory CategoryStyle.fromAccent(Color accent) => CategoryStyle(
+    tint: Color.alphaBlend(
+      accent.withValues(alpha: .22),
+      const Color(0xFFFFFFFF),
+    ),
+    chart: accent,
   );
-
-  /// Minor units.
-  final int income;
-  final int expense;
-  final int transfers;
-  final Map<String, int> expenseByCategory;
-  final Map<String, int> incomeByCategory;
-}
-
-/// A finished month shown by the analytics period picker.
-@immutable
-class PastPeriod {
-  const PastPeriod({
-    required this.monthsAgo,
-    required this.expenseByCategory,
-    required this.incomeByCategory,
-    required this.transfers,
-  });
-
-  final int monthsAgo;
-  final Map<String, int> expenseByCategory;
-  final Map<String, int> incomeByCategory;
-  final int transfers;
-
-  bool get isEmpty => expenseByCategory.isEmpty && incomeByCategory.isEmpty;
-}
-
-/// Income vs expense for one month of the trend chart, in minor units.
-@immutable
-class TrendMonth {
-  const TrendMonth({
-    required this.monthsAgo,
-    required this.income,
-    required this.expense,
-  });
-
-  final int monthsAgo;
-  final int income;
-  final int expense;
 }
 
 /// What the entry screen submits.
@@ -207,33 +173,24 @@ class TransactionInput {
   final String? scanId;
 }
 
-/// Everything the demo store holds.
+/// Everything the app store holds: ledger data mirrored from the Drift
+/// database, plus the in-memory (simulated) slip queue.
 @immutable
 class DemoState {
   const DemoState({
     required this.transactions,
-    required this.seedTransactionIds,
     required this.transactionImportSources,
     required this.accounts,
     required this.accountDetails,
     required this.categories,
     required this.categoryStyles,
-    required this.categorySeedCounts,
     required this.scans,
     required this.scanDetails,
     required this.ocrProgress,
-    required this.baseline,
-    required this.pastPeriods,
-    required this.trend,
-    required this.dailySpend,
   });
 
   /// Newest first.
   final List<MoneyTransaction> transactions;
-
-  /// Ids of the visible seed transactions; they are already included in
-  /// [baseline], so only other transactions are added to summaries.
-  final Set<String> seedTransactionIds;
 
   /// Import source for slip-backed transactions (for the "source" row).
   final Map<String, ImportSource> transactionImportSources;
@@ -242,57 +199,34 @@ class DemoState {
   final List<Category> categories;
   final Map<String, CategoryStyle> categoryStyles;
 
-  /// Transaction counts shown under each category, as in the prototype.
-  final Map<String, int> categorySeedCounts;
-
   /// Newest first.
   final List<ScanRecord> scans;
   final Map<String, ScanDetails> scanDetails;
 
   /// Simulated OCR progress (0–100) for scans being read.
   final Map<String, double> ocrProgress;
-  final MonthBaseline baseline;
-  final List<PastPeriod> pastPeriods;
-
-  /// Oldest first; the last entry is replaced by the live current month.
-  final List<TrendMonth> trend;
-
-  /// Spend per day of the current month, in minor units, oldest first.
-  final List<int> dailySpend;
 
   DemoState copyWith({
     List<MoneyTransaction>? transactions,
-    Set<String>? seedTransactionIds,
     Map<String, ImportSource>? transactionImportSources,
     List<Account>? accounts,
     Map<String, AccountDetails>? accountDetails,
     List<Category>? categories,
     Map<String, CategoryStyle>? categoryStyles,
-    Map<String, int>? categorySeedCounts,
     List<ScanRecord>? scans,
     Map<String, ScanDetails>? scanDetails,
     Map<String, double>? ocrProgress,
-    MonthBaseline? baseline,
-    List<PastPeriod>? pastPeriods,
-    List<TrendMonth>? trend,
-    List<int>? dailySpend,
   }) => DemoState(
     transactions: transactions ?? this.transactions,
-    seedTransactionIds: seedTransactionIds ?? this.seedTransactionIds,
     transactionImportSources:
         transactionImportSources ?? this.transactionImportSources,
     accounts: accounts ?? this.accounts,
     accountDetails: accountDetails ?? this.accountDetails,
     categories: categories ?? this.categories,
     categoryStyles: categoryStyles ?? this.categoryStyles,
-    categorySeedCounts: categorySeedCounts ?? this.categorySeedCounts,
     scans: scans ?? this.scans,
     scanDetails: scanDetails ?? this.scanDetails,
     ocrProgress: ocrProgress ?? this.ocrProgress,
-    baseline: baseline ?? this.baseline,
-    pastPeriods: pastPeriods ?? this.pastPeriods,
-    trend: trend ?? this.trend,
-    dailySpend: dailySpend ?? this.dailySpend,
   );
 
   Account? account(String? id) {

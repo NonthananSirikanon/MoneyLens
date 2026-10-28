@@ -225,8 +225,10 @@ void main() {
     Future<Map<String, int>> balances() async {
       final all = await transactions.watchAll().first;
       final accs = await accounts.watchActive().first;
+      // Ignore the default cash account every install starts with.
       return {
-        for (final e in calc.balances(accs, all).entries) e.key: e.value.minor,
+        for (final e in calc.balances(accs, all).entries)
+          if (e.key == cash || e.key == bank) e.key: e.value.minor,
       };
     }
 

@@ -25,6 +25,16 @@ class DriftCategoryRepository implements CategoryRepository {
   }
 
   @override
+  Future<List<Category>> findActive() async {
+    final rows =
+        await (_db.select(_db.categories)
+              ..where((c) => c.isArchived.equals(false))
+              ..orderBy([(c) => OrderingTerm.asc(c.name)]))
+            .get();
+    return rows.map(_toDomain).toList();
+  }
+
+  @override
   Future<Category?> findById(String id) async {
     final row = await (_db.select(
       _db.categories,

@@ -8,6 +8,10 @@ class Accounts extends Table {
   TextColumn get kind => text()();
   TextColumn get currencyCode => text().withLength(min: 3, max: 3)();
   IntColumn get openingBalanceMinor => integer().nullable()();
+
+  /// Last four digits only, to help match slips. Full account numbers are
+  /// never stored (PROJECT.md privacy rules).
+  TextColumn get lastFour => text().nullable()();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();

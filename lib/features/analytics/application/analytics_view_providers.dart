@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../demo/demo_store.dart';
-import '../../dashboard/application/home_view_providers.dart';
+import 'report_calculator.dart';
 
 enum AnalyticsTab { breakdown, trend }
 
@@ -52,8 +52,7 @@ class AnalyticsController extends Notifier<AnalyticsUiState> {
   /// The period pill cycles through the available months, as in the
   /// prototype (current → previous → a month without data).
   void cyclePeriod() {
-    final count = 1 + ref.read(demoStoreProvider).pastPeriods.length;
-    state = state.copyWith(periodIndex: (state.periodIndex + 1) % count);
+    state = state.copyWith(periodIndex: (state.periodIndex + 1) % periodCount);
   }
 
   void resetPeriod() => state = state.copyWith(periodIndex: 0);
@@ -63,6 +62,10 @@ class AnalyticsController extends Notifier<AnalyticsUiState> {
   /// Opening Analytics from elsewhere chooses a tab.
   void open(AnalyticsTab tab) => state = state.copyWith(tab: tab);
 }
+
+/// Periods the picker cycles through: the current month and the five
+/// before it.
+const periodCount = 6;
 
 final analyticsProvider =
     NotifierProvider<AnalyticsController, AnalyticsUiState>(
@@ -114,24 +117,15 @@ final breakdownProvider = Provider<Breakdown>((ref) {
   final s = ref.watch(demoStoreProvider);
   final ui = ref.watch(analyticsProvider);
   final now = ref.watch(clockProvider).nowUtc();
-  final Map<String, int> source;
-  final int transfers;
-  final DateTime month;
-  if (ui.periodIndex == 0) {
-    final totals = ref.watch(monthTotalsProvider);
-    source = ui.mode == AnalyticsMode.expense
-        ? totals.expenseByCategory
-        : totals.incomeByCategory;
-    transfers = totals.transfers;
-    month = _monthsAgo(now, 0);
-  } else {
-    final p = s.pastPeriods[ui.periodIndex - 1];
-    source = ui.mode == AnalyticsMode.expense
-        ? p.expenseByCategory
-        : p.incomeByCategory;
-    transfers = p.transfers;
-    month = _monthsAgo(now, p.monthsAgo);
-  }
+  final tz = ReportingTimeZone.bangkok;
+  final month = _monthsAgo(now, ui.periodIndex);
+  final totals = const ReportCalculator().totals(
+    s.transactions,
+    tz.month(month.year, month.month),
+  );
+  final source = ui.mode == AnalyticsMode.expense
+      ? totals.expenseByCategory
+      : totals.incomeByCategory;
   final entries =
       source.entries
           .where((e) => e.value > 0 && s.category(e.key) != null)
@@ -141,7 +135,7 @@ final breakdownProvider = Provider<Breakdown>((ref) {
   return Breakdown(
     month: month,
     total: total,
-    transfers: transfers,
+    transfers: totals.transfers,
     slices: [
       for (final e in entries)
         BreakdownSlice(
@@ -169,17 +163,23 @@ class TrendPoint {
   int get net => income - expense;
 }
 
-/// Six months of income vs expense; the current month is live.
+/// Six months of income vs expense, oldest first.
 final trendProvider = Provider<List<TrendPoint>>((ref) {
   final s = ref.watch(demoStoreProvider);
-  final totals = ref.watch(monthTotalsProvider);
   final now = ref.watch(clockProvider).nowUtc();
+  final tz = ReportingTimeZone.bangkok;
+  final months = [
+    for (var i = periodCount - 1; i >= 0; i--) _monthsAgo(now, i),
+  ];
+  final totals = const ReportCalculator().trend(s.transactions, [
+    for (final m in months) tz.month(m.year, m.month),
+  ]);
   return [
-    for (final m in s.trend)
+    for (final (i, m) in months.indexed)
       TrendPoint(
-        month: _monthsAgo(now, m.monthsAgo),
-        income: m.monthsAgo == 0 ? totals.income : m.income,
-        expense: m.monthsAgo == 0 ? totals.expense : m.expense,
+        month: m,
+        income: totals[i].income,
+        expense: totals[i].expense,
       ),
   ];
 });

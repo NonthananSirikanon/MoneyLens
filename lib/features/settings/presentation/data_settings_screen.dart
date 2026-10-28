@@ -29,7 +29,8 @@ class DataSettingsScreen extends ConsumerWidget {
       confirmLabel: l10n.wipeConfirm,
     );
     if (!confirmed) return;
-    ref.read(demoStoreProvider.notifier).wipeAll();
+    await ref.read(demoStoreProvider.notifier).wipeAll();
+    if (!context.mounted) return;
     showMlToast(l10n.toastWiped);
   }
 
@@ -39,6 +40,11 @@ class DataSettingsScreen extends ConsumerWidget {
     final prefs = ref.watch(appPreferencesProvider);
     final txCount = ref.watch(
       demoStoreProvider.select((s) => s.transactions.length),
+    );
+    final slipImages = ref.watch(
+      demoStoreProvider.select(
+        (s) => s.transactions.where((t) => t.attachmentPath != null).length,
+      ),
     );
     final now = ReportingTimeZone.bangkok.wallClock(
       ref.watch(clockProvider).nowUtc(),
@@ -85,7 +91,7 @@ class DataSettingsScreen extends ConsumerWidget {
             MlListRow(
               icon: MlIcons.image,
               label: l10n.dataSlipsOnDevice,
-              value: l10n.dataSlipsSize(128, '46 MB'),
+              value: l10n.dataSlipsSize(slipImages, '–'),
               chevron: false,
               onPressed: null,
             ),

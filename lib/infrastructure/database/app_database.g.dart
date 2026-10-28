@@ -62,6 +62,17 @@ class $AccountsTable extends Accounts
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _lastFourMeta = const VerificationMeta(
+    'lastFour',
+  );
+  @override
+  late final GeneratedColumn<String> lastFour = GeneratedColumn<String>(
+    'last_four',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isArchivedMeta = const VerificationMeta(
     'isArchived',
   );
@@ -106,6 +117,7 @@ class $AccountsTable extends Accounts
     kind,
     currencyCode,
     openingBalanceMinor,
+    lastFour,
     isArchived,
     createdAt,
     updatedAt,
@@ -163,6 +175,12 @@ class $AccountsTable extends Accounts
         ),
       );
     }
+    if (data.containsKey('last_four')) {
+      context.handle(
+        _lastFourMeta,
+        lastFour.isAcceptableOrUnknown(data['last_four']!, _lastFourMeta),
+      );
+    }
     if (data.containsKey('is_archived')) {
       context.handle(
         _isArchivedMeta,
@@ -214,6 +232,10 @@ class $AccountsTable extends Accounts
         DriftSqlType.int,
         data['${effectivePrefix}opening_balance_minor'],
       ),
+      lastFour: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_four'],
+      ),
       isArchived: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_archived'],
@@ -241,6 +263,10 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
   final String kind;
   final String currencyCode;
   final int? openingBalanceMinor;
+
+  /// Last four digits only, to help match slips. Full account numbers are
+  /// never stored (PROJECT.md privacy rules).
+  final String? lastFour;
   final bool isArchived;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -250,6 +276,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     required this.kind,
     required this.currencyCode,
     this.openingBalanceMinor,
+    this.lastFour,
     required this.isArchived,
     required this.createdAt,
     required this.updatedAt,
@@ -263,6 +290,9 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     map['currency_code'] = Variable<String>(currencyCode);
     if (!nullToAbsent || openingBalanceMinor != null) {
       map['opening_balance_minor'] = Variable<int>(openingBalanceMinor);
+    }
+    if (!nullToAbsent || lastFour != null) {
+      map['last_four'] = Variable<String>(lastFour);
     }
     map['is_archived'] = Variable<bool>(isArchived);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -279,6 +309,9 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       openingBalanceMinor: openingBalanceMinor == null && nullToAbsent
           ? const Value.absent()
           : Value(openingBalanceMinor),
+      lastFour: lastFour == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastFour),
       isArchived: Value(isArchived),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -298,6 +331,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       openingBalanceMinor: serializer.fromJson<int?>(
         json['openingBalanceMinor'],
       ),
+      lastFour: serializer.fromJson<String?>(json['lastFour']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -312,6 +346,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       'kind': serializer.toJson<String>(kind),
       'currencyCode': serializer.toJson<String>(currencyCode),
       'openingBalanceMinor': serializer.toJson<int?>(openingBalanceMinor),
+      'lastFour': serializer.toJson<String?>(lastFour),
       'isArchived': serializer.toJson<bool>(isArchived),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -324,6 +359,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     String? kind,
     String? currencyCode,
     Value<int?> openingBalanceMinor = const Value.absent(),
+    Value<String?> lastFour = const Value.absent(),
     bool? isArchived,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -335,6 +371,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     openingBalanceMinor: openingBalanceMinor.present
         ? openingBalanceMinor.value
         : this.openingBalanceMinor,
+    lastFour: lastFour.present ? lastFour.value : this.lastFour,
     isArchived: isArchived ?? this.isArchived,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -350,6 +387,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
       openingBalanceMinor: data.openingBalanceMinor.present
           ? data.openingBalanceMinor.value
           : this.openingBalanceMinor,
+      lastFour: data.lastFour.present ? data.lastFour.value : this.lastFour,
       isArchived: data.isArchived.present
           ? data.isArchived.value
           : this.isArchived,
@@ -366,6 +404,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
           ..write('kind: $kind, ')
           ..write('currencyCode: $currencyCode, ')
           ..write('openingBalanceMinor: $openingBalanceMinor, ')
+          ..write('lastFour: $lastFour, ')
           ..write('isArchived: $isArchived, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -380,6 +419,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
     kind,
     currencyCode,
     openingBalanceMinor,
+    lastFour,
     isArchived,
     createdAt,
     updatedAt,
@@ -393,6 +433,7 @@ class AccountRow extends DataClass implements Insertable<AccountRow> {
           other.kind == this.kind &&
           other.currencyCode == this.currencyCode &&
           other.openingBalanceMinor == this.openingBalanceMinor &&
+          other.lastFour == this.lastFour &&
           other.isArchived == this.isArchived &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -404,6 +445,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
   final Value<String> kind;
   final Value<String> currencyCode;
   final Value<int?> openingBalanceMinor;
+  final Value<String?> lastFour;
   final Value<bool> isArchived;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -414,6 +456,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
     this.kind = const Value.absent(),
     this.currencyCode = const Value.absent(),
     this.openingBalanceMinor = const Value.absent(),
+    this.lastFour = const Value.absent(),
     this.isArchived = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -425,6 +468,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
     required String kind,
     required String currencyCode,
     this.openingBalanceMinor = const Value.absent(),
+    this.lastFour = const Value.absent(),
     this.isArchived = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -441,6 +485,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
     Expression<String>? kind,
     Expression<String>? currencyCode,
     Expression<int>? openingBalanceMinor,
+    Expression<String>? lastFour,
     Expression<bool>? isArchived,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -453,6 +498,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
       if (currencyCode != null) 'currency_code': currencyCode,
       if (openingBalanceMinor != null)
         'opening_balance_minor': openingBalanceMinor,
+      if (lastFour != null) 'last_four': lastFour,
       if (isArchived != null) 'is_archived': isArchived,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -466,6 +512,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
     Value<String>? kind,
     Value<String>? currencyCode,
     Value<int?>? openingBalanceMinor,
+    Value<String?>? lastFour,
     Value<bool>? isArchived,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -477,6 +524,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
       kind: kind ?? this.kind,
       currencyCode: currencyCode ?? this.currencyCode,
       openingBalanceMinor: openingBalanceMinor ?? this.openingBalanceMinor,
+      lastFour: lastFour ?? this.lastFour,
       isArchived: isArchived ?? this.isArchived,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -502,6 +550,9 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
     if (openingBalanceMinor.present) {
       map['opening_balance_minor'] = Variable<int>(openingBalanceMinor.value);
     }
+    if (lastFour.present) {
+      map['last_four'] = Variable<String>(lastFour.value);
+    }
     if (isArchived.present) {
       map['is_archived'] = Variable<bool>(isArchived.value);
     }
@@ -525,6 +576,7 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
           ..write('kind: $kind, ')
           ..write('currencyCode: $currencyCode, ')
           ..write('openingBalanceMinor: $openingBalanceMinor, ')
+          ..write('lastFour: $lastFour, ')
           ..write('isArchived: $isArchived, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -3113,6 +3165,7 @@ typedef $$AccountsTableCreateCompanionBuilder = AccountsCompanion Function({
   required String kind,
   required String currencyCode,
   Value<int?> openingBalanceMinor,
+  Value<String?> lastFour,
   Value<bool> isArchived,
   required DateTime createdAt,
   required DateTime updatedAt,
@@ -3124,6 +3177,7 @@ typedef $$AccountsTableUpdateCompanionBuilder = AccountsCompanion Function({
   Value<String> kind,
   Value<String> currencyCode,
   Value<int?> openingBalanceMinor,
+  Value<String?> lastFour,
   Value<bool> isArchived,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -3203,6 +3257,11 @@ class $$AccountsTableFilterComposer
 
   ColumnFilters<int> get openingBalanceMinor => $composableBuilder(
     column: $table.openingBalanceMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastFour => $composableBuilder(
+    column: $table.lastFour,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3306,6 +3365,11 @@ class $$AccountsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get lastFour => $composableBuilder(
+    column: $table.lastFour,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isArchived => $composableBuilder(
     column: $table.isArchived,
     builder: (column) => ColumnOrderings(column),
@@ -3349,6 +3413,9 @@ class $$AccountsTableAnnotationComposer
     column: $table.openingBalanceMinor,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get lastFour =>
+      $composableBuilder(column: $table.lastFour, builder: (column) => column);
 
   GeneratedColumn<bool> get isArchived => $composableBuilder(
     column: $table.isArchived,
@@ -3448,6 +3515,7 @@ class $$AccountsTableTableManager
                 Value<String> kind = const Value.absent(),
                 Value<String> currencyCode = const Value.absent(),
                 Value<int?> openingBalanceMinor = const Value.absent(),
+                Value<String?> lastFour = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -3458,6 +3526,7 @@ class $$AccountsTableTableManager
                 kind: kind,
                 currencyCode: currencyCode,
                 openingBalanceMinor: openingBalanceMinor,
+                lastFour: lastFour,
                 isArchived: isArchived,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -3470,6 +3539,7 @@ class $$AccountsTableTableManager
                 required String kind,
                 required String currencyCode,
                 Value<int?> openingBalanceMinor = const Value.absent(),
+                Value<String?> lastFour = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -3480,6 +3550,7 @@ class $$AccountsTableTableManager
                 kind: kind,
                 currencyCode: currencyCode,
                 openingBalanceMinor: openingBalanceMinor,
+                lastFour: lastFour,
                 isArchived: isArchived,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

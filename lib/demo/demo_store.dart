@@ -5,22 +5,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/dates/clock.dart';
 import '../core/money/currency.dart';
+import '../features/accounts/application/account_providers.dart';
 import '../features/accounts/domain/account.dart';
+import '../features/categories/application/category_providers.dart';
 import '../features/categories/domain/category.dart';
 import '../features/slip_import/domain/scan_record.dart';
 import '../features/slip_import/domain/scan_status.dart';
+import '../features/transactions/application/transaction_providers.dart';
 import '../features/transactions/domain/transaction.dart';
 import '../features/transactions/domain/transaction_type.dart';
+import '../infrastructure/database/app_database.dart';
+import 'demo_config.dart';
 import 'demo_models.dart';
-import 'demo_scenario.dart';
 import 'demo_seed.dart';
 
-/// In-memory stand-in for the ledger, accounts, categories and slip queue.
+/// The app's UI store.
 ///
-/// MOCK DATA: nothing here touches the Drift database or a real OCR engine.
-/// Every action mirrors a handler in `design/mockups/prototype.html` so the
-/// prototype's flows work end to end. Swapping to the real repositories is a
-/// change to the feature `*_view_providers.dart` files only.
+/// Ledger data (transactions, accounts, categories) is mirrored from the
+/// Drift database and every change is written there. The slip queue is
+/// SIMULATED in memory (no camera, OCR or gallery adapter is wired yet) and
+/// is only populated in sample mode (`ML_SAMPLE_DATA`); see
+/// `demo_config.dart`.
 class DemoStore extends Notifier<DemoState> {
   final _timers = <Timer>[];
   var _idCounter = 0;
@@ -32,12 +37,91 @@ class DemoStore extends Notifier<DemoState> {
         t.cancel();
       }
     });
-    final seed = ref.watch(demoSeedProvider).build();
-    if (ref.watch(demoScenarioProvider) == DemoScenario.emptyTx) {
-      return seed.copyWith(transactions: const [], seedTransactionIds: {});
-    }
-    return seed;
+
+    final sample = ref.watch(sampleDataEnabledProvider);
+    final seed = ref.read(demoSeedProvider);
+    final (scans, details) = sample
+        ? seed.scans()
+        : (const <ScanRecord>[], const <String, ScanDetails>{});
+
+    // Mirror the database. A stream event only signals that something
+    // changed; the state is then re-read, so a slow or stale event can never
+    // overwrite newer data. Listening (not watching) keeps the slip queue in
+    // memory when a ledger stream emits.
+    ref.listen(activeAccountsProvider, (_, next) {
+      if (next.hasValue) unawaited(_refreshAccounts());
+    });
+    ref.listen(activeCategoriesProvider, (_, next) {
+      if (next.hasValue) unawaited(_refreshCategories());
+    });
+    ref.listen(allTransactionsProvider, (_, next) {
+      if (next.hasValue) unawaited(_refreshTransactions());
+    });
+
+    final accounts = ref.read(activeAccountsProvider).value ?? const [];
+    final categories = ref.read(activeCategoriesProvider).value ?? const [];
+    return DemoState(
+      transactions: ref.read(allTransactionsProvider).value ?? const [],
+      transactionImportSources: sample
+          ? DemoSeed.transactionImportSources
+          : const {},
+      accounts: accounts,
+      accountDetails: _accountDetails(accounts),
+      categories: categories,
+      categoryStyles: _categoryStyles(categories),
+      scans: scans,
+      scanDetails: details,
+      ocrProgress: const {},
+    );
   }
+
+  static Map<String, AccountDetails> _accountDetails(List<Account> accounts) =>
+      {for (final a in accounts) a.id: AccountDetails.of(a)};
+
+  static Map<String, CategoryStyle> _categoryStyles(List<Category> cs) => {
+    for (final c in cs) c.id: CategoryStyle.of(c),
+  };
+
+  // The database streams update the state too, but a write must be visible
+  // to the caller as soon as it returns (e.g. before navigating to the new
+  // transaction), so each write re-reads what it changed (one-shot reads,
+  // not stream queries).
+  // Each read carries a sequence number and only the newest one is applied,
+  // so a slower, older read can never overwrite newer data.
+  var _txSeq = 0;
+  var _accountSeq = 0;
+  var _categorySeq = 0;
+
+  Future<void> _refreshTransactions() async {
+    final seq = ++_txSeq;
+    final txs = await ref.read(transactionRepositoryProvider).findAll();
+    if (!ref.mounted) return;
+    if (seq == _txSeq) state = state.copyWith(transactions: txs);
+  }
+
+  Future<void> _refreshAccounts() async {
+    final seq = ++_accountSeq;
+    final accounts = await ref.read(accountRepositoryProvider).findActive();
+    if (!ref.mounted) return;
+    if (seq == _accountSeq) _setAccounts(accounts);
+  }
+
+  Future<void> _refreshCategories() async {
+    final seq = ++_categorySeq;
+    final categories = await ref.read(categoryRepositoryProvider).findActive();
+    if (!ref.mounted) return;
+    if (seq == _categorySeq) _setCategories(categories);
+  }
+
+  void _setAccounts(List<Account> accounts) => state = state.copyWith(
+    accounts: accounts,
+    accountDetails: _accountDetails(accounts),
+  );
+
+  void _setCategories(List<Category> categories) => state = state.copyWith(
+    categories: categories,
+    categoryStyles: _categoryStyles(categories),
+  );
 
   DateTime get _now => ref.read(clockProvider).nowUtc();
 
@@ -46,162 +130,127 @@ class DemoStore extends Notifier<DemoState> {
 
   // ---------------------------------------------------------------- ledger
 
-  /// Saves a new transaction; when it came from a slip, marks the scan
-  /// confirmed. Returns the new transaction id.
-  String addTransaction(TransactionInput input) {
-    final now = _now;
-    final id = _nextId('tx');
+  /// Saves a new transaction to the database; when it came from a (mock)
+  /// slip, marks that scan confirmed. Returns the new transaction id.
+  Future<String> addTransaction(TransactionInput input) async {
     final scan = state.scan(input.scanId);
-    final tx = MoneyTransaction(
-      id: id,
-      type: input.type,
-      amount: input.amount,
-      accountId: input.accountId,
-      destinationAccountId: input.type == TransactionType.transfer
-          ? input.destinationAccountId
-          : null,
-      categoryId: input.type == TransactionType.transfer
-          ? null
-          : input.categoryId,
-      merchant: input.merchant,
-      note: input.note,
-      occurredAt: input.occurredAt,
-      source: scan == null ? TransactionSource.manual : TransactionSource.ocr,
-      scanRecordId: scan?.id,
-      attachmentPath: scan == null ? null : demoSlipImage,
-      createdAt: now,
-      updatedAt: now,
-    );
-    state = state.copyWith(
-      transactions: _sorted([tx, ...state.transactions]),
-      transactionImportSources: scan == null
-          ? null
-          : {...state.transactionImportSources, id: scan.source},
-    );
+    final tx = await ref
+        .read(createTransactionProvider)
+        .call(
+          _draft(
+            input,
+            source: scan == null
+                ? TransactionSource.manual
+                : TransactionSource.ocr,
+            attachmentPath: scan == null ? null : demoSlipImage,
+          ),
+        );
+    await _refreshTransactions();
     if (scan != null) {
-      _updateScan(scan.id, status: ScanStatus.confirmed, transactionId: id);
+      state = state.copyWith(
+        transactionImportSources: {
+          ...state.transactionImportSources,
+          tx.id: scan.source,
+        },
+      );
+      _updateScan(scan.id, status: ScanStatus.confirmed, transactionId: tx.id);
       _setTitleKind(scan.id, ScanTitleKind.reading, reading: _readingFrom(tx));
     }
-    return id;
+    return tx.id;
   }
 
-  void updateTransaction(String id, TransactionInput input) {
+  Future<void> updateTransaction(String id, TransactionInput input) async {
     final old = state.transaction(id);
-    if (old == null) return;
-    final updated = MoneyTransaction(
-      id: old.id,
-      type: input.type,
-      amount: input.amount,
-      accountId: input.accountId,
-      destinationAccountId: input.type == TransactionType.transfer
-          ? input.destinationAccountId
-          : null,
-      categoryId: input.type == TransactionType.transfer
-          ? null
-          : input.categoryId,
-      merchant: input.merchant,
-      note: input.note,
-      occurredAt: input.occurredAt,
-      source: old.source,
-      scanRecordId: old.scanRecordId,
-      attachmentPath: old.attachmentPath,
-      providerReference: old.providerReference,
-      createdAt: old.createdAt,
-      updatedAt: _now,
-    );
-    state = state.copyWith(
-      transactions: _sorted([
-        for (final t in state.transactions) t.id == id ? updated : t,
-      ]),
-    );
+    await ref
+        .read(updateTransactionProvider)
+        .call(
+          id,
+          _draft(
+            input,
+            source: old?.source ?? TransactionSource.manual,
+            attachmentPath: old?.attachmentPath,
+          ),
+        );
+    await _refreshTransactions();
   }
 
-  void deleteTransaction(String id) {
-    state = state.copyWith(
-      transactions: [
-        for (final t in state.transactions)
-          if (t.id != id) t,
-      ],
-    );
+  Future<void> deleteTransaction(String id) async {
+    await ref.read(transactionRepositoryProvider).delete(id);
+    await _refreshTransactions();
   }
 
   /// "Delete all data" from Settings → Data & export.
-  void wipeAll() {
+  Future<void> wipeAll() async {
+    await ref.read(appDatabaseProvider).wipeUserData(_now);
+    await Future.wait([
+      _refreshTransactions(),
+      _refreshAccounts(),
+      _refreshCategories(),
+    ]);
     state = state.copyWith(
-      transactions: const [],
-      seedTransactionIds: {},
       scans: const [],
       scanDetails: const {},
       ocrProgress: const {},
-      baseline: MonthBaseline.empty,
-      dailySpend: [for (final _ in state.dailySpend) 0],
-      accounts: [for (final a in state.accounts) _withOpening(a, 0)],
+      transactionImportSources: const {},
     );
   }
+
+  TransactionDraft _draft(
+    TransactionInput input, {
+    required TransactionSource source,
+    String? attachmentPath,
+  }) => TransactionDraft(
+    type: input.type,
+    amount: input.amount,
+    accountId: input.accountId,
+    destinationAccountId: input.type == TransactionType.transfer
+        ? input.destinationAccountId
+        : null,
+    categoryId: input.type == TransactionType.transfer
+        ? null
+        : input.categoryId,
+    merchant: input.merchant,
+    note: input.note,
+    occurredAt: input.occurredAt,
+    source: source,
+    attachmentPath: attachmentPath,
+  );
 
   // ------------------------------------------------- categories & accounts
 
-  void addCategory({
+  Future<void> addCategory({
     required String name,
     required CategoryKind kind,
     required String iconKey,
-    required Color tint,
-  }) {
-    final now = _now;
-    final id = _nextId('cat');
-    state = state.copyWith(
-      categories: [
-        ...state.categories,
-        Category(
-          id: id,
+    required Color accent,
+  }) async {
+    await ref
+        .read(categoryRepositoryProvider)
+        .create(
           name: name,
           kind: kind,
           iconKey: iconKey,
-          colorValue: 0xFFB9B3CC,
-          isDefault: false,
-          isArchived: false,
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ],
-      categoryStyles: {
-        ...state.categoryStyles,
-        id: CategoryStyle(tint: tint, chart: const Color(0xFFB9B3CC)),
-      },
-    );
+          colorValue: accent.toARGB32(),
+        );
+    await _refreshCategories();
   }
 
-  void addAccount({
+  Future<void> addAccount({
     required String name,
     required AccountKind kind,
     String? last4,
     required int openingBalanceMinor,
-  }) {
-    final now = _now;
-    final id = _nextId('acc');
-    state = state.copyWith(
-      accounts: [
-        ...state.accounts,
-        Account(
-          id: id,
+  }) async {
+    await ref
+        .read(accountRepositoryProvider)
+        .create(
           name: name,
           kind: kind,
           currency: Currency.thb,
           openingBalanceMinor: openingBalanceMinor,
-          isArchived: false,
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ],
-      accountDetails: {
-        ...state.accountDetails,
-        id: AccountDetails(
-          shortName: name.split(' ').first,
-          last4: last4,
-          tint: const Color(0xFFE3E8EE),
-        ),
-      },
-    );
+          lastFour: last4,
+        );
+    await _refreshAccounts();
   }
 
   // ------------------------------------------------------------ slip queue
@@ -355,20 +404,6 @@ class DemoStore extends Notifier<DemoState> {
     categoryId: t.categoryId,
     accountId: t.accountId,
   );
-
-  static Account _withOpening(Account a, int opening) => Account(
-    id: a.id,
-    name: a.name,
-    kind: a.kind,
-    currency: a.currency,
-    openingBalanceMinor: opening,
-    isArchived: a.isArchived,
-    createdAt: a.createdAt,
-    updatedAt: a.updatedAt,
-  );
-
-  static List<MoneyTransaction> _sorted(List<MoneyTransaction> txs) =>
-      [...txs]..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
 }
 
 final demoSeedProvider = Provider<DemoSeed>(

@@ -187,18 +187,20 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) return;
     final opening = Money.tryParse(_balance.text, Currency.thb)?.minor ?? 0;
-    ref
+    await ref
         .read(demoStoreProvider.notifier)
         .addAccount(
           name: name,
           kind: _kind,
-          last4: _last4.text.isEmpty ? null : _last4.text,
+          // Only a complete set of four digits is kept.
+          last4: _last4.text.length == 4 ? _last4.text : null,
           openingBalanceMinor: opening,
         );
+    if (!mounted) return;
     Navigator.of(context).pop();
     showMlToast(context.l10n.toastAccountAdded(name));
   }

@@ -22,6 +22,7 @@ class Account {
     required this.kind,
     required this.currency,
     this.openingBalanceMinor,
+    this.lastFour,
     required this.isArchived,
     required this.createdAt,
     required this.updatedAt,
@@ -35,6 +36,9 @@ class Account {
   /// Optional. Balance semantics are still an open decision
   /// (DATABASE.md §11.2), so nothing computes balances from this yet.
   final int? openingBalanceMinor;
+
+  /// Last four digits only; the full number is never stored.
+  final String? lastFour;
   final bool isArchived;
   final DateTime createdAt;
   final DateTime updatedAt;

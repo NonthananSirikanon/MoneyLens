@@ -7,6 +7,7 @@ import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_overlays.dart';
+import '../../../demo/demo_config.dart';
 import '../../../l10n/l10n.dart';
 import 'import_flows.dart';
 
@@ -20,6 +21,7 @@ class _AddSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final slipsReady = ref.watch(sampleDataEnabledProvider);
     // Each option closes the sheet first, then navigates from the shell.
     final navContext = Navigator.of(context, rootNavigator: true).context;
     void then(void Function() action) {
@@ -34,12 +36,14 @@ class _AddSheet extends ConsumerWidget {
           icon: MlIcons.camera,
           label: l10n.addOptionCamera,
           sub: l10n.addOptionCameraSub,
+          soon: !slipsReady,
           onPressed: () => then(() => ImportFlows.startCamera(navContext, ref)),
         ),
         _AddOption(
           icon: MlIcons.image,
           label: l10n.addOptionGallery,
           sub: l10n.addOptionGallerySub,
+          soon: !slipsReady,
           onPressed: () =>
               then(() => ImportFlows.startGallery(navContext, ref)),
         ),

@@ -239,7 +239,14 @@ class EntryFormController extends Notifier<EntryDraft> {
       ref.read(clockProvider).nowUtc(),
     );
     final accounts = s.accounts.map((a) => a.id).toList();
-    final firstAccount = accounts.isEmpty ? '' : accounts.first;
+    // Default to the account used most, so frequent entries need no change.
+    final usage = <String, int>{};
+    for (final t in s.transactions) {
+      usage.update(t.accountId, (v) => v + 1, ifAbsent: () => 1);
+    }
+    final firstAccount = accounts.isEmpty
+        ? ''
+        : accounts.reduce((a, b) => (usage[b] ?? 0) > (usage[a] ?? 0) ? b : a);
     String otherThan(String id) =>
         accounts.firstWhere((a) => a != id, orElse: () => id);
 
@@ -307,7 +314,9 @@ class EntryFormController extends Notifier<EntryDraft> {
 
   static String? _defaultCategory(DemoState s, TransactionType type) {
     if (type == TransactionType.transfer) return null;
-    final preferred = type == TransactionType.income ? 'salary' : 'food';
+    final preferred = type == TransactionType.income
+        ? 'default-income-salary'
+        : 'default-expense-food';
     if (s.category(preferred) != null) return preferred;
     final kind = type == TransactionType.income
         ? CategoryKind.income
@@ -405,8 +414,9 @@ class EntryFormController extends Notifier<EntryDraft> {
     );
   }
 
-  /// Validates and saves. Returns null (and shows errors) when invalid.
-  EntrySaved? save() {
+  /// Validates and saves to the database. Returns null (and shows errors)
+  /// when invalid.
+  Future<EntrySaved?> save() async {
     final d = state;
     if (d.sameAccount) return null;
     final errors = validateEntry(d);
@@ -432,10 +442,10 @@ class EntryFormController extends Notifier<EntryDraft> {
       scanId: d.scanId,
     );
     if (d.mode == EntryMode.edit) {
-      _store.updateTransaction(d.editId!, input);
+      await _store.updateTransaction(d.editId!, input);
       return EntrySaved(transactionId: d.editId!, mode: d.mode);
     }
-    final id = _store.addTransaction(input);
+    final id = await _store.addTransaction(input);
     return EntrySaved(transactionId: id, mode: d.mode);
   }
 

@@ -23,6 +23,16 @@ class DriftAccountRepository implements AccountRepository {
   }
 
   @override
+  Future<List<Account>> findActive() async {
+    final rows =
+        await (_db.select(_db.accounts)
+              ..where((a) => a.isArchived.equals(false))
+              ..orderBy([(a) => OrderingTerm.asc(a.name)]))
+            .get();
+    return rows.map(_toDomain).toList();
+  }
+
+  @override
   Future<Account?> findById(String id) async {
     final row = await (_db.select(
       _db.accounts,
@@ -36,6 +46,7 @@ class DriftAccountRepository implements AccountRepository {
     required AccountKind kind,
     required Currency currency,
     int? openingBalanceMinor,
+    String? lastFour,
   }) async {
     final now = _clock.nowUtc();
     final row = await _db
@@ -47,6 +58,7 @@ class DriftAccountRepository implements AccountRepository {
             kind: kind.dbValue,
             currencyCode: currency.code,
             openingBalanceMinor: Value(openingBalanceMinor),
+            lastFour: Value(lastFour),
             createdAt: now,
             updatedAt: now,
           ),
@@ -62,6 +74,7 @@ class DriftAccountRepository implements AccountRepository {
         Currency.tryFromCode(row.currencyCode) ??
         (throw StateError('Stored account uses unsupported currency')),
     openingBalanceMinor: row.openingBalanceMinor,
+    lastFour: row.lastFour,
     isArchived: row.isArchived,
     createdAt: row.createdAt.toUtc(),
     updatedAt: row.updatedAt.toUtc(),

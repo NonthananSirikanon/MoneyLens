@@ -13,12 +13,23 @@ import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_fields.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../demo/demo_seed.dart';
+import '../../../demo/demo_models.dart';
 import '../../../demo/demo_store.dart';
 import '../../../l10n/l10n.dart';
 import '../../dashboard/application/home_view_providers.dart';
 import '../../transactions/application/transaction_view_providers.dart';
 import '../domain/category.dart';
+
+/// Accent colours offered by the "new category" sheet; the icon tint is
+/// derived from the chosen one (same rule as every other category).
+const _accents = [
+  Color(0xFFE09A88),
+  Color(0xFF93ABCB),
+  Color(0xFFE2BC6E),
+  Color(0xFFA8B89A),
+  Color(0xFFB9B3CC),
+  Color(0xFF4F8A68),
+];
 
 final _categoryTabProvider = NotifierProvider<_CategoryTab, CategoryKind>(
   _CategoryTab.new,
@@ -158,17 +169,18 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) return;
-    ref
+    await ref
         .read(demoStoreProvider.notifier)
         .addCategory(
           name: name,
           kind: _kind,
           iconKey: MlIconKeys.newCategoryChoices[_icon],
-          tint: newCategoryTints[_tint],
+          accent: _accents[_tint],
         );
+    if (!mounted) return;
     ref.read(_categoryTabProvider.notifier).set(_kind);
     Navigator.of(context).pop();
     showMlToast(context.l10n.toastCategoryAdded(name));
@@ -238,7 +250,7 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
           label: l10n.categoryColorLabel,
           child: Row(
             children: [
-              for (final (i, tint) in newCategoryTints.indexed) ...[
+              for (final (i, accent) in _accents.indexed) ...[
                 if (i > 0) const SizedBox(width: 10),
                 FTappable(
                   semanticsLabel: l10n.categoryColorOption(i + 1),
@@ -248,7 +260,7 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: tint,
+                      color: CategoryStyle.fromAccent(accent).tint,
                       shape: BoxShape.circle,
                       border: i == _tint
                           ? null

@@ -54,9 +54,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     super.dispose();
   }
 
-  void _save() {
-    final saved = _form.save();
-    if (saved == null) return;
+  Future<void> _save() async {
+    final saved = await _form.save();
+    if (saved == null || !mounted) return;
     if (saved.mode == EntryMode.edit) {
       context.pop();
       showMlToast(context.l10n.toastEditSaved);

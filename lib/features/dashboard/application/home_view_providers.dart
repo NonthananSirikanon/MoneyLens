@@ -5,8 +5,8 @@ import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../demo/demo_models.dart';
 import '../../../demo/demo_store.dart';
+import '../../analytics/application/report_calculator.dart';
 import '../../categories/domain/category.dart';
-import '../../transactions/domain/transaction_type.dart';
 
 /// Income, expense and transfer totals for the current month, in minor
 /// units. Transfers are reported separately and never counted as income or
@@ -28,45 +28,17 @@ class MonthTotals {
   final Map<String, int> incomeByCategory;
 }
 
-/// The demo baseline plus every transaction added this session that falls
-/// in the current Bangkok month (the prototype's `BASE + sessionTx`).
+/// Totals for the Bangkok month containing [nowUtc], from confirmed
+/// transactions only (transfers are reported separately).
 MonthTotals currentMonthTotals(DemoState s, DateTime nowUtc) {
   final month = ReportingTimeZone.bangkok.monthContaining(nowUtc);
-  var income = s.baseline.income;
-  var expense = s.baseline.expense;
-  var transfers = s.baseline.transfers;
-  final byExpense = {...s.baseline.expenseByCategory};
-  final byIncome = {...s.baseline.incomeByCategory};
-  for (final t in s.transactions) {
-    if (s.seedTransactionIds.contains(t.id) || !month.contains(t.occurredAt)) {
-      continue;
-    }
-    final amount = t.amount.minor;
-    switch (t.type) {
-      case TransactionType.income:
-        income += amount;
-        byIncome.update(
-          t.categoryId!,
-          (v) => v + amount,
-          ifAbsent: () => amount,
-        );
-      case TransactionType.expense:
-        expense += amount;
-        byExpense.update(
-          t.categoryId!,
-          (v) => v + amount,
-          ifAbsent: () => amount,
-        );
-      case TransactionType.transfer:
-        transfers += amount;
-    }
-  }
+  final t = const ReportCalculator().totals(s.transactions, month);
   return MonthTotals(
-    income: income,
-    expense: expense,
-    transfers: transfers,
-    expenseByCategory: byExpense,
-    incomeByCategory: byIncome,
+    income: t.income,
+    expense: t.expense,
+    transfers: t.transfers,
+    expenseByCategory: t.expenseByCategory,
+    incomeByCategory: t.incomeByCategory,
   );
 }
 
@@ -77,13 +49,13 @@ final monthTotalsProvider = Provider<MonthTotals>(
   ),
 );
 
-/// Number of transactions per category (seed counts plus session entries).
+/// Number of transactions per category.
 final categoryCountsProvider = Provider<Map<String, int>>((ref) {
   final s = ref.watch(demoStoreProvider);
-  final counts = {...s.categorySeedCounts};
+  final counts = <String, int>{};
   for (final t in s.transactions) {
-    if (s.seedTransactionIds.contains(t.id) || t.categoryId == null) continue;
-    counts.update(t.categoryId!, (v) => v + 1, ifAbsent: () => 1);
+    final id = t.categoryId;
+    if (id != null) counts.update(id, (v) => v + 1, ifAbsent: () => 1);
   }
   return counts;
 });
@@ -137,23 +109,17 @@ final topCategoriesProvider = Provider<List<TopCategory>>((ref) {
   ];
 });
 
-/// Spend per day of the current month (index 0 = the 1st), including
-/// expenses added this session.
+/// Spend per day of the current month up to today (index 0 = the 1st).
 final dailySpendProvider = Provider<List<int>>((ref) {
   final s = ref.watch(demoStoreProvider);
   final now = ref.watch(clockProvider).nowUtc();
-  final month = ReportingTimeZone.bangkok.monthContaining(now);
-  final days = [...s.dailySpend];
-  for (final t in s.transactions) {
-    if (s.seedTransactionIds.contains(t.id) ||
-        t.type != TransactionType.expense ||
-        !month.contains(t.occurredAt)) {
-      continue;
-    }
-    final day = ReportingTimeZone.bangkok.wallClock(t.occurredAt).day - 1;
-    if (day >= 0 && day < days.length) days[day] += t.amount.minor;
-  }
-  return days;
+  final tz = ReportingTimeZone.bangkok;
+  return const ReportCalculator().dailyExpense(
+    s.transactions,
+    tz.monthContaining(now),
+    dayCount: tz.wallClock(now).day,
+    dayOf: (instant) => tz.wallClock(instant).day - 1,
+  );
 });
 
 /// The selected bar in "ใช้จ่ายรายวัน"; defaults to the biggest day.

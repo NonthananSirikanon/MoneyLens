@@ -35,6 +35,14 @@ class DriftTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Future<List<MoneyTransaction>> findAll() async {
+    final rows = await (_db.select(
+      _db.transactions,
+    )..orderBy([(t) => OrderingTerm.desc(t.occurredAt)])).get();
+    return rows.map(_toDomain).toList();
+  }
+
+  @override
   Future<MoneyTransaction?> findById(String id) async {
     final row = await (_db.select(
       _db.transactions,
@@ -165,6 +173,7 @@ class DriftTransactionRepository implements TransactionRepository {
     occurredAt: draft.occurredAt.toUtc(),
     source: draft.source.dbValue,
     providerReference: Value(draft.providerReference),
+    attachmentPath: Value(draft.attachmentPath),
     createdAt: now,
     updatedAt: now,
   );

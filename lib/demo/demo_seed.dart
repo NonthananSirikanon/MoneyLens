@@ -1,10 +1,7 @@
-import 'package:flutter/widgets.dart';
-
 import '../core/dates/reporting_time_zone.dart';
 import '../core/money/currency.dart';
 import '../core/money/money.dart';
 import '../features/accounts/domain/account.dart';
-import '../features/categories/domain/category.dart';
 import '../features/slip_import/domain/scan_record.dart';
 import '../features/slip_import/domain/scan_status.dart';
 import '../features/transactions/domain/transaction.dart';
@@ -38,7 +35,7 @@ class DemoSeed {
     merchant: 'Café Amazon สาขาสามย่าน',
     amountText: '65.00',
     occurredAt: _now,
-    categoryId: 'food',
+    categoryId: 'default-expense-food',
     accountId: 'kbank',
     confidence: _allVerified,
   );
@@ -49,7 +46,7 @@ class DemoSeed {
       merchant: 'Tops Market',
       amountText: '642.50',
       occurredAt: at(1, 18, 40),
-      categoryId: 'shopping',
+      categoryId: 'default-expense-shopping',
       accountId: 'scb',
       confidence: _allVerified,
     ),
@@ -57,7 +54,7 @@ class DemoSeed {
       merchant: 'ค่าไฟ กฟน.',
       amountText: '1,245.00',
       occurredAt: at(0, 7, 30),
-      categoryId: 'bills',
+      categoryId: 'default-expense-bills',
       accountId: 'kbank',
       confidence: {..._allVerified, ReadingField.amount: .uncertain},
     ),
@@ -71,147 +68,51 @@ class DemoSeed {
     ReadingField.category: FieldConfidence.verified,
   };
 
-  DemoState build() {
-    final categories = [
-      for (final (id, name, icon, chart, kind) in _categories)
-        Category(
-          id: id,
-          name: name,
-          kind: kind,
-          iconKey: icon,
-          colorValue: chart,
-          isDefault: true,
-          isArchived: false,
-          createdAt: _now,
-          updatedAt: _now,
-        ),
-    ];
-
-    final accounts = <Account>[];
-    final accountDetails = <String, AccountDetails>{};
-    final targetBalances = <String, int>{};
-    for (final (id, name, short, last4, tint, balance, kind) in _accounts) {
-      accounts.add(
+  /// Sample accounts: the prototype's four, with the cash one mapped onto
+  /// the default cash account. Opening balances are chosen so the balances
+  /// shown in the prototype come out after the sample transactions.
+  List<Account> accounts() {
+    final txs = transactions();
+    return [
+      for (final (id, name, last4, balance, kind) in _accounts)
         Account(
           id: id,
           name: name,
           kind: kind,
           currency: _thb,
+          lastFour: last4,
+          openingBalanceMinor:
+              balance * 100 - txs.fold(0, (sum, t) => sum + _effect(t, id)),
           isArchived: false,
           createdAt: _now,
           updatedAt: _now,
         ),
-      );
-      accountDetails[id] = AccountDetails(
-        shortName: short,
-        last4: last4,
-        tint: Color(tint),
-      );
-      targetBalances[id] = balance * 100;
-    }
-
-    final transactions = _transactions();
-
-    // The prototype's balances already include the seed transactions, so
-    // back out their effect to get each opening balance.
-    final openedAccounts = [
-      for (final a in accounts)
-        Account(
-          id: a.id,
-          name: a.name,
-          kind: a.kind,
-          currency: a.currency,
-          openingBalanceMinor:
-              targetBalances[a.id]! -
-              transactions.fold(0, (sum, t) => sum + balanceEffect(t, a.id)),
-          isArchived: false,
-          createdAt: a.createdAt,
-          updatedAt: a.updatedAt,
-        ),
     ];
-
-    final (scans, scanDetails) = _scans();
-
-    return DemoState(
-      transactions: transactions,
-      seedTransactionIds: {for (final t in transactions) t.id},
-      transactionImportSources: const {
-        'tx-1': ImportSource.shareSheet,
-        'tx-2': ImportSource.gallery,
-        'tx-5': ImportSource.camera,
-        'tx-6': ImportSource.gallery,
-      },
-      accounts: openedAccounts,
-      accountDetails: accountDetails,
-      categories: categories,
-      categoryStyles: {
-        for (final (id, _, _, chart, _) in _categories)
-          id: CategoryStyle(tint: Color(_tints[id]!), chart: Color(chart)),
-      },
-      categorySeedCounts: const {
-        'food': 24,
-        'shopping': 18,
-        'transport': 31,
-        'entertainment': 8,
-        'bills': 3,
-        'other': 5,
-        'salary': 1,
-        'freelance': 2,
-        'gift': 0,
-        'otherInc': 0,
-      },
-      scans: scans,
-      scanDetails: scanDetails,
-      ocrProgress: const {},
-      baseline: const MonthBaseline(
-        income: 2840000,
-        expense: 1235000,
-        transfers: 800000,
-        expenseByCategory: {
-          'food': 518700,
-          'shopping': 275000,
-          'transport': 185000,
-          'entertainment': 125000,
-          'other': 131300,
-        },
-        incomeByCategory: {'salary': 2500000, 'freelance': 340000},
-      ),
-      pastPeriods: const [
-        PastPeriod(
-          monthsAgo: 1,
-          expenseByCategory: {
-            'food': 462000,
-            'shopping': 310500,
-            'transport': 172000,
-            'entertainment': 89000,
-            'other': 64500,
-          },
-          incomeByCategory: {'salary': 2500000, 'freelance': 430000},
-          transfers: 650000,
-        ),
-        PastPeriod(
-          monthsAgo: 6,
-          expenseByCategory: {},
-          incomeByCategory: {},
-          transfers: 0,
-        ),
-      ],
-      trend: const [
-        TrendMonth(monthsAgo: 5, income: 2750000, expense: 1020000),
-        TrendMonth(monthsAgo: 4, income: 2800000, expense: 989000),
-        TrendMonth(monthsAgo: 3, income: 2600000, expense: 2750000),
-        TrendMonth(monthsAgo: 2, income: 2820000, expense: 960000),
-        TrendMonth(monthsAgo: 1, income: 2930000, expense: 1098000),
-        TrendMonth(monthsAgo: 0, income: 2840000, expense: 1235000),
-      ],
-      dailySpend: [
-        for (var day = 0; day < _today.day; day++)
-          _daily[day % _daily.length] * 100,
-      ],
-    );
   }
 
-  List<MoneyTransaction> _transactions() {
+  static int _effect(MoneyTransaction t, String id) {
+    final amount = t.amount.minor;
+    return switch (t.type) {
+      TransactionType.income => t.accountId == id ? amount : 0,
+      TransactionType.expense => t.accountId == id ? -amount : 0,
+      TransactionType.transfer =>
+        (t.accountId == id ? -amount : 0) +
+            (t.destinationAccountId == id ? amount : 0),
+    };
+  }
+
+  /// Import source shown on the detail screen of sample slip transactions.
+  static const transactionImportSources = {
+    'tx-1': ImportSource.shareSheet,
+    'tx-2': ImportSource.gallery,
+    'tx-5': ImportSource.camera,
+    'tx-6': ImportSource.gallery,
+  };
+
+  /// The sample slip queue (prototype SCANS) and its reading details.
+  (List<ScanRecord>, Map<String, ScanDetails>) scans() => _scans();
+
+  List<MoneyTransaction> transactions() {
     MoneyTransaction tx(
       int n,
       String merchant,
@@ -248,7 +149,7 @@ class DemoSeed {
         .expense,
         80,
         'kbank',
-        category: 'transport',
+        category: 'default-expense-transport',
         at: at(0, 10, 24),
         ocr: true,
       ),
@@ -258,7 +159,7 @@ class DemoSeed {
         .expense,
         120,
         'kbank',
-        category: 'food',
+        category: 'default-expense-food',
         at: at(0, 9, 15),
         slip: true,
         ocr: true,
@@ -270,7 +171,7 @@ class DemoSeed {
         .income,
         25000,
         'kbank',
-        category: 'salary',
+        category: 'default-income-salary',
         at: at(0, 8, 0),
       ),
       tx(
@@ -287,8 +188,8 @@ class DemoSeed {
         '7-Eleven',
         .expense,
         45,
-        'cash',
-        category: 'shopping',
+        'default-cash',
+        category: 'default-expense-shopping',
         at: at(1, 20, 12),
         slip: true,
         ocr: true,
@@ -299,7 +200,7 @@ class DemoSeed {
         .expense,
         349,
         'scb',
-        category: 'entertainment',
+        category: 'default-expense-entertainment',
         at: at(1, 18, 24),
         slip: true,
         ocr: true,
@@ -309,11 +210,19 @@ class DemoSeed {
         'ร้านข้าวมันไก่ป้าศรี',
         .expense,
         60,
-        'cash',
-        category: 'food',
+        'default-cash',
+        category: 'default-expense-food',
         at: at(2, 12, 10),
       ),
-      tx(8, 'ถอนเงินสด', .transfer, 1000, 'scb', to: 'cash', at: at(4, 17, 40)),
+      tx(
+        8,
+        'ถอนเงินสด',
+        .transfer,
+        1000,
+        'scb',
+        to: 'default-cash',
+        at: at(4, 17, 40),
+      ),
     ];
   }
 
@@ -370,7 +279,7 @@ class DemoSeed {
           merchant: 'Grab',
           amountText: '80.00',
           occurredAt: at(0, 10, 24),
-          categoryId: 'transport',
+          categoryId: 'default-expense-transport',
           accountId: 'kbank',
           providerReference: '…8842',
           confidence: _allVerified,
@@ -382,7 +291,7 @@ class DemoSeed {
           merchant: "Lotus's พระราม 4",
           amountText: '389.00',
           occurredAt: at(0, 10, 5),
-          categoryId: 'shopping',
+          categoryId: 'default-expense-shopping',
           accountId: 'scb',
           confidence: {..._allVerified, ReadingField.time: .uncertain},
         ),
@@ -396,8 +305,8 @@ class DemoSeed {
           merchant: '7-Eleven',
           amountText: '45.00',
           occurredAt: at(1, 20, 12),
-          categoryId: 'shopping',
-          accountId: 'cash',
+          categoryId: 'default-expense-shopping',
+          accountId: 'default-cash',
           confidence: _allVerified,
         ),
       ),
@@ -408,7 +317,7 @@ class DemoSeed {
           merchant: 'Netflix',
           amountText: '349.00',
           occurredAt: at(1, 18, 24),
-          categoryId: 'entertainment',
+          categoryId: 'default-expense-entertainment',
           accountId: 'scb',
           confidence: _allVerified,
         ),
@@ -417,72 +326,22 @@ class DemoSeed {
     return (scans, details);
   }
 
-  static const _categories = <(String, String, String, int, CategoryKind)>[
-    ('food', 'อาหารและเครื่องดื่ม', 'coffee', 0xFFE09A88, .expense),
-    ('shopping', 'ช้อปปิ้ง', 'shopping-bag', 0xFF93ABCB, .expense),
-    ('transport', 'เดินทาง', 'bus', 0xFFE2BC6E, .expense),
-    ('entertainment', 'บันเทิง', 'clapperboard', 0xFFA8B89A, .expense),
-    ('bills', 'ค่าน้ำ ค่าไฟ', 'zap', 0xFFB9B3CC, .expense),
-    ('other', 'อื่นๆ', 'ellipsis', 0xFFC9C8C2, .expense),
-    ('salary', 'เงินเดือน', 'banknote', 0xFF4F8A68, .income),
-    ('freelance', 'ฟรีแลนซ์', 'laptop', 0xFFA8B89A, .income),
-    ('gift', 'ของขวัญ', 'gift', 0xFFE2BC6E, .income),
-    ('otherInc', 'รายรับอื่นๆ', 'circle-plus', 0xFFC9C8C2, .income),
+  static const _accounts = <(String, String, String?, int, AccountKind)>[
+    ('kbank', 'กสิกรไทย', '1234', 18250, .bank),
+    ('scb', 'SCB', '5678', 6420, .bank),
+    ('truemoney', 'TrueMoney', '9012', 0, .ewallet),
+    ('default-cash', 'เงินสด', null, 1850, .cash),
   ];
-
-  static const _tints = <String, int>{
-    'food': 0xFFF6E4E2,
-    'shopping': 0xFFE3E8EE,
-    'transport': 0xFFF7EDD6,
-    'entertainment': 0xFFE6EBDF,
-    'bills': 0xFFECEAF2,
-    'other': 0xFFF0F0EC,
-    'salary': 0xFFE3EFE7,
-    'freelance': 0xFFE6EBDF,
-    'gift': 0xFFF7EDD6,
-    'otherInc': 0xFFF0F0EC,
-  };
-
-  static const _accounts =
-      <(String, String, String, String?, int, int, AccountKind)>[
-        ('kbank', 'กสิกรไทย', 'KBank', '1234', 0xFFE3EFE7, 18250, .bank),
-        ('scb', 'SCB', 'SCB', '5678', 0xFFECEAF2, 6420, .bank),
-        (
-          'truemoney',
-          'TrueMoney',
-          'TrueMoney',
-          '9012',
-          0xFFF7EDD6,
-          0,
-          .ewallet,
-        ),
-        ('cash', 'เงินสด', 'เงินสด', null, 0xFFE6EBDF, 1850, .cash),
-      ];
 
   /// Seed merchant names are Thai user data, so they don't go through intl.
   static const _thaiMonths = [
     'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', //
     'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.',
   ];
-
-  static const _daily = [
-    420, 180, 650, 300, 820, 240, 510, 390, 150, 700, 460, 880, //
-    330, 270, 610, 520, 190, 740, 560, 410, 300, 1245, 394, 200,
-  ];
 }
 
 /// The sample slip photo from the mockups, standing in for captured images.
 const demoSlipImage = 'assets/images/receipt.png';
-
-/// Icon/tint choices for the "new category" sheet (prototype NC_TINTS).
-const newCategoryTints = [
-  Color(0xFFF6E4E2),
-  Color(0xFFE3E8EE),
-  Color(0xFFF7EDD6),
-  Color(0xFFE6EBDF),
-  Color(0xFFECEAF2),
-  Color(0xFFE3EFE7),
-];
 
 /// MOCK profile name shown on Home and Settings (no account system yet).
 const demoProfileFirstName = 'นนทนันท์';
