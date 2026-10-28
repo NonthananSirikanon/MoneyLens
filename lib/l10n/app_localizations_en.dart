@@ -1150,89 +1150,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your financial data and slip images stay on your phone';
 
   @override
-  String get authWithPhone => 'Continue with phone number';
-
-  @override
   String get authWithGoogle => 'Continue with Google';
 
   @override
   String get authTerms =>
       'By continuing, you accept the Terms of Use and Privacy Policy';
-
-  @override
-  String get authPhoneTitle => 'Phone number';
-
-  @override
-  String get authPhoneHeading => 'Enter your mobile number';
-
-  @override
-  String get authPhoneBody => 'We\'ll text a 6-digit code to confirm it\'s you';
-
-  @override
-  String get authPhoneLabel => 'Mobile number';
-
-  @override
-  String get authPhoneHint => 'No need to type the leading 0';
-
-  @override
-  String get authPhoneError =>
-      'Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)';
-
-  @override
-  String get authSendCode => 'Send code';
-
-  @override
-  String get authPhonePrivacy => 'We only use your number to sign you in';
-
-  @override
-  String get authOtpTitle => 'Verify code';
-
-  @override
-  String get authOtpHeading => 'Enter the 6-digit code';
-
-  @override
-  String authOtpSentTo(String phone) {
-    return 'Sent to $phone';
-  }
-
-  @override
-  String get authOtpField => '6-digit code';
-
-  @override
-  String get authChangeNumber => 'Change number';
-
-  @override
-  String authOtpWrong(int count) {
-    return 'Wrong code, $count tries left';
-  }
-
-  @override
-  String authOtpLocked(String time) {
-    return 'Too many wrong codes. Try again in $time';
-  }
-
-  @override
-  String get authOtpExpiredTitle => 'The code has expired';
-
-  @override
-  String get authOtpExpiredBody => 'Send a new code to get a fresh one';
-
-  @override
-  String authResendIn(String time) {
-    return 'Resend code in $time';
-  }
-
-  @override
-  String get authResend => 'Resend code';
-
-  @override
-  String get authNewCode => 'Send a new code';
-
-  @override
-  String get authConfirm => 'Confirm';
-
-  @override
-  String get authVerifying => 'Checking the code…';
 
   @override
   String get authErrTooMany => 'Too many requests. Please try again later';
@@ -1320,13 +1242,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountViaGoogle => 'Signed in with Google';
 
   @override
-  String get accountViaPhone => 'Signed in with phone number';
-
-  @override
   String get accountEmail => 'Email';
-
-  @override
-  String get accountPhone => 'Phone number';
 
   @override
   String get accountBirth => 'Date of birth';

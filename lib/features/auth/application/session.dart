@@ -37,7 +37,7 @@ class SessionState {
 }
 
 /// The auth backend: Supabase when a publishable key is configured,
-/// otherwise the in-memory fake (OTP `123456`). Tests override this.
+/// otherwise the in-memory fake. Tests override this.
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   if (SupabaseConfig.isConfigured) {
     return SupabaseAuthRepository(Supabase.instance.client);

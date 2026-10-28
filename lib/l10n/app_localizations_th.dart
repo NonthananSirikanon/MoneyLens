@@ -1134,89 +1134,11 @@ class AppLocalizationsTh extends AppLocalizations {
   String get authLocalNote => 'ข้อมูลการเงินและรูปสลิปเก็บในเครื่องของคุณ';
 
   @override
-  String get authWithPhone => 'ดำเนินการต่อด้วยเบอร์โทร';
-
-  @override
   String get authWithGoogle => 'ดำเนินการต่อด้วย Google';
 
   @override
   String get authTerms =>
       'เมื่อดำเนินการต่อ แปลว่าคุณยอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว';
-
-  @override
-  String get authPhoneTitle => 'เบอร์โทรศัพท์';
-
-  @override
-  String get authPhoneHeading => 'กรอกเบอร์มือถือของคุณ';
-
-  @override
-  String get authPhoneBody => 'เราจะส่งรหัส 6 หลักทาง SMS เพื่อยืนยันตัวตน';
-
-  @override
-  String get authPhoneLabel => 'เบอร์มือถือ';
-
-  @override
-  String get authPhoneHint => 'ไม่ต้องใส่ 0 ข้างหน้า';
-
-  @override
-  String get authPhoneError =>
-      'ใส่เบอร์ให้ครบ 9 หลัก เช่น 81 234 5678 (ขึ้นต้นด้วย 6, 8 หรือ 9)';
-
-  @override
-  String get authSendCode => 'ส่งรหัส OTP';
-
-  @override
-  String get authPhonePrivacy => 'เราใช้เบอร์ของคุณเพื่อเข้าสู่ระบบเท่านั้น';
-
-  @override
-  String get authOtpTitle => 'ยืนยันรหัส';
-
-  @override
-  String get authOtpHeading => 'กรอกรหัส 6 หลัก';
-
-  @override
-  String authOtpSentTo(String phone) {
-    return 'ส่งไปที่ $phone';
-  }
-
-  @override
-  String get authOtpField => 'รหัส OTP 6 หลัก';
-
-  @override
-  String get authChangeNumber => 'เปลี่ยนเบอร์';
-
-  @override
-  String authOtpWrong(int count) {
-    return 'รหัสไม่ถูกต้อง เหลืออีก $count ครั้ง';
-  }
-
-  @override
-  String authOtpLocked(String time) {
-    return 'ลองผิดหลายครั้งเกินไป ขอรหัสใหม่ได้ใน $time';
-  }
-
-  @override
-  String get authOtpExpiredTitle => 'รหัสหมดอายุแล้ว';
-
-  @override
-  String get authOtpExpiredBody => 'กดส่งรหัสใหม่เพื่อรับรหัสใหม่';
-
-  @override
-  String authResendIn(String time) {
-    return 'ส่งรหัสอีกครั้งใน $time';
-  }
-
-  @override
-  String get authResend => 'ส่งรหัสอีกครั้ง';
-
-  @override
-  String get authNewCode => 'ส่งรหัสใหม่';
-
-  @override
-  String get authConfirm => 'ยืนยัน';
-
-  @override
-  String get authVerifying => 'กำลังตรวจสอบรหัส…';
 
   @override
   String get authErrTooMany => 'ขอรหัสบ่อยเกินไป โปรดลองใหม่ภายหลัง';
@@ -1303,13 +1225,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get accountViaGoogle => 'เข้าสู่ระบบด้วย Google';
 
   @override
-  String get accountViaPhone => 'เข้าสู่ระบบด้วยเบอร์โทร';
-
-  @override
   String get accountEmail => 'อีเมล';
-
-  @override
-  String get accountPhone => 'เบอร์โทร';
 
   @override
   String get accountBirth => 'วันเกิด';

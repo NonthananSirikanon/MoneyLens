@@ -1,57 +1,12 @@
-import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/app/auth_redirect.dart';
 import 'package:moneylens/features/auth/application/birth_date.dart';
-import 'package:moneylens/features/auth/application/phone_number.dart';
-import 'package:moneylens/features/auth/application/phone_sign_in.dart';
 import 'package:moneylens/features/auth/application/session.dart';
 import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
 import 'package:moneylens/features/auth/domain/auth_models.dart';
 
 void main() {
-  group('ThaiPhone', () {
-    test('drops the leading 0, non-digits and extra digits', () {
-      expect(ThaiPhone.normalize('081 234 5678'), '812345678');
-      expect(ThaiPhone.normalize('0812345678999'), '812345678');
-      expect(
-        ThaiPhone.normalize('+66 81-234'),
-        '6681234',
-      ); // the +66 is typed digits
-    });
-
-    test('accepts nine digits starting with 6, 8 or 9 only', () {
-      for (final ok in ['612345678', '812345678', '912345678']) {
-        expect(ThaiPhone.isValid(ok), isTrue, reason: ok);
-      }
-      for (final bad in ['', '81234567', '712345678', '8123456789']) {
-        expect(ThaiPhone.isValid(bad), isFalse, reason: bad);
-      }
-    });
-
-    test('formats while typing and builds E.164', () {
-      expect(ThaiPhone.format('8'), '8');
-      expect(ThaiPhone.format('812'), '81 2');
-      expect(ThaiPhone.format('812345678'), '81 234 5678');
-      expect(ThaiPhone.toE164('812345678'), '+66812345678');
-      const f = ThaiPhoneFormatter();
-      final v = f.formatEditUpdate(
-        TextEditingValue.empty,
-        const TextEditingValue(text: '0812345678'),
-      );
-      expect(v.text, '81 234 5678');
-    });
-
-    test('masks an E.164 number for display', () {
-      const u = AppUser(
-        id: 'x',
-        method: SignInMethod.phone,
-        phone: '+66812345678',
-      );
-      expect(u.maskedPhone, '81 ••• 5678');
-    });
-  });
-
   group('BirthDateValidator', () {
     final today = DateTime(2026, 10, 24);
     BirthDateResult run(String d, int? m, String y) =>
@@ -116,7 +71,7 @@ void main() {
     test('signed out: only onboarding and sign-in', () {
       expect(go('/home', SessionStatus.signedOut), '/login');
       expect(go('/home', SessionStatus.signedOut, done: false), '/onboarding');
-      for (final p in ['/login', '/phone', '/otp', '/onboarding']) {
+      for (final p in ['/login', '/onboarding']) {
         expect(go(p, SessionStatus.signedOut), isNull, reason: p);
       }
     });
@@ -128,7 +83,7 @@ void main() {
 
     test('ready: leaves the sign-in screens, edit stays open', () {
       expect(go('/login', SessionStatus.ready), '/home');
-      expect(go('/otp', SessionStatus.ready, done: false), '/permissions');
+      expect(go('/login', SessionStatus.ready, done: false), '/permissions');
       expect(go('/birth', SessionStatus.ready), '/home');
       expect(go('/birth?edit=1', SessionStatus.ready), isNull);
       expect(go('/home', SessionStatus.ready), isNull);
@@ -159,8 +114,8 @@ void main() {
       final repo = FakeAuthRepository(
         signedIn: const AppUser(
           id: 'u',
-          method: SignInMethod.phone,
-          phone: '+66812345678',
+          method: SignInMethod.google,
+          email: 'a@b.c',
         ),
         birthDate: DateTime.utc(1997, 3, 14),
       );
@@ -192,8 +147,8 @@ void main() {
       final repo = FakeAuthRepository(
         signedIn: const AppUser(
           id: 'u',
-          method: SignInMethod.phone,
-          phone: '+66812345678',
+          method: SignInMethod.google,
+          email: 'a@b.c',
         ),
         birthDate: DateTime.utc(1997, 3, 14),
       );
@@ -211,8 +166,8 @@ void main() {
         final repo = _ProfileFails(
           signedIn: const AppUser(
             id: 'u',
-            method: SignInMethod.phone,
-            phone: '+66812345678',
+            method: SignInMethod.google,
+            email: 'a@b.c',
           ),
         );
         final c = container(repo);
@@ -221,128 +176,14 @@ void main() {
       },
     );
 
-    test('signing in with the code moves a signed-out session along', () async {
+    test('signing in with Google moves a signed-out session along', () async {
       final repo = FakeAuthRepository();
       final c = container(repo);
       final session = c.read(sessionProvider.notifier);
       await session.initialized;
-      await repo.verifyPhoneOtp('+66812345678', FakeAuthRepository.validCode);
+      await repo.signInWithGoogle();
       await pumpEventQueue();
       expect(c.read(sessionProvider).status, SessionStatus.needsBirthDate);
-    });
-  });
-
-  group('PhoneSignInController', () {
-    ProviderContainer container([FakeAuthRepository? repo]) {
-      final c = ProviderContainer(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(
-            repo ?? FakeAuthRepository(),
-          ),
-        ],
-      );
-      addTearDown(c.dispose);
-      c.listen(phoneSignInProvider, (_, _) {});
-      return c;
-    }
-
-    PhoneSignInController ctl(ProviderContainer c) =>
-        c.read(phoneSignInProvider.notifier);
-    PhoneSignInState st(ProviderContainer c) => c.read(phoneSignInProvider);
-
-    test('an invalid number is not sent and shows its error', () async {
-      final repo = FakeAuthRepository();
-      final c = container(repo);
-      ctl(c).setNumber('8123');
-      await ctl(c).sendCode();
-      expect(st(c).showNumberError, isTrue);
-      expect(st(c).step, PhoneStep.enterNumber);
-      expect(repo.sentTo, isEmpty);
-    });
-
-    test('a valid number sends E.164 and starts the resend timer', () async {
-      final repo = FakeAuthRepository();
-      final c = container(repo);
-      ctl(c).setNumber('0812345678');
-      await ctl(c).sendCode();
-      expect(repo.sentTo, ['+66812345678']);
-      expect(st(c).step, PhoneStep.enterCode);
-      expect(st(c).resendSeconds, 45);
-    });
-
-    test('a wrong code counts down the tries, then locks', () async {
-      final c = container();
-      ctl(c).setNumber('812345678');
-      await ctl(c).sendCode();
-      for (var i = 1; i <= 4; i++) {
-        await ctl(c).setCode('00000$i');
-        expect(st(c).codeWrong, isTrue);
-        expect(st(c).triesLeft, 5 - i);
-        await ctl(c).setCode('0000'); // editing clears the error
-        expect(st(c).codeWrong, isFalse);
-      }
-      await ctl(c).setCode('000009');
-      expect(st(c).locked, isTrue);
-      // While locked, a correct code is not even tried.
-      await ctl(c).setCode(FakeAuthRepository.validCode);
-      expect(st(c).code, '000009');
-    });
-
-    test('the lock does not reset by sending the code again', () async {
-      final c = container();
-      ctl(c).setNumber('812345678');
-      await ctl(c).sendCode();
-      for (var i = 0; i < 5; i++) {
-        await ctl(c).setCode('00000$i');
-        await ctl(c).setCode('0');
-      }
-      expect(st(c).locked, isTrue);
-      await ctl(c).sendCode();
-      expect(st(c).locked, isTrue);
-      expect(st(c).wrongTries, 5);
-    });
-
-    test('the right code signs in', () async {
-      final repo = FakeAuthRepository();
-      final c = container(repo);
-      ctl(c).setNumber('812345678');
-      await ctl(c).sendCode();
-      await ctl(c).setCode(FakeAuthRepository.validCode);
-      expect(repo.currentUser?.phone, '+66812345678');
-    });
-
-    test(
-      'rate limiting and offline show a failure, not a new screen',
-      () async {
-        final repo = FakeAuthRepository(
-          sendFailure: AuthFailureKind.tooManyRequests,
-        );
-        final c = container(repo);
-        ctl(c).setNumber('812345678');
-        await ctl(c).sendCode();
-        expect(st(c).failure, AuthFailureKind.tooManyRequests);
-        expect(st(c).step, PhoneStep.enterNumber);
-      },
-    );
-
-    test('resend is blocked until the countdown ends', () {
-      fakeAsync((async) {
-        final repo = FakeAuthRepository();
-        final c = container(repo);
-        ctl(c).setNumber('812345678');
-        ctl(c).sendCode();
-        async.flushMicrotasks();
-        ctl(c).resend();
-        async.flushMicrotasks();
-        expect(repo.sentTo.length, 1);
-
-        async.elapse(const Duration(seconds: 45));
-        expect(st(c).resendSeconds, 0);
-        ctl(c).resend();
-        async.flushMicrotasks();
-        expect(repo.sentTo.length, 2);
-        expect(st(c).resendSeconds, 45);
-      });
     });
   });
 }

@@ -26,8 +26,6 @@ import '../features/auth/application/session.dart';
 import '../features/auth/presentation/account_screen.dart';
 import '../features/auth/presentation/birth_screen.dart';
 import '../features/auth/presentation/login_screen.dart';
-import '../features/auth/presentation/otp_screen.dart';
-import '../features/auth/presentation/phone_screen.dart';
 import 'app_preferences.dart';
 import 'auth_redirect.dart';
 import 'shell/app_shell.dart';
@@ -50,8 +48,6 @@ abstract final class AppRoutes {
   static const dataSettings = '/data';
   static const securitySettings = '/security';
   static const login = '/login';
-  static const phone = '/phone';
-  static const otp = '/otp';
   static const birth = '/birth';
   static const account = '/account';
 
@@ -145,8 +141,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       page(AppRoutes.categories, (_) => const CategoriesScreen()),
       page(AppRoutes.accounts, (_) => const AccountsScreen()),
       page(AppRoutes.login, (_) => const LoginScreen()),
-      page(AppRoutes.phone, (_) => const PhoneScreen()),
-      page(AppRoutes.otp, (_) => const OtpScreen()),
       page(
         AppRoutes.birth,
         (s) => BirthScreen(edit: s.uri.queryParameters['edit'] == '1'),

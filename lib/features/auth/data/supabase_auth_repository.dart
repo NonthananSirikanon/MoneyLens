@@ -6,11 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../domain/auth_models.dart';
 import '../domain/auth_repository.dart';
 
-/// Supabase Auth (phone OTP and Google) plus the `profiles` table.
+/// Supabase Auth (Google) plus the `profiles` table.
 ///
 /// Error text from the provider is never surfaced or logged, only mapped to
-/// an [AuthFailureKind]. The exact error codes of SMS providers should be
-/// re-checked against the real project once SMS is enabled.
+/// an [AuthFailureKind].
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
 
@@ -47,14 +46,10 @@ class SupabaseAuthRepository implements AuthRepository {
 
   AppUser? _map(sb.User? u) {
     if (u == null) return null;
-    final isGoogle = u.appMetadata['provider'] == 'google';
     final name = u.userMetadata?['full_name'] ?? u.userMetadata?['name'];
     return AppUser(
       id: u.id,
-      method: isGoogle ? SignInMethod.google : SignInMethod.phone,
-      phone: (u.phone == null || u.phone!.isEmpty)
-          ? null
-          : (u.phone!.startsWith('+') ? u.phone : '+${u.phone}'),
+      method: SignInMethod.google,
       email: u.email,
       displayName: name is String && name.isNotEmpty ? name : null,
     );
@@ -68,9 +63,6 @@ class SupabaseAuthRepository implements AuthRepository {
       return await run();
     } on sb.AuthApiException catch (e) {
       final code = (e.code ?? '').toLowerCase();
-      if (code == 'otp_expired') {
-        throw const AuthFailure(AuthFailureKind.expiredCode);
-      }
       if (e.statusCode == '429' || code.contains('rate_limit')) {
         throw const AuthFailure(AuthFailureKind.tooManyRequests);
       }
@@ -85,16 +77,6 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const AuthFailure(AuthFailureKind.unknown);
     }
   }
-
-  @override
-  Future<void> sendPhoneOtp(String e164) =>
-      _guard(() => _auth.signInWithOtp(phone: e164));
-
-  @override
-  Future<void> verifyPhoneOtp(String e164, String code) => _guard(
-    () => _auth.verifyOTP(phone: e164, token: code, type: sb.OtpType.sms),
-    otherwise: AuthFailureKind.invalidCode,
-  );
 
   @override
   Future<void> signInWithGoogle() => _guard(

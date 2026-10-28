@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router.dart';
 import '../../../app/theme/icons.dart';
 import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
@@ -14,7 +12,7 @@ import '../application/session.dart';
 import '../domain/auth_models.dart';
 import 'auth_widgets.dart';
 
-/// "เริ่มต้นกับ MoneyLens": choose phone or Google. There is no way to skip
+/// "เริ่มต้นกับ MoneyLens": Google. There is no way to skip
 /// (sign-in is required).
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -98,13 +96,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  MlButton(
-                    label: l10n.authWithPhone,
-                    icon: MlIcons.smartphone,
-                    enabled: !_busy,
-                    onPressed: () => context.push(AppRoutes.phone),
-                  ),
-                  const SizedBox(height: 10),
                   MlButton(
                     label: l10n.authWithGoogle,
                     variant: MlButtonVariant.outline,

@@ -553,59 +553,8 @@
   "authLoginTitle": "Get started with\nMoneyLens",
   "authLoginBody": "Sign in to keep your data safe",
   "authLocalNote": "Your financial data and slip images stay on your phone",
-  "authWithPhone": "Continue with phone number",
   "authWithGoogle": "Continue with Google",
   "authTerms": "By continuing, you accept the Terms of Use and Privacy Policy",
-  "authPhoneTitle": "Phone number",
-  "authPhoneHeading": "Enter your mobile number",
-  "authPhoneBody": "We'll text a 6-digit code to confirm it's you",
-  "authPhoneLabel": "Mobile number",
-  "authPhoneHint": "No need to type the leading 0",
-  "authPhoneError": "Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)",
-  "authSendCode": "Send code",
-  "authPhonePrivacy": "We only use your number to sign you in",
-  "authOtpTitle": "Verify code",
-  "authOtpHeading": "Enter the 6-digit code",
-  "authOtpSentTo": "Sent to {phone}",
-  "@authOtpSentTo": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
-  "authOtpField": "6-digit code",
-  "authChangeNumber": "Change number",
-  "authOtpWrong": "Wrong code, {count} tries left",
-  "@authOtpWrong": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "authOtpLocked": "Too many wrong codes. Try again in {time}",
-  "@authOtpLocked": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "authOtpExpiredTitle": "The code has expired",
-  "authOtpExpiredBody": "Send a new code to get a fresh one",
-  "authResendIn": "Resend code in {time}",
-  "@authResendIn": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "authResend": "Resend code",
-  "authNewCode": "Send a new code",
-  "authConfirm": "Confirm",
-  "authVerifying": "Checking the code…",
   "authErrTooMany": "Too many requests. Please try again later",
   "authErrNetwork": "Couldn't reach the server. Check your connection and try again",
   "authErrUnknown": "Something went wrong. Please try again",
@@ -652,9 +601,7 @@
   "toastBirthSaved": "Birth date saved",
   "accountTitle": "My account",
   "accountViaGoogle": "Signed in with Google",
-  "accountViaPhone": "Signed in with phone number",
   "accountEmail": "Email",
-  "accountPhone": "Phone number",
   "accountBirth": "Date of birth",
   "accountSignOut": "Sign out",
   "accountSignOutSub": "Data on this device stays",

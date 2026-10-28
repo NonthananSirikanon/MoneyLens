@@ -15,13 +15,10 @@ import '../application/session.dart';
 import '../domain/auth_models.dart';
 import 'auth_widgets.dart';
 
-/// Display name for a signed-in user: the Google name, otherwise the masked
-/// phone number.
+/// Display name for a signed-in user: the Google name, otherwise the email.
 String accountName(AppUser? user, {required String fallback}) {
   if (user == null) return fallback;
-  if (user.displayName != null) return user.displayName!;
-  if (user.maskedPhone != null) return '+66 ${user.maskedPhone}';
-  return user.email ?? fallback;
+  return user.displayName ?? user.email ?? fallback;
 }
 
 /// "บัญชีของฉัน": sign-in method, birth date, sign out.
@@ -47,7 +44,6 @@ class AccountScreen extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
     final user = session.user;
     final name = accountName(user, fallback: l10n.profileFallbackName);
-    final isPhone = user?.method == SignInMethod.phone;
     final birth = session.birthDate;
     final fmt = context.dateFormat;
 
@@ -85,7 +81,7 @@ class AccountScreen extends ConsumerWidget {
                   style: MlText.h3.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  isPhone ? l10n.accountViaPhone : l10n.accountViaGoogle,
+                  l10n.accountViaGoogle,
                   style: MlText.caption.copyWith(color: MlColors.textSecondary),
                 ),
               ],
@@ -94,11 +90,9 @@ class AccountScreen extends ConsumerWidget {
           MlListGroup(
             children: [
               MlListRow(
-                icon: isPhone ? MlIcons.smartphone : MlIcons.mail,
-                label: isPhone ? l10n.accountPhone : l10n.accountEmail,
-                value: isPhone
-                    ? '+66 ${user?.maskedPhone ?? ''}'
-                    : (user?.email ?? ''),
+                icon: MlIcons.mail,
+                label: l10n.accountEmail,
+                value: user?.email ?? '',
                 chevron: false,
                 onPressed: null,
               ),

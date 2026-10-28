@@ -2192,12 +2192,6 @@ abstract class AppLocalizations {
   /// **'Your financial data and slip images stay on your phone'**
   String get authLocalNote;
 
-  /// No description provided for @authWithPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue with phone number'**
-  String get authWithPhone;
-
   /// No description provided for @authWithGoogle.
   ///
   /// In en, this message translates to:
@@ -2209,138 +2203,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'By continuing, you accept the Terms of Use and Privacy Policy'**
   String get authTerms;
-
-  /// No description provided for @authPhoneTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Phone number'**
-  String get authPhoneTitle;
-
-  /// No description provided for @authPhoneHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your mobile number'**
-  String get authPhoneHeading;
-
-  /// No description provided for @authPhoneBody.
-  ///
-  /// In en, this message translates to:
-  /// **'We\'ll text a 6-digit code to confirm it\'s you'**
-  String get authPhoneBody;
-
-  /// No description provided for @authPhoneLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Mobile number'**
-  String get authPhoneLabel;
-
-  /// No description provided for @authPhoneHint.
-  ///
-  /// In en, this message translates to:
-  /// **'No need to type the leading 0'**
-  String get authPhoneHint;
-
-  /// No description provided for @authPhoneError.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)'**
-  String get authPhoneError;
-
-  /// No description provided for @authSendCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Send code'**
-  String get authSendCode;
-
-  /// No description provided for @authPhonePrivacy.
-  ///
-  /// In en, this message translates to:
-  /// **'We only use your number to sign you in'**
-  String get authPhonePrivacy;
-
-  /// No description provided for @authOtpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Verify code'**
-  String get authOtpTitle;
-
-  /// No description provided for @authOtpHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the 6-digit code'**
-  String get authOtpHeading;
-
-  /// No description provided for @authOtpSentTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Sent to {phone}'**
-  String authOtpSentTo(String phone);
-
-  /// No description provided for @authOtpField.
-  ///
-  /// In en, this message translates to:
-  /// **'6-digit code'**
-  String get authOtpField;
-
-  /// No description provided for @authChangeNumber.
-  ///
-  /// In en, this message translates to:
-  /// **'Change number'**
-  String get authChangeNumber;
-
-  /// No description provided for @authOtpWrong.
-  ///
-  /// In en, this message translates to:
-  /// **'Wrong code, {count} tries left'**
-  String authOtpWrong(int count);
-
-  /// No description provided for @authOtpLocked.
-  ///
-  /// In en, this message translates to:
-  /// **'Too many wrong codes. Try again in {time}'**
-  String authOtpLocked(String time);
-
-  /// No description provided for @authOtpExpiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'The code has expired'**
-  String get authOtpExpiredTitle;
-
-  /// No description provided for @authOtpExpiredBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Send a new code to get a fresh one'**
-  String get authOtpExpiredBody;
-
-  /// No description provided for @authResendIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Resend code in {time}'**
-  String authResendIn(String time);
-
-  /// No description provided for @authResend.
-  ///
-  /// In en, this message translates to:
-  /// **'Resend code'**
-  String get authResend;
-
-  /// No description provided for @authNewCode.
-  ///
-  /// In en, this message translates to:
-  /// **'Send a new code'**
-  String get authNewCode;
-
-  /// No description provided for @authConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm'**
-  String get authConfirm;
-
-  /// No description provided for @authVerifying.
-  ///
-  /// In en, this message translates to:
-  /// **'Checking the code…'**
-  String get authVerifying;
 
   /// No description provided for @authErrTooMany.
   ///
@@ -2498,23 +2360,11 @@ abstract class AppLocalizations {
   /// **'Signed in with Google'**
   String get accountViaGoogle;
 
-  /// No description provided for @accountViaPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Signed in with phone number'**
-  String get accountViaPhone;
-
   /// No description provided for @accountEmail.
   ///
   /// In en, this message translates to:
   /// **'Email'**
   String get accountEmail;
-
-  /// No description provided for @accountPhone.
-  ///
-  /// In en, this message translates to:
-  /// **'Phone number'**
-  String get accountPhone;
 
   /// No description provided for @accountBirth.
   ///

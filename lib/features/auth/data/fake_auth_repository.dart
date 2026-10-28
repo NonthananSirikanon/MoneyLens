@@ -4,25 +4,19 @@ import '../domain/auth_models.dart';
 import '../domain/auth_repository.dart';
 
 /// In-memory sign-in used when no Supabase project is configured (local
-/// development) and in tests. NOT SECURE: the one-time code is always
-/// [validCode] and nothing is persisted.
+/// development) and in tests. Nothing is persisted.
 class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository({AppUser? signedIn, this.birthDate, this.sendFailure})
+  FakeAuthRepository({AppUser? signedIn, this.birthDate, this.failure})
     : _user = signedIn;
 
-  static const validCode = '123456';
-
-  /// Throw this from `sendPhoneOtp` (to test rate limiting and offline).
-  AuthFailureKind? sendFailure;
+  /// Throw this from `signInWithGoogle` (to test being offline).
+  AuthFailureKind? failure;
 
   AppUser? _user;
 
   /// The saved birth date (date only, UTC).
   DateTime? birthDate;
   final _changes = StreamController<AppUser?>.broadcast();
-
-  /// Codes sent so far, for assertions.
-  final sentTo = <String>[];
 
   @override
   AppUser? get currentUser => _user;
@@ -49,26 +43,17 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> sendPhoneOtp(String e164) async {
-    if (sendFailure != null) throw AuthFailure(sendFailure!);
-    sentTo.add(e164);
+  Future<void> signInWithGoogle() async {
+    if (failure != null) throw AuthFailure(failure!);
+    _set(
+      const AppUser(
+        id: 'fake-google',
+        method: SignInMethod.google,
+        email: 'somchai.demo@gmail.com',
+        displayName: 'สมชาย ใจดี',
+      ),
+    );
   }
-
-  @override
-  Future<void> verifyPhoneOtp(String e164, String code) async {
-    if (code != validCode) throw const AuthFailure(AuthFailureKind.invalidCode);
-    _set(AppUser(id: 'fake-phone', method: SignInMethod.phone, phone: e164));
-  }
-
-  @override
-  Future<void> signInWithGoogle() async => _set(
-    const AppUser(
-      id: 'fake-google',
-      method: SignInMethod.google,
-      email: 'somchai.demo@gmail.com',
-      displayName: 'สมชาย ใจดี',
-    ),
-  );
 
   @override
   Future<void> signOut() async {
