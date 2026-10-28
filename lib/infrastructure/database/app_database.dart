@@ -46,6 +46,22 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 3;
 
+  /// Relative paths of every slip image file this database refers to. Asset
+  /// paths (sample data points at a bundled image) are not files and are
+  /// left out, so nothing built into the app is ever deleted.
+  Future<List<String>> localSlipPaths() async {
+    final rows = await customSelect(
+      'SELECT attachment_path AS p FROM scan_records '
+      'WHERE attachment_path IS NOT NULL '
+      'UNION SELECT attachment_path FROM transactions '
+      'WHERE attachment_path IS NOT NULL',
+    ).get();
+    return [
+      for (final r in rows)
+        if (!r.read<String>('p').startsWith('assets/')) r.read<String>('p'),
+    ];
+  }
+
   /// Deletes everything the user entered: transactions, slip records,
   /// accounts and custom categories. Default categories and the default
   /// cash account are restored afterwards. Runs in one transaction.

@@ -8,6 +8,7 @@ import 'package:moneylens/app/theme/icons.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
 import 'package:moneylens/demo/demo_config.dart';
+import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/auth/application/session.dart';
 import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
 import 'package:moneylens/features/auth/domain/auth_models.dart';
@@ -41,6 +42,7 @@ void main() {
     bool sample = true,
     bool signedIn = true,
     FakeAuthRepository? auth,
+    RecordingEraser? eraser,
   }) async {
     final authRepo =
         auth ??
@@ -65,6 +67,7 @@ void main() {
         appDatabaseProvider.overrideWithValue(db),
         sampleDataEnabledProvider.overrideWithValue(sample),
         authRepositoryProvider.overrideWithValue(authRepo),
+        localDataEraserProvider.overrideWithValue(eraser ?? RecordingEraser()),
         // Drift stream queries and writes deadlock under the fake clock of
         // widget tests, so the ledger streams emit one-shot reads instead.
         // The store re-reads after every write, so the UI still updates.
@@ -195,6 +198,59 @@ void main() {
     expect(find.text('Continue with Google'), findsOneWidget);
     // The data on the device is still there.
     expect(container.read(demoStoreProvider).transactions, isNotEmpty);
+    await drain(tester);
+  });
+
+  testWidgets('deleting the account asks twice, then erases everything', (
+    tester,
+  ) async {
+    final auth = FakeAuthRepository(
+      signedIn: const AppUser(
+        id: 'u',
+        method: SignInMethod.google,
+        email: 'a@b.co',
+        displayName: 'Somchai',
+      ),
+      birthDate: DateTime.utc(1997, 3, 14),
+    );
+    final eraser = RecordingEraser();
+    final container = await pumpApp(tester, auth: auth, eraser: eraser);
+
+    await tapOn(tester, find.text('Settings'));
+    await settle(tester);
+    await tapOn(tester, find.text('Somchai').first);
+    await settle(tester);
+    expect(find.text('Delete account'), findsOneWidget);
+
+    // Cancelling at either step changes nothing.
+    await tapOn(tester, find.text('Delete account'));
+    await settle(tester);
+    expect(find.text('Delete this account?'), findsOneWidget);
+    await tapOn(tester, find.text('Cancel'));
+    await settle(tester);
+    await tapOn(tester, find.text('Delete account'));
+    await settle(tester);
+    await tapOn(tester, find.text('Continue'));
+    await settle(tester);
+    expect(find.text('Delete permanently'), findsOneWidget);
+    await tapOn(tester, find.text('Cancel'));
+    await settle(tester);
+    expect(auth.accountDeleted, isFalse);
+    expect(container.read(sessionProvider).isSignedIn, isTrue);
+
+    // Both confirmed: the account is deleted, then the device is cleared.
+    await tapOn(tester, find.text('Delete account'));
+    await settle(tester);
+    await tapOn(tester, find.text('Continue'));
+    await settle(tester);
+    await tapOn(tester, find.text('Delete account permanently'));
+    await settle(tester);
+    expect(auth.accountDeleted, isTrue);
+    expect(container.read(sessionProvider).status, SessionStatus.signedOut);
+    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(eraser.erased.single.userId, 'u');
+    // The sample slips point at a bundled asset, which is never erased.
+    expect(eraser.erased.single.slipPaths, isEmpty);
     await drain(tester);
   });
 

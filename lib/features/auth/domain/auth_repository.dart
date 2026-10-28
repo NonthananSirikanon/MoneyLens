@@ -16,6 +16,11 @@ abstract interface class AuthRepository {
 
   Future<void> signOut();
 
+  /// Deletes the account and all of its data on the server, then ends the
+  /// session. Throws [AuthFailure] (for example `network`) without changing
+  /// anything when it cannot be done.
+  Future<void> deleteAccount();
+
   /// The saved birth date (date only), or null when the user has not given
   /// one yet.
   Future<DateTime?> fetchBirthDate();

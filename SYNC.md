@@ -51,6 +51,5 @@ outbox just waits.
 
 - Scan records and slip images (needs Supabase Storage and a decision on OCR
   text retention, DATABASE.md §9).
-- Account deletion that also removes cloud data (needed before public launch).
 - A conflict screen: edits to the same record from two devices at once keep
   the later one without telling the user.

@@ -61,6 +61,17 @@ class FakeAuthRepository implements AuthRepository {
     _set(null);
   }
 
+  /// True once [deleteAccount] succeeded, for assertions.
+  var accountDeleted = false;
+
+  @override
+  Future<void> deleteAccount() async {
+    if (failure != null) throw AuthFailure(failure!);
+    accountDeleted = true;
+    birthDate = null;
+    _set(null);
+  }
+
   @override
   Future<DateTime?> fetchBirthDate() async => birthDate;
 

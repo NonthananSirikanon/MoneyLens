@@ -12,6 +12,7 @@ import 'package:moneylens/core/errors/app_failure.dart';
 import 'package:moneylens/core/money/currency.dart';
 import 'package:moneylens/core/money/money.dart';
 import 'package:moneylens/core/utils/id_generator.dart';
+import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/slip_import/domain/import_ports.dart';
 import 'package:moneylens/features/transactions/domain/transaction.dart';
 import 'package:moneylens/features/transactions/domain/transaction_repository.dart';
@@ -158,4 +159,16 @@ Future<ProviderContainer> sampleContainer(DateTime now) async {
   });
   await container.read(appStartupProvider.future);
   return container;
+}
+
+/// Remembers what would have been erased from the device, instead of
+/// touching the file system.
+class RecordingEraser implements LocalDataEraser {
+  final erased = <({String userId, List<String> slipPaths})>[];
+
+  @override
+  Future<void> erase({
+    required String userId,
+    required List<String> slipPaths,
+  }) async => erased.add((userId: userId, slipPaths: slipPaths));
 }

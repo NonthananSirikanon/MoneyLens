@@ -117,6 +117,10 @@ Notes and limits:
 - If the profile cannot be read (offline), a returning user is let in so that data on the device stays reachable; the birth-date check repeats on the next start.
 - **Data on the device is per account.** Each user has their own database file (`moneylens_<user id>.sqlite`), so signing in as someone else shows none of the previous account's data; signing out keeps the file. The shared database from before accounts existed goes to the first account that signs in after the update. While signed out the app uses an empty in-memory database. Files are not encrypted, and "delete all data" only clears the signed-in account.
 
+## Account deletion
+
+Settings → profile card → **ลบบัญชี** deletes the account on Supabase through the `delete_my_account()` function (every table cascades from `auth.users`) and then removes this device's database file and slip images. It needs an internet connection and asks twice; if the server cannot be reached nothing is deleted. The Google account itself is untouched. Slip image *objects* in Supabase Storage are not handled yet because nothing uploads them (PR-12).
+
 ## Sync
 
 Entries (accounts, categories, transactions) are backed up to Supabase and shared between a user's devices while signed in; see [SYNC.md](SYNC.md). The device database stays the primary one, so the app works offline and syncs when it can. Slip images and scan records are not synced yet. Status and a "sync now" button are on Settings → profile card. Sync is off when no `SUPABASE_PUBLISHABLE_KEY` is passed.

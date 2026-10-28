@@ -2069,7 +2069,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataWipeSub.
   ///
   /// In en, this message translates to:
-  /// **'Permanently delete transactions, accounts and slip images'**
+  /// **'Permanently delete transactions, accounts and slip images (including the server copy)'**
   String get dataWipeSub;
 
   /// No description provided for @wipeTitle.
@@ -2081,7 +2081,7 @@ abstract class AppLocalizations {
   /// No description provided for @wipeBody.
   ///
   /// In en, this message translates to:
-  /// **'All transactions, accounts and slip images on this device will be deleted permanently. This can\'t be undone.'**
+  /// **'All transactions, accounts and slip images on this device, and their copies on the server, will be deleted permanently. This can\'t be undone.'**
   String get wipeBody;
 
   /// No description provided for @wipeConfirm.
@@ -2455,6 +2455,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sync failed. Will retry automatically · tap to try now'**
   String get syncFailed;
+
+  /// No description provided for @accountDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDelete;
+
+  /// No description provided for @accountDeleteSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete the account and all its data'**
+  String get accountDeleteSub;
+
+  /// No description provided for @accountDeleting.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting account…'**
+  String get accountDeleting;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this account?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your transactions, accounts, categories and date of birth will be permanently deleted from the server and from this device. This can\'t be undone. Your Google account itself is not deleted.'**
+  String get deleteAccountBody;
+
+  /// No description provided for @deleteAccountAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get deleteAccountAction;
+
+  /// No description provided for @deleteAccountAgainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get deleteAccountAgainTitle;
+
+  /// No description provided for @deleteAccountAgainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything will be gone immediately and can\'t be recovered. Do you really want to delete the account?'**
+  String get deleteAccountAgainBody;
+
+  /// No description provided for @deleteAccountAgainAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account permanently'**
+  String get deleteAccountAgainAction;
+
+  /// No description provided for @toastAccountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deleted'**
+  String get toastAccountDeleted;
+
+  /// No description provided for @accountDeleteNeedsInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'You need an internet connection to delete the account. Try again when you\'re connected.'**
+  String get accountDeleteNeedsInternet;
 }
 
 class _AppLocalizationsDelegate

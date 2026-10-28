@@ -62,4 +62,27 @@ void main() {
       expect(UserDatabaseFiles.legacyFile(dir).existsSync(), isTrue);
     },
   );
+
+  test(
+    'deleting a user removes the database and its side files only',
+    () async {
+      final a = UserDatabaseFiles.userFile(dir, 'user-a')
+        ..writeAsStringSync('a');
+      for (final suffix in ['-wal', '-shm', '-journal']) {
+        File('${a.path}$suffix').writeAsStringSync('side');
+      }
+      final b = UserDatabaseFiles.userFile(dir, 'user-b')
+        ..writeAsStringSync('b');
+
+      await UserDatabaseFiles.deleteFor(dir, 'user-a');
+      expect(a.existsSync(), isFalse);
+      for (final suffix in ['-wal', '-shm', '-journal']) {
+        expect(File('${a.path}$suffix').existsSync(), isFalse);
+      }
+      expect(b.readAsStringSync(), 'b');
+      // Deleting again, or a user with no files, is fine.
+      await UserDatabaseFiles.deleteFor(dir, 'user-a');
+      await UserDatabaseFiles.deleteFor(dir, 'nobody');
+    },
+  );
 }

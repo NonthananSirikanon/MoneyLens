@@ -9,6 +9,7 @@ import '../features/accounts/application/account_providers.dart';
 import '../features/accounts/domain/account.dart';
 import '../features/categories/application/category_providers.dart';
 import '../features/categories/domain/category.dart';
+import '../features/slip_import/application/slip_import_providers.dart';
 import '../features/slip_import/domain/scan_record.dart';
 import '../features/slip_import/domain/scan_status.dart';
 import '../features/transactions/application/transaction_providers.dart';
@@ -181,7 +182,18 @@ class DemoStore extends Notifier<DemoState> {
 
   /// "Delete all data" from Settings → Data & export.
   Future<void> wipeAll() async {
-    await ref.read(appDatabaseProvider).wipeUserData(_now);
+    final db = ref.read(appDatabaseProvider);
+    final slips = await db.localSlipPaths();
+    await db.wipeUserData(_now);
+    // The rows are gone; the image files must go too.
+    final store = ref.read(slipImageStoreProvider);
+    for (final path in slips) {
+      try {
+        await store.delete(path);
+      } on Object {
+        // A file that cannot be removed must not fail the wipe.
+      }
+    }
     await Future.wait([
       _refreshTransactions(),
       _refreshAccounts(),

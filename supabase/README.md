@@ -11,6 +11,7 @@ the background (SYNC.md).
   by adding a new migration; never edit one that was already pushed.
 - `tests/schema_test.sql` – checks constraints, balances and RLS.
 - `tests/profiles_test.sql` – checks the birth-date profile (constraints, RLS, cascade).
+- `tests/delete_account_test.sql` – checks `delete_my_account()` (own data removed, others untouched, anon refused).
 - `tests/sync_test.sql` – checks the sync columns (server timestamps, stale-write protection, soft deletes).
 - `config.toml` – local stack settings.
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show SocketException;
 
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../domain/sync_remote.dart';
@@ -24,6 +25,8 @@ class SupabaseSyncRemote implements SyncRemote {
     } on SocketException {
       throw const SyncFailure(true);
     } on TimeoutException {
+      throw const SyncFailure(true);
+    } on http.ClientException {
       throw const SyncFailure(true);
     } on sb.AuthRetryableFetchException {
       throw const SyncFailure(true);

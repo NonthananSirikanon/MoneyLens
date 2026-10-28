@@ -532,9 +532,9 @@
   "dataAutoDelete": "Auto-delete images of saved slips",
   "dataAutoDeleteSub": "After 30 days",
   "dataWipe": "Delete all data",
-  "dataWipeSub": "Permanently delete transactions, accounts and slip images",
+  "dataWipeSub": "Permanently delete transactions, accounts and slip images (including the server copy)",
   "wipeTitle": "Delete all data?",
-  "wipeBody": "All transactions, accounts and slip images on this device will be deleted permanently. This can't be undone.",
+  "wipeBody": "All transactions, accounts and slip images on this device, and their copies on the server, will be deleted permanently. This can't be undone.",
   "wipeConfirm": "Delete everything",
   "toastWiped": "All data deleted",
   "securityTitle": "Privacy",
@@ -630,5 +630,16 @@
     }
   },
   "syncOffline": "No internet. Will retry automatically",
-  "syncFailed": "Sync failed. Will retry automatically · tap to try now"
+  "syncFailed": "Sync failed. Will retry automatically · tap to try now",
+  "accountDelete": "Delete account",
+  "accountDeleteSub": "Permanently delete the account and all its data",
+  "accountDeleting": "Deleting account…",
+  "deleteAccountTitle": "Delete this account?",
+  "deleteAccountBody": "Your transactions, accounts, categories and date of birth will be permanently deleted from the server and from this device. This can't be undone. Your Google account itself is not deleted.",
+  "deleteAccountAction": "Continue",
+  "deleteAccountAgainTitle": "Delete permanently",
+  "deleteAccountAgainBody": "Everything will be gone immediately and can't be recovered. Do you really want to delete the account?",
+  "deleteAccountAgainAction": "Delete account permanently",
+  "toastAccountDeleted": "Account deleted",
+  "accountDeleteNeedsInternet": "You need an internet connection to delete the account. Try again when you're connected."
 }

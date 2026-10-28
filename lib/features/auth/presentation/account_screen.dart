@@ -23,8 +23,52 @@ String accountName(AppUser? user, {required String fallback}) {
 }
 
 /// "บัญชีของฉัน": sign-in method, birth date, sign out.
-class AccountScreen extends ConsumerWidget {
+class AccountScreen extends ConsumerStatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  ConsumerState<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends ConsumerState<AccountScreen> {
+  var _deleting = false;
+
+  /// Two confirmations, then the server and the device are cleared. Nothing is
+  /// deleted unless the server confirms, so being offline only shows a message.
+  Future<void> _deleteAccount() async {
+    if (_deleting) return;
+    final l10n = context.l10n;
+    final first = await showMlConfirmDialog(
+      context,
+      title: l10n.deleteAccountTitle,
+      body: l10n.deleteAccountBody,
+      confirmLabel: l10n.deleteAccountAction,
+    );
+    if (!first || !mounted) return;
+    final second = await showMlConfirmDialog(
+      context,
+      title: l10n.deleteAccountAgainTitle,
+      body: l10n.deleteAccountAgainBody,
+      confirmLabel: l10n.deleteAccountAgainAction,
+    );
+    if (!second || !mounted) return;
+
+    setState(() => _deleting = true);
+    try {
+      await ref.read(sessionProvider.notifier).deleteAccount();
+      // The session is gone, so the router moves to the sign-in screen.
+      showMlToast(l10n.toastAccountDeleted);
+    } on AuthFailure catch (e) {
+      if (!mounted) return;
+      showMlToast(
+        e.kind == AuthFailureKind.network
+            ? l10n.accountDeleteNeedsInternet
+            : (authFailureMessage(context, e.kind) ?? l10n.authErrUnknown),
+      );
+    } finally {
+      if (mounted) setState(() => _deleting = false);
+    }
+  }
 
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
@@ -40,7 +84,7 @@ class AccountScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final session = ref.watch(sessionProvider);
     final user = session.user;
@@ -117,6 +161,14 @@ class AccountScreen extends ConsumerWidget {
                 danger: true,
                 chevron: false,
                 onPressed: () => _signOut(context, ref),
+              ),
+              MlListRow(
+                icon: MlIcons.trash2,
+                label: _deleting ? l10n.accountDeleting : l10n.accountDelete,
+                sub: l10n.accountDeleteSub,
+                danger: true,
+                chevron: false,
+                onPressed: _deleting ? null : _deleteAccount,
               ),
             ],
           ),

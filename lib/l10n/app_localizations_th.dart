@@ -1069,14 +1069,15 @@ class AppLocalizationsTh extends AppLocalizations {
   String get dataWipe => 'ลบข้อมูลทั้งหมด';
 
   @override
-  String get dataWipeSub => 'ลบรายการ บัญชี และรูปสลิปถาวร';
+  String get dataWipeSub =>
+      'ลบรายการ บัญชี และรูปสลิปถาวร (รวมสำเนาบนเซิร์ฟเวอร์)';
 
   @override
   String get wipeTitle => 'ลบข้อมูลทั้งหมด?';
 
   @override
   String get wipeBody =>
-      'รายการ บัญชี และรูปสลิปทั้งหมดในเครื่องนี้จะถูกลบถาวร ไม่สามารถกู้คืนได้';
+      'รายการ บัญชี และรูปสลิปทั้งหมดในเครื่องนี้และสำเนาบนเซิร์ฟเวอร์จะถูกลบถาวร ไม่สามารถกู้คืนได้';
 
   @override
   String get wipeConfirm => 'ลบทั้งหมด';
@@ -1278,4 +1279,40 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get syncFailed =>
       'ซิงก์ไม่สำเร็จ จะลองใหม่อัตโนมัติ · แตะเพื่อลองเดี๋ยวนี้';
+
+  @override
+  String get accountDelete => 'ลบบัญชี';
+
+  @override
+  String get accountDeleteSub => 'ลบบัญชีและข้อมูลทั้งหมดถาวร';
+
+  @override
+  String get accountDeleting => 'กำลังลบบัญชี…';
+
+  @override
+  String get deleteAccountTitle => 'ลบบัญชีนี้?';
+
+  @override
+  String get deleteAccountBody =>
+      'รายการ บัญชี หมวดหมู่ และวันเกิดของคุณจะถูกลบถาวรทั้งบนเซิร์ฟเวอร์และในเครื่องนี้ ไม่สามารถกู้คืนได้ บัญชี Google ของคุณเองไม่ถูกลบ';
+
+  @override
+  String get deleteAccountAction => 'ดำเนินการต่อ';
+
+  @override
+  String get deleteAccountAgainTitle => 'ยืนยันลบถาวร';
+
+  @override
+  String get deleteAccountAgainBody =>
+      'ข้อมูลทั้งหมดจะหายไปทันทีและกู้คืนไม่ได้ ต้องการลบบัญชีจริงหรือไม่';
+
+  @override
+  String get deleteAccountAgainAction => 'ลบบัญชีถาวร';
+
+  @override
+  String get toastAccountDeleted => 'ลบบัญชีแล้ว';
+
+  @override
+  String get accountDeleteNeedsInternet =>
+      'ต้องมีอินเทอร์เน็ตเพื่อลบบัญชี ลองอีกครั้งเมื่อเชื่อมต่อแล้ว';
 }

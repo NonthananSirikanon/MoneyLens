@@ -1084,14 +1084,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataWipeSub =>
-      'Permanently delete transactions, accounts and slip images';
+      'Permanently delete transactions, accounts and slip images (including the server copy)';
 
   @override
   String get wipeTitle => 'Delete all data?';
 
   @override
   String get wipeBody =>
-      'All transactions, accounts and slip images on this device will be deleted permanently. This can\'t be undone.';
+      'All transactions, accounts and slip images on this device, and their copies on the server, will be deleted permanently. This can\'t be undone.';
 
   @override
   String get wipeConfirm => 'Delete everything';
@@ -1294,4 +1294,41 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncFailed =>
       'Sync failed. Will retry automatically · tap to try now';
+
+  @override
+  String get accountDelete => 'Delete account';
+
+  @override
+  String get accountDeleteSub =>
+      'Permanently delete the account and all its data';
+
+  @override
+  String get accountDeleting => 'Deleting account…';
+
+  @override
+  String get deleteAccountTitle => 'Delete this account?';
+
+  @override
+  String get deleteAccountBody =>
+      'Your transactions, accounts, categories and date of birth will be permanently deleted from the server and from this device. This can\'t be undone. Your Google account itself is not deleted.';
+
+  @override
+  String get deleteAccountAction => 'Continue';
+
+  @override
+  String get deleteAccountAgainTitle => 'Delete permanently';
+
+  @override
+  String get deleteAccountAgainBody =>
+      'Everything will be gone immediately and can\'t be recovered. Do you really want to delete the account?';
+
+  @override
+  String get deleteAccountAgainAction => 'Delete account permanently';
+
+  @override
+  String get toastAccountDeleted => 'Account deleted';
+
+  @override
+  String get accountDeleteNeedsInternet =>
+      'You need an internet connection to delete the account. Try again when you\'re connected.';
 }

@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 
 import '../../../app/supabase_config.dart';
+import '../../../infrastructure/database/app_database.dart';
 
 import '../data/fake_auth_repository.dart';
 import '../data/supabase_auth_repository.dart';
 import '../domain/auth_models.dart';
 import '../domain/auth_repository.dart';
+import 'local_data_eraser.dart';
 
 enum SessionStatus {
   /// Restoring the session / loading the profile.
@@ -118,6 +120,28 @@ class SessionController extends Notifier<SessionState> {
       user: state.user,
       birthDate: DateTime.utc(date.year, date.month, date.day),
     );
+  }
+
+  /// Deletes the account on the server (and with it everything synced), then
+  /// everything of it on this device. Throws [AuthFailure] without touching
+  /// anything when the server cannot be reached.
+  Future<void> deleteAccount() async {
+    final user = state.user;
+    if (user == null) return;
+    // Read before the account goes: the paths live in this user's database.
+    final db = ref.read(appDatabaseProvider);
+    final slips = await db.localSlipPaths();
+    await ref.read(authRepositoryProvider).deleteAccount();
+    if (!ref.mounted) return;
+    state = const SessionState(SessionStatus.signedOut);
+    try {
+      await db.close(); // the provider closes it too; closing twice is safe
+    } on Object {
+      // Already closed.
+    }
+    await ref
+        .read(localDataEraserProvider)
+        .erase(userId: user.id, slipPaths: slips);
   }
 
   /// Ends the session. Data on the device is kept.

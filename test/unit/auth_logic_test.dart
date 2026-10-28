@@ -2,9 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/app/auth_redirect.dart';
 import 'package:moneylens/features/auth/application/birth_date.dart';
+import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/auth/application/session.dart';
 import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
 import 'package:moneylens/features/auth/domain/auth_models.dart';
+import 'package:moneylens/infrastructure/database/app_database.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
+
+import '../support/test_support.dart';
 
 void main() {
   group('BirthDateValidator', () {
@@ -184,6 +189,87 @@ void main() {
       await repo.signInWithGoogle();
       await pumpEventQueue();
       expect(c.read(sessionProvider).status, SessionStatus.needsBirthDate);
+    });
+  });
+  group('SessionController.deleteAccount', () {
+    const user = AppUser(id: 'u1', method: SignInMethod.google, email: 'a@b.c');
+
+    Future<({ProviderContainer c, AppDatabase db, RecordingEraser eraser})>
+    setUpDeletion(FakeAuthRepository repo) async {
+      final db = openTestDatabase();
+      final eraser = RecordingEraser();
+      final c = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repo),
+          appDatabaseProvider.overrideWithValue(db),
+          localDataEraserProvider.overrideWithValue(eraser),
+        ],
+      );
+      addTearDown(() async {
+        c.dispose();
+        await db.close();
+      });
+      await c.read(sessionProvider.notifier).initialized;
+      return (c: c, db: db, eraser: eraser);
+    }
+
+    Future<void> addSlip(AppDatabase db, String id, String path) => db
+        .into(db.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            id: id,
+            type: 'expense',
+            amountMinor: 100,
+            currencyCode: 'THB',
+            accountId: 'default-cash',
+            occurredAt: DateTime.utc(2026, 10, 1),
+            source: 'manual',
+            createdAt: DateTime.utc(2026, 10, 1),
+            updatedAt: DateTime.utc(2026, 10, 1),
+            attachmentPath: Value(path),
+          ),
+        );
+
+    test('deletes the account, then erases the device', () async {
+      final repo = FakeAuthRepository(
+        signedIn: user,
+        birthDate: DateTime.utc(1997, 3, 14),
+      );
+      final t = await setUpDeletion(repo);
+      await addSlip(t.db, 'tx-1', 'slips/a.jpg');
+      await addSlip(t.db, 'tx-2', 'assets/images/receipt.png');
+
+      await t.c.read(sessionProvider.notifier).deleteAccount();
+
+      expect(repo.accountDeleted, isTrue);
+      expect(t.c.read(sessionProvider).status, SessionStatus.signedOut);
+      expect(t.eraser.erased.single.userId, 'u1');
+      // Only real files; the bundled sample image is never a file to erase.
+      expect(t.eraser.erased.single.slipPaths, ['slips/a.jpg']);
+    });
+
+    test('offline: nothing is deleted anywhere', () async {
+      final repo = FakeAuthRepository(
+        signedIn: user,
+        birthDate: DateTime.utc(1997, 3, 14),
+        failure: AuthFailureKind.network,
+      );
+      final t = await setUpDeletion(repo);
+      await addSlip(t.db, 'tx-1', 'slips/a.jpg');
+
+      await expectLater(
+        t.c.read(sessionProvider.notifier).deleteAccount(),
+        throwsA(
+          isA<AuthFailure>().having(
+            (e) => e.kind,
+            'kind',
+            AuthFailureKind.network,
+          ),
+        ),
+      );
+      expect(repo.accountDeleted, isFalse);
+      expect(t.c.read(sessionProvider).status, SessionStatus.ready);
+      expect(t.eraser.erased, isEmpty);
     });
   });
 }

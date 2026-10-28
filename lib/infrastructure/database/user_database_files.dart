@@ -42,4 +42,14 @@ abstract final class UserDatabaseFiles {
     }
     return target;
   }
+
+  /// Deletes [userId]'s database file and its side files, if they exist.
+  /// Other accounts' files are never touched.
+  static Future<void> deleteFor(Directory dir, String userId) async {
+    final main = userFile(dir, userId);
+    for (final suffix in ['', '-wal', '-shm', '-journal']) {
+      final file = File('${main.path}$suffix');
+      if (await file.exists()) await file.delete();
+    }
+  }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show SocketException;
 
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../domain/auth_models.dart';
@@ -71,6 +72,8 @@ class SupabaseAuthRepository implements AuthRepository {
       throw const AuthFailure(AuthFailureKind.network);
     } on SocketException {
       throw const AuthFailure(AuthFailureKind.network);
+    } on http.ClientException {
+      throw const AuthFailure(AuthFailureKind.network);
     } on AuthFailure {
       rethrow;
     } catch (_) {
@@ -86,6 +89,17 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() => _guard(_auth.signOut);
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+    await _client.rpc('delete_my_account');
+    try {
+      // The server session died with the user; only forget it here.
+      await _auth.signOut(scope: sb.SignOutScope.local);
+    } on Object {
+      // The account is gone either way.
+    }
+  });
 
   @override
   Future<DateTime?> fetchBirthDate() => _guard(() async {
