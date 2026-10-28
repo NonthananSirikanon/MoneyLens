@@ -9,6 +9,7 @@ import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
 import 'package:moneylens/demo/demo_config.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
+import 'package:moneylens/features/export/application/export_service.dart';
 import 'package:moneylens/features/auth/application/session.dart';
 import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
 import 'package:moneylens/features/auth/domain/auth_models.dart';
@@ -43,6 +44,7 @@ void main() {
     bool signedIn = true,
     FakeAuthRepository? auth,
     RecordingEraser? eraser,
+    RecordingSharer? sharer,
   }) async {
     final authRepo =
         auth ??
@@ -68,6 +70,7 @@ void main() {
         sampleDataEnabledProvider.overrideWithValue(sample),
         authRepositoryProvider.overrideWithValue(authRepo),
         localDataEraserProvider.overrideWithValue(eraser ?? RecordingEraser()),
+        fileSharerProvider.overrideWithValue(sharer ?? RecordingSharer()),
         // Drift stream queries and writes deadlock under the fake clock of
         // widget tests, so the ledger streams emit one-shot reads instead.
         // The store re-reads after every write, so the UI still updates.
@@ -251,6 +254,54 @@ void main() {
     expect(eraser.erased.single.userId, 'u');
     // The sample slips point at a bundled asset, which is never erased.
     expect(eraser.erased.single.slipPaths, isEmpty);
+    await drain(tester);
+  });
+
+  testWidgets('CSV export: choose a period, share the file', (tester) async {
+    final sharer = RecordingSharer();
+    await pumpApp(tester, sharer: sharer);
+    await tapOn(tester, find.text('Settings'));
+    await settle(tester);
+    await tapOn(tester, find.textContaining('Data and export'));
+    await settle(tester);
+    expect(find.text('This month'), findsOneWidget);
+    // The sample ledger has 8 entries in October 2569, more over all time.
+    final month = find.textContaining(RegExp(r'^\d+ transactions$'));
+    expect(month, findsOneWidget);
+    final monthCount = (tester.widget<Text>(month).data ?? '');
+
+    await tapOn(tester, find.text('Period'));
+    await settle(tester);
+    await tapOn(tester, find.text('All time'));
+    await settle(tester);
+    expect(find.text('All time'), findsOneWidget);
+
+    await tapOn(tester, find.text('Export CSV'));
+    await settle(tester);
+    expect(sharer.files.single.name, 'moneylens-all.csv');
+    expect(sharer.files.single.mime, 'text/csv');
+    final text = String.fromCharCodes(sharer.files.single.bytes);
+    expect(sharer.files.single.bytes.take(3), [0xEF, 0xBB, 0xBF]);
+    expect(text, contains('Merchant / payee'));
+    expect(
+      text.split('\r\n').length - 2,
+      greaterThanOrEqualTo(int.parse(monthCount.split(' ').first)),
+    );
+    expect(find.text('Exported moneylens-all.csv'), findsOneWidget);
+    await drain(tester);
+  });
+
+  testWidgets('CSV export of an empty period shares nothing', (tester) async {
+    final sharer = RecordingSharer();
+    await pumpApp(tester, sample: false, sharer: sharer);
+    await tapOn(tester, find.text('Settings'));
+    await settle(tester);
+    await tapOn(tester, find.textContaining('Data and export'));
+    await settle(tester);
+    await tapOn(tester, find.text('Export CSV'));
+    await settle(tester);
+    expect(sharer.files, isEmpty);
+    expect(find.text('No transactions in this period'), findsOneWidget);
     await drain(tester);
   });
 

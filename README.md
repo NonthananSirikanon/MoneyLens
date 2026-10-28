@@ -117,6 +117,10 @@ Notes and limits:
 - If the profile cannot be read (offline), a returning user is let in so that data on the device stays reachable; the birth-date check repeats on the next start.
 - **Data on the device is per account.** Each user has their own database file (`moneylens_<user id>.sqlite`), so signing in as someone else shows none of the previous account's data; signing out keeps the file. The shared database from before accounts existed goes to the first account that signs in after the update. While signed out the app uses an empty in-memory database. Files are not encrypted, and "delete all data" only clears the signed-in account.
 
+## CSV export
+
+Settings → ข้อมูลและการส่งออก: choose a period (this month, last 3 months, this year, all) and **ส่งออก CSV**. The file is built on the device from the local database and handed to the system share sheet (Save to Files, e-mail, Drive, ...). Format: UTF-8 with a byte order mark (so Excel shows Thai correctly), CRLF, quoted fields, dates as Gregorian `YYYY-MM-DD` in Asia/Bangkok, amounts as plain decimals (always positive; the type column gives the direction). Text starting with `=`, `+`, `-`, `@` is prefixed with `'` so spreadsheets do not run it as a formula. Provider references and slip image paths are not exported. The temporary file is deleted at the next export.
+
 ## Account deletion
 
 Settings → profile card → **ลบบัญชี** deletes the account on Supabase through the `delete_my_account()` function (every table cascades from `auth.users`) and then removes this device's database file and slip images. It needs an internet connection and asks twice; if the server cannot be reached nothing is deleted. The Google account itself is untouched. Slip image *objects* in Supabase Storage are not handled yet because nothing uploads them (PR-12).

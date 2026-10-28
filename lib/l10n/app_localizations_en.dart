@@ -1331,4 +1331,55 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountDeleteNeedsInternet =>
       'You need an internet connection to delete the account. Try again when you\'re connected.';
+
+  @override
+  String get exportPeriodThisMonth => 'This month';
+
+  @override
+  String get exportPeriodLast3 => 'Last 3 months';
+
+  @override
+  String get exportPeriodThisYear => 'This year';
+
+  @override
+  String get exportPeriodAll => 'All time';
+
+  @override
+  String get exportEmpty => 'No transactions in this period';
+
+  @override
+  String get exportFailed => 'Export failed. Try again';
+
+  @override
+  String get csvColDate => 'Date';
+
+  @override
+  String get csvColTime => 'Time';
+
+  @override
+  String get csvColType => 'Type';
+
+  @override
+  String get csvColAmount => 'Amount';
+
+  @override
+  String get csvColCurrency => 'Currency';
+
+  @override
+  String get csvColAccount => 'Account';
+
+  @override
+  String get csvColToAccount => 'To account';
+
+  @override
+  String get csvColCategory => 'Category';
+
+  @override
+  String get csvColMerchant => 'Merchant / payee';
+
+  @override
+  String get csvColNote => 'Note';
+
+  @override
+  String get csvColSource => 'Source';
 }

@@ -2521,6 +2521,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You need an internet connection to delete the account. Try again when you\'re connected.'**
   String get accountDeleteNeedsInternet;
+
+  /// No description provided for @exportPeriodThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get exportPeriodThisMonth;
+
+  /// No description provided for @exportPeriodLast3.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 months'**
+  String get exportPeriodLast3;
+
+  /// No description provided for @exportPeriodThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get exportPeriodThisYear;
+
+  /// No description provided for @exportPeriodAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get exportPeriodAll;
+
+  /// No description provided for @exportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions in this period'**
+  String get exportEmpty;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed. Try again'**
+  String get exportFailed;
+
+  /// No description provided for @csvColDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get csvColDate;
+
+  /// No description provided for @csvColTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get csvColTime;
+
+  /// No description provided for @csvColType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get csvColType;
+
+  /// No description provided for @csvColAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get csvColAmount;
+
+  /// No description provided for @csvColCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get csvColCurrency;
+
+  /// No description provided for @csvColAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get csvColAccount;
+
+  /// No description provided for @csvColToAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'To account'**
+  String get csvColToAccount;
+
+  /// No description provided for @csvColCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get csvColCategory;
+
+  /// No description provided for @csvColMerchant.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant / payee'**
+  String get csvColMerchant;
+
+  /// No description provided for @csvColNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get csvColNote;
+
+  /// No description provided for @csvColSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get csvColSource;
 }
 
 class _AppLocalizationsDelegate

@@ -403,5 +403,22 @@
   "deleteAccountAgainBody": "ข้อมูลทั้งหมดจะหายไปทันทีและกู้คืนไม่ได้ ต้องการลบบัญชีจริงหรือไม่",
   "deleteAccountAgainAction": "ลบบัญชีถาวร",
   "toastAccountDeleted": "ลบบัญชีแล้ว",
-  "accountDeleteNeedsInternet": "ต้องมีอินเทอร์เน็ตเพื่อลบบัญชี ลองอีกครั้งเมื่อเชื่อมต่อแล้ว"
+  "accountDeleteNeedsInternet": "ต้องมีอินเทอร์เน็ตเพื่อลบบัญชี ลองอีกครั้งเมื่อเชื่อมต่อแล้ว",
+  "exportPeriodThisMonth": "เดือนนี้",
+  "exportPeriodLast3": "3 เดือนล่าสุด",
+  "exportPeriodThisYear": "ปีนี้",
+  "exportPeriodAll": "ทั้งหมด",
+  "exportEmpty": "ไม่มีรายการในช่วงเวลานี้",
+  "exportFailed": "ส่งออกไม่สำเร็จ ลองอีกครั้ง",
+  "csvColDate": "วันที่",
+  "csvColTime": "เวลา",
+  "csvColType": "ประเภท",
+  "csvColAmount": "จำนวนเงิน",
+  "csvColCurrency": "สกุลเงิน",
+  "csvColAccount": "บัญชี",
+  "csvColToAccount": "บัญชีปลายทาง",
+  "csvColCategory": "หมวดหมู่",
+  "csvColMerchant": "ร้านค้า/ผู้รับ",
+  "csvColNote": "หมายเหตุ",
+  "csvColSource": "แหล่งที่มา"
 }

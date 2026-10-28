@@ -641,5 +641,22 @@
   "deleteAccountAgainBody": "Everything will be gone immediately and can't be recovered. Do you really want to delete the account?",
   "deleteAccountAgainAction": "Delete account permanently",
   "toastAccountDeleted": "Account deleted",
-  "accountDeleteNeedsInternet": "You need an internet connection to delete the account. Try again when you're connected."
+  "accountDeleteNeedsInternet": "You need an internet connection to delete the account. Try again when you're connected.",
+  "exportPeriodThisMonth": "This month",
+  "exportPeriodLast3": "Last 3 months",
+  "exportPeriodThisYear": "This year",
+  "exportPeriodAll": "All time",
+  "exportEmpty": "No transactions in this period",
+  "exportFailed": "Export failed. Try again",
+  "csvColDate": "Date",
+  "csvColTime": "Time",
+  "csvColType": "Type",
+  "csvColAmount": "Amount",
+  "csvColCurrency": "Currency",
+  "csvColAccount": "Account",
+  "csvColToAccount": "To account",
+  "csvColCategory": "Category",
+  "csvColMerchant": "Merchant / payee",
+  "csvColNote": "Note",
+  "csvColSource": "Source"
 }

@@ -13,6 +13,7 @@ import 'package:moneylens/core/money/currency.dart';
 import 'package:moneylens/core/money/money.dart';
 import 'package:moneylens/core/utils/id_generator.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
+import 'package:moneylens/features/export/domain/file_sharer.dart';
 import 'package:moneylens/features/slip_import/domain/import_ports.dart';
 import 'package:moneylens/features/transactions/domain/transaction.dart';
 import 'package:moneylens/features/transactions/domain/transaction_repository.dart';
@@ -171,4 +172,20 @@ class RecordingEraser implements LocalDataEraser {
     required String userId,
     required List<String> slipPaths,
   }) async => erased.add((userId: userId, slipPaths: slipPaths));
+}
+
+/// Remembers the files that would have been shared.
+class RecordingSharer implements FileSharer {
+  final files = <({String name, List<int> bytes, String mime})>[];
+  var outcome = ShareOutcome.shared;
+
+  @override
+  Future<ShareOutcome> shareFile({
+    required String fileName,
+    required Uint8List bytes,
+    required String mimeType,
+  }) async {
+    files.add((name: fileName, bytes: bytes, mime: mimeType));
+    return outcome;
+  }
 }

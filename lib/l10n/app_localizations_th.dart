@@ -1315,4 +1315,55 @@ class AppLocalizationsTh extends AppLocalizations {
   @override
   String get accountDeleteNeedsInternet =>
       'ต้องมีอินเทอร์เน็ตเพื่อลบบัญชี ลองอีกครั้งเมื่อเชื่อมต่อแล้ว';
+
+  @override
+  String get exportPeriodThisMonth => 'เดือนนี้';
+
+  @override
+  String get exportPeriodLast3 => '3 เดือนล่าสุด';
+
+  @override
+  String get exportPeriodThisYear => 'ปีนี้';
+
+  @override
+  String get exportPeriodAll => 'ทั้งหมด';
+
+  @override
+  String get exportEmpty => 'ไม่มีรายการในช่วงเวลานี้';
+
+  @override
+  String get exportFailed => 'ส่งออกไม่สำเร็จ ลองอีกครั้ง';
+
+  @override
+  String get csvColDate => 'วันที่';
+
+  @override
+  String get csvColTime => 'เวลา';
+
+  @override
+  String get csvColType => 'ประเภท';
+
+  @override
+  String get csvColAmount => 'จำนวนเงิน';
+
+  @override
+  String get csvColCurrency => 'สกุลเงิน';
+
+  @override
+  String get csvColAccount => 'บัญชี';
+
+  @override
+  String get csvColToAccount => 'บัญชีปลายทาง';
+
+  @override
+  String get csvColCategory => 'หมวดหมู่';
+
+  @override
+  String get csvColMerchant => 'ร้านค้า/ผู้รับ';
+
+  @override
+  String get csvColNote => 'หมายเหตุ';
+
+  @override
+  String get csvColSource => 'แหล่งที่มา';
 }
