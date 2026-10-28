@@ -28,6 +28,53 @@ class DriftTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Stream<List<MoneyTransaction>> watchAll() {
+    final query = _db.select(_db.transactions)
+      ..orderBy([(t) => OrderingTerm.desc(t.occurredAt)]);
+    return query.watch().map((rows) => rows.map(_toDomain).toList());
+  }
+
+  @override
+  Future<MoneyTransaction?> findById(String id) async {
+    final row = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
+    return row == null ? null : _toDomain(row);
+  }
+
+  @override
+  Future<MoneyTransaction> update(String id, TransactionDraft draft) async {
+    final updated =
+        await (_db.update(
+          _db.transactions,
+        )..where((t) => t.id.equals(id))).writeReturning(
+          TransactionsCompanion(
+            type: Value(draft.type.dbValue),
+            amountMinor: Value(draft.amount.minor),
+            currencyCode: Value(draft.amount.currency.code),
+            accountId: Value(draft.accountId),
+            destinationAccountId: Value(draft.destinationAccountId),
+            categoryId: Value(draft.categoryId),
+            merchant: Value(draft.merchant),
+            note: Value(draft.note),
+            occurredAt: Value(draft.occurredAt.toUtc()),
+            providerReference: Value(draft.providerReference),
+            updatedAt: Value(_clock.nowUtc()),
+          ),
+        );
+    if (updated.isEmpty) throw const AppFailure(FailureCode.notFound);
+    return _toDomain(updated.single);
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    final count = await (_db.delete(
+      _db.transactions,
+    )..where((t) => t.id.equals(id))).go();
+    if (count == 0) throw const AppFailure(FailureCode.notFound);
+  }
+
+  @override
   Stream<List<MoneyTransaction>> watchInRange(DateRange range) {
     final query = _db.select(_db.transactions)
       ..where(

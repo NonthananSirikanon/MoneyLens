@@ -9,6 +9,7 @@ import '../data/drift_transaction_repository.dart';
 import '../domain/transaction.dart';
 import '../domain/transaction_repository.dart';
 import 'create_transaction.dart';
+import 'update_transaction.dart';
 import 'transaction_draft_checker.dart';
 
 final transactionRepositoryProvider = Provider<TransactionRepository>(
@@ -31,6 +32,18 @@ final createTransactionProvider = Provider<CreateTransaction>(
     ref.watch(transactionDraftCheckerProvider),
     ref.watch(transactionRepositoryProvider),
   ),
+);
+
+final updateTransactionProvider = Provider<UpdateTransaction>(
+  (ref) => UpdateTransaction(
+    ref.watch(transactionDraftCheckerProvider),
+    ref.watch(transactionRepositoryProvider),
+  ),
+);
+
+/// Every transaction, newest first (balances and reports).
+final allTransactionsProvider = StreamProvider<List<MoneyTransaction>>(
+  (ref) => ref.watch(transactionRepositoryProvider).watchAll(),
 );
 
 /// Transaction history, newest first.

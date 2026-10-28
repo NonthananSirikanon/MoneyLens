@@ -5,4 +5,12 @@ abstract interface class CategoryRepository {
   Stream<List<Category>> watchActive({CategoryKind? kind});
 
   Future<Category?> findById(String id);
+
+  /// Creates a user category. [iconKey] is an app-owned identifier.
+  Future<Category> create({
+    required String name,
+    required CategoryKind kind,
+    String? iconKey,
+    int? colorValue,
+  });
 }

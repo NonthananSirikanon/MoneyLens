@@ -1,13 +1,17 @@
 import 'package:drift/drift.dart';
 
+import '../../../core/dates/clock.dart';
+import '../../../core/utils/id_generator.dart';
 import '../../../infrastructure/database/app_database.dart';
 import '../domain/category.dart';
 import '../domain/category_repository.dart';
 
 class DriftCategoryRepository implements CategoryRepository {
-  DriftCategoryRepository(this._db);
+  DriftCategoryRepository(this._db, this._clock, this._ids);
 
   final AppDatabase _db;
+  final Clock _clock;
+  final IdGenerator _ids;
 
   @override
   Stream<List<Category>> watchActive({CategoryKind? kind}) {
@@ -26,6 +30,30 @@ class DriftCategoryRepository implements CategoryRepository {
       _db.categories,
     )..where((c) => c.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toDomain(row);
+  }
+
+  @override
+  Future<Category> create({
+    required String name,
+    required CategoryKind kind,
+    String? iconKey,
+    int? colorValue,
+  }) async {
+    final now = _clock.nowUtc();
+    final row = await _db
+        .into(_db.categories)
+        .insertReturning(
+          CategoriesCompanion.insert(
+            id: _ids.newId(),
+            name: name,
+            kind: kind.dbValue,
+            iconKey: Value(iconKey),
+            colorValue: Value(colorValue),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    return _toDomain(row);
   }
 
   static Category _toDomain(CategoryRow row) => Category(

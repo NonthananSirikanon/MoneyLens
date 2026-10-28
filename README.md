@@ -82,7 +82,7 @@ lib/
 
 The screens implement `design/mockups/prototype.html` using the design system in `design/mockups/index.html`, built on Forui. Tokens and text styles are in `lib/app/theme/`, and the shared widgets (`Ml*`) are in `lib/core/widgets/`.
 
-**The UI currently runs on mock data.** `lib/demo/` holds an in-memory store seeded with the prototype's data, plus simulated OCR, camera, gallery, permissions and CSV export. The Drift repositories and `SlipImportPipeline` are unchanged, but no screen uses them yet. To connect real data, point the feature `application/*_view_providers.dart` files and `EntryFormController` at the repositories (this needs update/delete transaction, create category and account balances first).
+**The UI currently runs on mock data.** `lib/demo/` holds an in-memory store seeded with the prototype's data, plus simulated OCR, camera, gallery, permissions and CSV export. The Drift repositories and `SlipImportPipeline` are unchanged, but no screen uses them yet. To connect real data, point the feature `application/*_view_providers.dart` files and `EntryFormController` at the repositories (the data layer now supports update/delete transaction, create category, `AccountBalanceCalculator` and `ReportCalculator`; only the wiring is left).
 
 Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|emptyTx|loading>`. Strings live in `lib/l10n/app_th.arb` (Thai, copied from the prototype) and `app_en.arb`; Settings → ภาษา switches the language.
 

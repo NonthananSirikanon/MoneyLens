@@ -106,6 +106,20 @@ class FakeTransactionRepository implements TransactionRepository {
       Stream.value(_items.take(limit).toList());
 
   @override
+  Stream<List<MoneyTransaction>> watchAll() => Stream.value([..._items]);
+
+  @override
+  Future<MoneyTransaction?> findById(String id) async =>
+      _items.where((t) => t.id == id).firstOrNull;
+
+  @override
+  Future<MoneyTransaction> update(String id, TransactionDraft draft) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> delete(String id) => throw UnimplementedError();
+
+  @override
   Stream<List<MoneyTransaction>> watchInRange(DateRange range) =>
       Stream.value(_items.where((t) => range.contains(t.occurredAt)).toList());
 
