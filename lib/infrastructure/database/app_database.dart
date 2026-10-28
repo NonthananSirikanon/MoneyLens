@@ -1,10 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
-
-import '../../features/auth/application/session.dart';
 
 import 'app_database.steps.dart';
 import 'seed/default_categories.dart';
@@ -12,7 +8,6 @@ import 'tables/accounts.dart';
 import 'tables/categories.dart';
 import 'tables/scan_records.dart';
 import 'tables/transactions.dart';
-import 'user_database_files.dart';
 
 part 'app_database.g.dart';
 
@@ -20,23 +15,8 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
-  /// The signed-in user's database in the app's private storage. Each user
-  /// has their own file (see [UserDatabaseFiles]).
-  factory AppDatabase.openFor(String userId) => AppDatabase(
-    driftDatabase(
-      name: 'moneylens',
-      native: DriftNativeOptions(
-        databasePath: () async => (await UserDatabaseFiles.resolve(
-          await getApplicationDocumentsDirectory(),
-          userId,
-        )).path,
-      ),
-    ),
-  );
-
-  /// A throwaway database for while nobody is signed in. It holds nothing
-  /// and is never written to disk.
-  factory AppDatabase.signedOut() => AppDatabase(NativeDatabase.memory());
+  /// The on-device database in the app's private storage.
+  factory AppDatabase.open() => AppDatabase(driftDatabase(name: 'moneylens'));
 
   /// Bump on every schema change, add a step in `migrations/`, and dump the
   /// new schema (see README "Database migrations").
@@ -76,14 +56,8 @@ class AppDatabase extends _$AppDatabase {
   );
 }
 
-/// The database of whoever is signed in. It is replaced (and the old one
-/// closed) when the user changes, which rebuilds everything that reads it,
-/// so one account's data is never shown to another.
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
-  final userId = ref.watch(sessionProvider.select((s) => s.user?.id));
-  final db = userId == null
-      ? AppDatabase.signedOut()
-      : AppDatabase.openFor(userId);
+  final db = AppDatabase.open();
   ref.onDispose(db.close);
   return db;
 });
