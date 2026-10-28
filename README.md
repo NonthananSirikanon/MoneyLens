@@ -78,6 +78,14 @@ lib/
 - **Raw OCR text** is not persisted (`scan_records.raw_text` stays null) until a retention policy exists (DATABASE.md §9).
 - **Default categories** are seeded with stable IDs using `INSERT OR IGNORE`, so seeding is idempotent.
 
+## UI and demo data
+
+The screens implement `design/mockups/prototype.html` using the design system in `design/mockups/index.html`, built on Forui. Tokens and text styles are in `lib/app/theme/`, and the shared widgets (`Ml*`) are in `lib/core/widgets/`.
+
+**The UI currently runs on mock data.** `lib/demo/` holds an in-memory store seeded with the prototype's data, plus simulated OCR, camera, gallery, permissions and CSV export. The Drift repositories and `SlipImportPipeline` are unchanged, but no screen uses them yet. To connect real data, point the feature `application/*_view_providers.dart` files and `EntryFormController` at the repositories (this needs update/delete transaction, create category and account balances first).
+
+Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|emptyTx|loading>`. Strings live in `lib/l10n/app_th.arb` (Thai, copied from the prototype) and `app_en.arb`; Settings → ภาษา switches the language.
+
 ## Database migrations
 
 The schema is at version 1, and its snapshot is in `drift_schemas/`. See [lib/infrastructure/database/migrations/README.md](lib/infrastructure/database/migrations/README.md). In short: bump `schemaVersion`, run `dart run drift_dev make-migrations`, write the step, and test it.

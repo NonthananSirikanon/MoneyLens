@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:forui/forui.dart';
 
 import '../core/widgets/async_states.dart';
+import '../core/widgets/ml_overlays.dart';
 import '../l10n/app_localizations.dart';
+import 'app_preferences.dart';
 import 'providers.dart';
 import 'router.dart';
 import 'theme/app_theme.dart';
@@ -13,20 +16,29 @@ class MoneyLensApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(appPreferencesProvider.select((p) => p.locale));
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.material(),
       routerConfig: ref.watch(routerProvider),
+      locale: locale,
       // Thai is listed first so it is the fallback locale.
       supportedLocales: const [Locale('th'), Locale('en')],
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        FLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      builder: (context, child) => _StartupGate(child: child!),
+      builder: (context, child) => FTheme(
+        data: AppTheme.light,
+        child: FToaster(
+          key: mlToasterKey,
+          child: _StartupGate(child: child!),
+        ),
+      ),
     );
   }
 }
@@ -44,13 +56,11 @@ class _StartupGate extends ConsumerWidget {
         .watch(appStartupProvider)
         .when(
           data: (_) => child,
-          loading: () => const Material(child: LoadingView()),
-          error: (_, _) => Material(
-            child: ErrorView(
-              message: l10n.startupError,
-              retryLabel: l10n.retry,
-              onRetry: () => ref.invalidate(appStartupProvider),
-            ),
+          loading: () => const LoadingView(),
+          error: (_, _) => ErrorView(
+            message: l10n.startupError,
+            retryLabel: l10n.retry,
+            onRetry: () => ref.invalidate(appStartupProvider),
           ),
         );
   }

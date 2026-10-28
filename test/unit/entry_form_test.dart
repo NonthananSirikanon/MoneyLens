@@ -1,0 +1,177 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:moneylens/core/dates/clock.dart';
+import 'package:moneylens/core/dates/reporting_time_zone.dart';
+import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/features/slip_import/domain/scan_status.dart';
+import 'package:moneylens/features/transactions/application/entry_form.dart';
+import 'package:moneylens/features/transactions/domain/transaction_type.dart';
+
+import '../support/test_support.dart';
+
+void main() {
+  final now = ReportingTimeZone.bangkok.toUtc(2026, 10, 24, 10, 45);
+
+  ProviderContainer container() {
+    final c = ProviderContainer(
+      overrides: [clockProvider.overrideWithValue(FixedClock(now))],
+    );
+    addTearDown(c.dispose);
+    return c;
+  }
+
+  group('validateEntry', () {
+    EntryDraft draft({
+      String amount = '120.00',
+      String merchant = 'Shop',
+      String? category = 'food',
+      TransactionType type = TransactionType.expense,
+    }) => EntryDraft(
+      mode: EntryMode.manual,
+      type: type,
+      amountText: amount,
+      date: DateTime.utc(2026, 10, 24),
+      hour: 12,
+      minute: 30,
+      merchant: merchant,
+      categoryId: category,
+      accountId: 'kbank',
+      destinationAccountId: 'scb',
+      note: '',
+    );
+
+    test('accepts grouped and plain amounts', () {
+      for (final amount in ['120', '120.5', '1,234.50', '25000']) {
+        expect(validateEntry(draft(amount: amount)), isEmpty, reason: amount);
+      }
+    });
+
+    test('rejects the OCR misread 1,20.00 as a format error', () {
+      expect(validateEntry(draft(amount: '1,20.00')), {
+        EntryField.amount: EntryError.amountFormat,
+      });
+    });
+
+    test('requires a positive amount', () {
+      expect(
+        validateEntry(draft(amount: ''))[EntryField.amount],
+        EntryError.amountRequired,
+      );
+      expect(
+        validateEntry(draft(amount: '0'))[EntryField.amount],
+        EntryError.amountRequired,
+      );
+    });
+
+    test('requires a category except for transfers', () {
+      expect(
+        validateEntry(draft(category: null))[EntryField.category],
+        EntryError.categoryRequired,
+      );
+      expect(
+        validateEntry(draft(category: null, type: TransactionType.transfer)),
+        isEmpty,
+      );
+    });
+
+    test('uses transfer wording for a missing transfer description', () {
+      expect(
+        validateEntry(
+          draft(merchant: ' ', type: TransactionType.transfer),
+        )[EntryField.merchant],
+        EntryError.transferDetailRequired,
+      );
+    });
+  });
+
+  group('EntryFormController', () {
+    test('a manual expense saves and lowers the account balance', () {
+      final c = container();
+      const args = ManualEntryArgs();
+      final before = c.read(demoStoreProvider).balanceOf('kbank');
+      final form = c.read(entryFormProvider(args).notifier);
+      form
+        ..setAmount('150')
+        ..setMerchant('Test shop');
+      final saved = form.save();
+
+      expect(saved, isNotNull);
+      final state = c.read(demoStoreProvider);
+      expect(state.balanceOf('kbank'), before - 15000);
+      expect(state.transaction(saved!.transactionId)!.categoryId, 'food');
+    });
+
+    test('a transfer to the same account cannot be saved', () {
+      final c = container();
+      const args = ManualEntryArgs(TransactionType.transfer);
+      final form = c.read(entryFormProvider(args).notifier);
+      form
+        ..setAmount('100')
+        ..setMerchant('Move')
+        ..setDestination('kbank');
+
+      expect(c.read(entryFormProvider(args)).sameAccount, isTrue);
+      expect(form.save(), isNull);
+    });
+
+    test('a transfer moves money without counting as income or expense', () {
+      final c = container();
+      const args = ManualEntryArgs(TransactionType.transfer);
+      final store = c.read(demoStoreProvider);
+      final total = store.totalBalance;
+      final from = store.balanceOf('kbank');
+      final to = store.balanceOf('truemoney');
+      final form = c.read(entryFormProvider(args).notifier);
+      form
+        ..setAmount('500')
+        ..setMerchant('Top up');
+      expect(form.save(), isNotNull);
+
+      final after = c.read(demoStoreProvider);
+      expect(after.balanceOf('kbank'), from - 50000);
+      expect(after.balanceOf('truemoney'), to + 50000);
+      expect(after.totalBalance, total);
+    });
+
+    test('reviewing the misread Starbucks slip needs two fixes', () {
+      final c = container();
+      const args = ScanEntryArgs('s1');
+      final form = c.read(entryFormProvider(args).notifier);
+      expect(c.read(entryFormProvider(args)).highlightCount, 2);
+
+      expect(form.save(), isNull);
+      expect(c.read(entryFormProvider(args)).errors, {
+        EntryField.amount: EntryError.amountFormat,
+        EntryField.category: EntryError.categoryRequired,
+      });
+
+      form
+        ..setAmount('120.00')
+        ..setCategory('food');
+      expect(c.read(entryFormProvider(args)).highlightCount, 0);
+      final saved = form.save();
+
+      expect(saved, isNotNull);
+      final state = c.read(demoStoreProvider);
+      expect(state.scan('s1')!.status, ScanStatus.confirmed);
+      expect(state.scan('s1')!.transactionId, saved!.transactionId);
+      expect(c.read(demoStoreProvider.notifier).pending.map((s) => s.id), [
+        's2',
+      ]);
+    });
+
+    test('editing keeps the transaction id and its slip', () {
+      final c = container();
+      const args = EditEntryArgs('tx-2');
+      final form = c.read(entryFormProvider(args).notifier);
+      expect(c.read(entryFormProvider(args)).amountText, '120.00');
+      form.setAmount('130');
+      final saved = form.save();
+
+      expect(saved!.transactionId, 'tx-2');
+      final t = c.read(demoStoreProvider).transaction('tx-2')!;
+      expect(t.amount.minor, 13000);
+      expect(t.attachmentPath, isNotNull);
+    });
+  });
+}

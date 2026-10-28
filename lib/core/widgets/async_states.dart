@@ -1,13 +1,32 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-/// Shared loading / empty / error placeholders so every screen presents
-/// these states consistently.
+import '../../app/theme/icons.dart';
+import '../../app/theme/text_styles.dart';
+import '../../app/theme/tokens.dart';
+import 'ml_button.dart';
+
+/// Shared loading / empty / error placeholders for whole-screen states such
+/// as app startup. Feature screens use the richer views in
+/// `ml_state_views.dart`.
 class LoadingView extends StatelessWidget {
   const LoadingView({super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      const Center(child: CircularProgressIndicator());
+  Widget build(BuildContext context) => const ColoredBox(
+    color: MlColors.bgApp,
+    child: Center(
+      child: Text(
+        'MoneyLens',
+        style: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontSize: 28,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1,
+          color: MlColors.textPrimary,
+        ),
+      ),
+    ),
+  );
 }
 
 class EmptyView extends StatelessWidget {
@@ -17,26 +36,23 @@ class EmptyView extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 48, color: theme.colorScheme.outline),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(MlSpace.xxl),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 28),
+          const SizedBox(height: MlSpace.sm),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: MlText.small.copyWith(color: MlColors.textSecondary),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class ErrorView extends StatelessWidget {
@@ -52,24 +68,42 @@ class ErrorView extends StatelessWidget {
   final String? retryLabel;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
+  Widget build(BuildContext context) => ColoredBox(
+    color: MlColors.bgApp,
+    child: Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(MlSpace.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: MlColors.errorSoft,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                MlIcons.database,
+                size: 26,
+                color: MlColors.amountExpense,
+              ),
+            ),
+            const SizedBox(height: MlSpace.md),
+            Text(message, textAlign: TextAlign.center, style: MlText.small),
             if (onRetry != null && retryLabel != null) ...[
-              const SizedBox(height: 16),
-              FilledButton.tonal(onPressed: onRetry, child: Text(retryLabel!)),
+              const SizedBox(height: MlSpace.lg),
+              MlButton(
+                label: retryLabel!,
+                icon: MlIcons.refreshCw,
+                height: 48,
+                expand: false,
+                onPressed: onRetry,
+              ),
             ],
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }

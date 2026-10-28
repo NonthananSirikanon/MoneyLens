@@ -10,7 +10,11 @@
   "summaryNet": "Net",
   "summaryTransfers": "{count, plural, =0{No transfers} =1{1 transfer (not counted)} other{{count} transfers (not counted)}}",
   "@summaryTransfers": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "recentTransactions": "Recent transactions",
   "transactionsEmpty": "No transactions yet",
@@ -29,14 +33,14 @@
   "scansTitle": "Imported slips",
   "scansEmpty": "No imported slips",
   "scanStatusQueued": "Waiting",
-  "scanStatusProcessing": "Processing",
+  "scanStatusProcessing": "Reading slip…",
   "scanStatusNeedsReview": "Needs review",
-  "scanStatusConfirmed": "Confirmed",
+  "scanStatusConfirmed": "Saved",
   "scanStatusDuplicate": "Possible duplicate",
-  "scanStatusFailed": "Failed",
+  "scanStatusFailed": "Couldn't read",
   "scanStatusDiscarded": "Discarded",
   "scanSourceCamera": "Camera",
-  "scanSourceGallery": "Photos",
+  "scanSourceGallery": "Gallery",
   "scanSourceShareSheet": "Share Sheet",
   "scanSourceDiscovery": "Detected",
   "failureUnsupportedFile": "This file is not a supported image.",
@@ -45,5 +49,505 @@
   "failureUnreadableImage": "The image could not be read.",
   "failureOcrUnavailable": "Text recognition is not available yet.",
   "failureExtractionFailed": "Transaction details could not be extracted.",
-  "failureGeneric": "Something went wrong. Please try again."
+  "failureGeneric": "Something went wrong. Please try again.",
+  "actionBack": "Back",
+  "actionClose": "Close",
+  "actionCancel": "Cancel",
+  "actionNext": "Next",
+  "actionRetry": "Try again",
+  "navHome": "Home",
+  "navAnalytics": "Analytics",
+  "navSettings": "Settings",
+  "navAdd": "Add transaction",
+  "typeExpense": "Expense",
+  "typeIncome": "Income",
+  "typeTransfer": "Transfer",
+  "typeAll": "All",
+  "transferCategoryName": "Transfer",
+  "soonTag": "Soon",
+  "testingTag": "In testing",
+  "hiddenAmount": "••••",
+  "hiddenBalance": "฿ ••••••",
+  "transfersExcludedNote": "Excludes transfers between accounts",
+  "slipOriginal": "Original slip",
+  "onboardingSkip": "Skip",
+  "onboardingStart": "Get started",
+  "onboardingTitle1": "Understand\nyour money",
+  "onboardingBody1": "Import transfer slips and receipts. The app reads the details and turns them into transactions for you.",
+  "onboardingTitle2": "Always review\nbefore saving",
+  "onboardingBody2": "What the app reads from a slip is only a draft. You can edit and confirm it every time; nothing is saved silently.",
+  "onboardingTitle3": "Your data stays\non your phone",
+  "onboardingBody3": "Works offline. Your financial data and slip images stay on this device and are never sent anywhere without telling you.",
+  "permissionTitle": "Let MoneyLens read your slips",
+  "permissionBody": "We only ask when you use a feature, and you can say no. You can always add transactions manually.",
+  "permissionCamera": "Camera",
+  "permissionCameraBody": "Photograph paper slips or another screen",
+  "permissionPhotos": "Photos",
+  "permissionPhotosBody": "Choose only the slips you want",
+  "permissionAuto": "Detect new slips automatically",
+  "permissionAutoBody": "Depends on iOS/Android",
+  "permissionAllow": "Allow and get started",
+  "permissionLater": "Maybe later",
+  "toastPermissionGranted": "Access allowed",
+  "uncategorized": "Uncategorized",
+  "addSheetTitle": "Add transaction",
+  "addOptionCamera": "Scan a slip",
+  "addOptionCameraSub": "Paper slip or another phone's screen",
+  "addOptionGallery": "Choose from Photos",
+  "addOptionGallerySub": "Pick several at once",
+  "addOptionManual": "Add manually",
+  "addOptionManualSub": "Expense, income or transfer",
+  "addOptionAuto": "Detect new slips automatically",
+  "addOptionAutoSub": "Depends on iOS/Android support",
+  "addSheetShareHint": "Or share slip images from your banking app into MoneyLens",
+  "toastFeatureTesting": "This feature is being tested",
+  "toastImportedPhotos": "Imported {count} photos, reading slips…",
+  "@toastImportedPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "greetingMorning": "Good morning",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "offlineTitle": "You're offline — everything still works",
+  "offlineBody": "Add, edit and browse as usual. Your data is on this device.",
+  "pendingSlipsTitle": "{count} slips waiting for review",
+  "@pendingSlipsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingSlipsBody": "Tap to check them before saving",
+  "totalBalance": "Total balance",
+  "toggleBalanceVisibility": "Hide or show balances",
+  "transfersExcludedShort": "Excludes transfers between accounts",
+  "quickScan": "Scan slip",
+  "quickManual": "Add manually",
+  "quickReport": "View report",
+  "recentTitle": "Recent transactions",
+  "seeAll": "See all",
+  "seeAllShort": "All",
+  "dailySpendTitle": "Daily spending",
+  "dailySpendDay": "{date}",
+  "@dailySpendDay": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "Today",
+  "topCategoriesTitle": "Top spending categories",
+  "topCategoryMeta": "{percent}% · {count} transactions",
+  "@topCategoryMeta": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transactionsTitle": "Transactions",
+  "searchPlaceholder": "Search merchants, notes…",
+  "categoryChip": "Category",
+  "filterByCategory": "Filter by category",
+  "allCategories": "All categories",
+  "clearFilter": "Clear filter",
+  "transferInfoTitle": "Transfers aren't counted as income or expenses",
+  "transferInfoBody": "They move money between your own accounts",
+  "loadErrorTitle": "Couldn't load transactions",
+  "loadErrorBody": "Your data is still safe. Try again,\nor restart the app if it keeps happening.",
+  "errorCode": "Code: {code}",
+  "@errorCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "noMatchesTitle": "No matching transactions",
+  "noMatchesBody": "Try another search or clear the filters",
+  "transactionsEmptyTitle": "No transactions yet",
+  "transactionsEmptyBody": "Start by scanning a slip or adding one manually",
+  "dayToday": "Today · {date}",
+  "@dayToday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dayYesterday": "Yesterday · {date}",
+  "@dayYesterday": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "detailDate": "Date",
+  "detailCategory": "Category",
+  "detailAccount": "Account",
+  "detailFrom": "From account",
+  "detailTo": "To account",
+  "detailNote": "Note",
+  "detailSource": "Source",
+  "sourceManual": "Added manually",
+  "sourceSlip": "Slip · {source}",
+  "@sourceSlip": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "slipTapToView": "Tap to view full screen",
+  "actionDelete": "Delete",
+  "actionEdit": "Edit",
+  "deleteTitle": "Delete this transaction?",
+  "deleteBody": "The transaction and its attached slip will be deleted permanently. This can't be undone.",
+  "deleteConfirm": "Delete permanently",
+  "toastDeleted": "Transaction deleted",
+  "entryTitleAdd": "Add transaction",
+  "entryTitleEdit": "Edit transaction",
+  "entryTitleReview": "Review transaction",
+  "entrySaveAdd": "Save transaction",
+  "entrySaveEdit": "Save changes",
+  "entrySaveTransfer": "Save transfer",
+  "entrySaveReview": "Confirm and save",
+  "entryDiscard": "Discard",
+  "entryAmount": "Amount",
+  "entryTime": "Time",
+  "entryMerchant": "Merchant / payee",
+  "entryPayer": "Payer / source",
+  "entryTransferDetail": "Details",
+  "entryMerchantPlaceholder": "e.g. Pa Sri's chicken rice",
+  "entryTransferPlaceholder": "e.g. Top up wallet",
+  "entryOptional": "Optional",
+  "entrySameAccount": "Source and destination must be different accounts",
+  "entryTransferNoteTitle": "Not counted as income or expense",
+  "entryTransferNoteBody": "Only the source balance goes down and the destination goes up",
+  "pickCategory": "Choose a category",
+  "pickAccount": "Choose an account",
+  "viewSlip": "View slip",
+  "actionDone": "Done",
+  "reviewHighlightTitle": "Check {count} highlighted fields",
+  "@reviewHighlightTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewHighlightBody": "OCR results are only a draft. You can edit every field before saving.",
+  "reviewAllReadTitle": "Every field was read",
+  "reviewAllReadBody": "Please check once more before saving",
+  "fieldVerified": "Read clearly",
+  "fieldUncertain": "OCR isn't sure — please check",
+  "fieldMissing": "Required before saving",
+  "errorAmountFormat": "Invalid amount format, e.g. 120.00",
+  "errorAmountRequired": "Enter an amount greater than 0",
+  "errorMerchantRequired": "Enter a merchant or payee",
+  "errorTransferDetailRequired": "Enter transfer details",
+  "toastEditSaved": "Changes saved",
+  "toastSlipDiscarded": "Slip discarded",
+  "transactionCount": "{count} transactions",
+  "@transactionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountSavings": "Savings",
+  "accountWallet": "Wallet",
+  "accountKindWallet": "e-Wallet",
+  "queueTitle": "Imported slips · {count}",
+  "@queueTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "queueNotice": "Every slip is reviewed before saving — nothing is saved automatically",
+  "queueActionReview": "Review",
+  "queueActionCompare": "Compare",
+  "queueActionRetry": "Retry",
+  "queueDuplicateTitle": "Duplicate slip · ฿{amount}",
+  "@queueDuplicateTitle": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "scansEmptyBody": "Scan or choose a slip to get started",
+  "cameraTitle": "Scan slip",
+  "cameraHint": "Fit the slip inside the frame · reads automatically when sharp",
+  "cameraGallery": "Photos",
+  "cameraShutter": "Take photo",
+  "cameraFlash": "Flash",
+  "previewTitle": "Check photo",
+  "previewImage": "Slip photo",
+  "previewQuestion": "Is the photo sharp with the full amount visible?",
+  "previewRetake": "Retake",
+  "previewUse": "Use photo",
+  "processingTitle": "Reading slip",
+  "processingStepFile": "Checking the image file",
+  "processingStepRecord": "Creating the import record",
+  "processingStepOcr": "Reading text (OCR)…",
+  "processingStepExtract": "Extracting amount, date and merchant",
+  "processingStepDuplicate": "Checking for duplicates",
+  "processingLeaveNote": "You can close this screen — the slip stays in the queue",
+  "processingGoQueue": "Go to slip queue",
+  "duplicateTitle": "Possible duplicate",
+  "duplicateBannerTitle": "A very similar transaction exists",
+  "duplicateBannerBody": "Amount, date and reference match",
+  "duplicateNew": "New slip",
+  "duplicateSaved": "Already saved",
+  "duplicateMerchant": "Merchant",
+  "duplicateAmount": "Amount",
+  "duplicateReference": "Reference",
+  "duplicateMatch": "Matches",
+  "duplicateMatchHint": "if you really paid twice, you can still save it",
+  "duplicateDiscard": "Discard this slip (duplicate)",
+  "duplicateKeep": "Not a duplicate, continue",
+  "toastDuplicateDiscarded": "Duplicate slip discarded",
+  "ocrFailedTitle": "Couldn't read slip",
+  "ocrFailedHeading": "The details couldn't be read",
+  "ocrFailedBody": "The photo may be blurry or dark, or the slip format isn't supported yet",
+  "ocrTipsTitle": "Try this",
+  "ocrTipLight": "Shoot in good light without shadows",
+  "ocrTipVisible": "Keep the amount and date fully visible",
+  "ocrTipScreenshot": "Use a screenshot from your banking app instead",
+  "ocrRetry": "Read again",
+  "ocrManual": "Enter manually",
+  "ocrDelete": "Delete slip",
+  "toastSlipDeleted": "Slip deleted",
+  "savedTitle": "Saved",
+  "savedView": "View transaction",
+  "savedNext": "Review next slip ({count})",
+  "@savedNext": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "savedHome": "Back to Home",
+  "deniedCameraTitle": "MoneyLens can't access the camera yet",
+  "deniedPhotosTitle": "MoneyLens can't access your photos yet",
+  "deniedBody": "Allow access in Settings, or use another way instead",
+  "deniedOpenSettings": "Open Settings",
+  "deniedAltGallery": "Choose from Photos",
+  "deniedAltCamera": "Scan with the camera",
+  "toastPermissionOpened": "Access turned on",
+  "analyticsTitle": "Analytics",
+  "analyticsTabBreakdown": "By category",
+  "analyticsTabTrend": "Trend",
+  "analyticsTransfersExcluded": "Excludes transfers between accounts {amount}",
+  "@analyticsTransfersExcluded": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsTotalExpense": "Total expenses",
+  "analyticsTotalIncome": "Total income",
+  "analyticsEmptyTitle": "No data for this period",
+  "analyticsEmptyBody": "Try another period, or add transactions for this month",
+  "analyticsChangePeriod": "Change period",
+  "analyticsAvgIncome": "Average income",
+  "analyticsAvgExpense": "Average expenses",
+  "analyticsIncomeVsExpense": "Income vs expenses",
+  "analyticsSixMonths": "6 months",
+  "analyticsNet": "Net {month}",
+  "@analyticsNet": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsOverspend": "{month}: spent {amount} more than earned",
+  "@analyticsOverspend": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsMonthBar": "{month}: income {income}, expenses {expense}",
+  "@analyticsMonthBar": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "income": {
+        "type": "String"
+      },
+      "expense": {
+        "type": "String"
+      }
+    }
+  },
+  "categoriesTitle": "Categories",
+  "addCategory": "Add category",
+  "newCategoryTitle": "New category",
+  "categoryNameLabel": "Category name",
+  "categoryNamePlaceholder": "e.g. Pets",
+  "categoryIconLabel": "Icon",
+  "categoryColorLabel": "Background colour",
+  "categoryColorOption": "Colour {index}",
+  "@categoryColorOption": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "saveCategory": "Save category",
+  "toastCategoryAdded": "Added category \"{name}\"",
+  "@toastCategoryAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "accountsTitle": "Accounts",
+  "accountsTotal": "Total across accounts",
+  "accountsCount": "{count} accounts · hidden accounts excluded",
+  "@accountsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "accountsGroupBank": "Banks",
+  "accountsGroupOther": "e-Wallets and cash",
+  "addAccount": "Add account",
+  "accountsMaskNote": "Account numbers are only shown masked",
+  "toastAccountEdit": "{name} · edit account",
+  "@toastAccountEdit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "newAccountTitle": "New account",
+  "accountKindBank": "Bank",
+  "accountKindEwallet": "e-Wallet",
+  "accountKindCash": "Cash",
+  "accountNameLabel": "Account name",
+  "accountNamePlaceholder": "e.g. Bangkok Bank savings",
+  "accountLast4Label": "Last 4 digits (optional)",
+  "accountLast4Hint": "Only the last 4 digits are kept, to help match slips",
+  "accountOpeningLabel": "Opening balance",
+  "saveAccount": "Save account",
+  "toastAccountAdded": "Added account \"{name}\"",
+  "@toastAccountAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTitle": "Settings",
+  "settingsProfile": "Profile",
+  "settingsGroupFinance": "Finance",
+  "settingsGroupDisplay": "Display",
+  "settingsGroupData": "Data and security",
+  "settingsImportedSlips": "Imported slips",
+  "settingsTheme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "settingsLanguage": "Language",
+  "languageName": "English",
+  "settingsCurrency": "Currency",
+  "toastCurrencyOnly": "Only THB is supported for now",
+  "settingsDataExport": "Data and export",
+  "settingsPrivacy": "Privacy and security",
+  "settingsNotifications": "Notifications",
+  "settingsAbout": "About MoneyLens",
+  "settingsVersion": "MoneyLens · version {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "p1Tag": "P1",
+  "dataTitle": "Data and export",
+  "dataGroupCsv": "Export as CSV",
+  "dataCsvWarning": "The file contains sensitive financial data — store and share it carefully",
+  "dataRange": "Period",
+  "toastPickRange": "Choose a period",
+  "dataExportCsv": "Export CSV",
+  "dataExportCount": "{count} transactions",
+  "@dataExportCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "toastExported": "Exported {file}",
+  "@toastExported": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "dataGroupSlips": "Stored slip images",
+  "dataSlipsOnDevice": "Slip images on this device",
+  "dataSlipsSize": "{count} images · {size}",
+  "@dataSlipsSize": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "dataAutoDelete": "Auto-delete images of saved slips",
+  "dataAutoDeleteSub": "After 30 days",
+  "dataWipe": "Delete all data",
+  "dataWipeSub": "Permanently delete transactions, accounts and slip images",
+  "wipeTitle": "Delete all data?",
+  "wipeBody": "All transactions, accounts and slip images on this device will be deleted permanently. This can't be undone.",
+  "wipeConfirm": "Delete everything",
+  "toastWiped": "All data deleted",
+  "securityTitle": "Privacy",
+  "securityGroupAccess": "Access",
+  "securityFaceId": "Lock the app with Face ID",
+  "securityFaceIdSub": "Verify every time the app opens",
+  "securityHideBalances": "Hide balances on Home",
+  "securityGroupPermissions": "App permissions",
+  "securityCamera": "Camera access",
+  "securityPhotos": "Photo access",
+  "permissionAllowed": "Allowed",
+  "permissionDenied": "Not allowed",
+  "permissionLimited": "Selected photos",
+  "toastPermissionRevoked": "Access turned off (simulated)",
+  "securityLocalNote": "Data stays on this device only · slip content and account numbers are never written to logs"
 }

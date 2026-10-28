@@ -26,4 +26,16 @@ class MoneyFormatter {
     );
     return '$sign$symbol$major${numberFormat.symbols.DECIMAL_SEP}$fraction';
   }
+
+  /// Rounded to whole major units, e.g. `฿12,350`, as used in summaries and
+  /// charts. Rounds half away from zero on the integer minor value.
+  String compact(Money money) {
+    final currency = money.currency;
+    final abs = money.minor.abs();
+    final half = currency.minorPerMajor ~/ 2;
+    final major = (abs + half) ~/ currency.minorPerMajor;
+    final sign = money.isNegative && major > 0 ? '-' : '';
+    final grouped = NumberFormat.decimalPattern(locale).format(major);
+    return '$sign${currency.symbol}$grouped';
+  }
 }
