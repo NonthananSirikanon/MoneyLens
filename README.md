@@ -119,7 +119,7 @@ Notes and limits:
 
 - Supabase's own rate limits are the real protection against password guessing; the app only maps the "too many requests" response to a message. If Supabase rejects the internal email domain when registering, change `Username.emailHost`.
 - If the profile cannot be read (offline), a returning user is let in so that data on the device stays reachable; the birth-date check repeats on the next start.
-- The local database is **not yet per user**: signing out keeps the device data, and a different account signing in on the same device sees it. Per-user data comes with sync.
+- **Data on the device is per account.** Each user has their own database file (`moneylens_<user id>.sqlite`), so signing in as someone else shows none of the previous account's data; signing out keeps the file. The shared database from before accounts existed goes to the first account that signs in after the update. While signed out the app uses an empty in-memory database. Files are not encrypted, and "delete all data" only clears the signed-in account.
 
 ## Database migrations
 
