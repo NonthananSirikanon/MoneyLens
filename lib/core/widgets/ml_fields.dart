@@ -211,6 +211,8 @@ class MlInput extends StatelessWidget {
     this.focusNode,
     this.semanticLabel,
     this.textInputAction,
+    this.autofocus = false,
+    this.autofillHints,
   });
 
   final TextEditingController controller;
@@ -223,6 +225,8 @@ class MlInput extends StatelessWidget {
   final FocusNode? focusNode;
   final String? semanticLabel;
   final TextInputAction? textInputAction;
+  final bool autofocus;
+  final Iterable<String>? autofillHints;
 
   @override
   Widget build(BuildContext context) {
@@ -242,6 +246,8 @@ class MlInput extends StatelessWidget {
           inputFormatters: inputFormatters,
           textAlign: textAlign,
           textInputAction: textInputAction,
+          autofocus: autofocus,
+          autofillHints: autofillHints,
           style: textStyle,
           cursorColor: MlColors.inverse,
           decoration: InputDecoration.collapsed(

@@ -2173,6 +2173,396 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Data stays on this device only · slip content and account numbers are never written to logs'**
   String get securityLocalNote;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started with\nMoneyLens'**
+  String get authLoginTitle;
+
+  /// No description provided for @authLoginBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to keep your data safe'**
+  String get authLoginBody;
+
+  /// No description provided for @authLocalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your financial data and slip images stay on your phone'**
+  String get authLocalNote;
+
+  /// No description provided for @authWithPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with phone number'**
+  String get authWithPhone;
+
+  /// No description provided for @authWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get authWithGoogle;
+
+  /// No description provided for @authTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you accept the Terms of Use and Privacy Policy'**
+  String get authTerms;
+
+  /// No description provided for @authPhoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get authPhoneTitle;
+
+  /// No description provided for @authPhoneHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your mobile number'**
+  String get authPhoneHeading;
+
+  /// No description provided for @authPhoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll text a 6-digit code to confirm it\'s you'**
+  String get authPhoneBody;
+
+  /// No description provided for @authPhoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get authPhoneLabel;
+
+  /// No description provided for @authPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No need to type the leading 0'**
+  String get authPhoneHint;
+
+  /// No description provided for @authPhoneError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)'**
+  String get authPhoneError;
+
+  /// No description provided for @authSendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get authSendCode;
+
+  /// No description provided for @authPhonePrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'We only use your number to sign you in'**
+  String get authPhonePrivacy;
+
+  /// No description provided for @authOtpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify code'**
+  String get authOtpTitle;
+
+  /// No description provided for @authOtpHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code'**
+  String get authOtpHeading;
+
+  /// No description provided for @authOtpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to {phone}'**
+  String authOtpSentTo(String phone);
+
+  /// No description provided for @authOtpField.
+  ///
+  /// In en, this message translates to:
+  /// **'6-digit code'**
+  String get authOtpField;
+
+  /// No description provided for @authChangeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Change number'**
+  String get authChangeNumber;
+
+  /// No description provided for @authOtpWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong code, {count} tries left'**
+  String authOtpWrong(int count);
+
+  /// No description provided for @authOtpLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong codes. Try again in {time}'**
+  String authOtpLocked(String time);
+
+  /// No description provided for @authOtpExpiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The code has expired'**
+  String get authOtpExpiredTitle;
+
+  /// No description provided for @authOtpExpiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new code to get a fresh one'**
+  String get authOtpExpiredBody;
+
+  /// No description provided for @authResendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {time}'**
+  String authResendIn(String time);
+
+  /// No description provided for @authResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get authResend;
+
+  /// No description provided for @authNewCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new code'**
+  String get authNewCode;
+
+  /// No description provided for @authConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get authConfirm;
+
+  /// No description provided for @authVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking the code…'**
+  String get authVerifying;
+
+  /// No description provided for @authErrTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please try again later'**
+  String get authErrTooMany;
+
+  /// No description provided for @authErrNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the server. Check your connection and try again'**
+  String get authErrNetwork;
+
+  /// No description provided for @authErrUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again'**
+  String get authErrUnknown;
+
+  /// No description provided for @authBirthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details'**
+  String get authBirthTitle;
+
+  /// No description provided for @authBirthEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit birth date'**
+  String get authBirthEditTitle;
+
+  /// No description provided for @authBirthHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your date of birth'**
+  String get authBirthHeading;
+
+  /// No description provided for @authBirthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Used as your profile information and never shown to others'**
+  String get authBirthBody;
+
+  /// No description provided for @authDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get authDay;
+
+  /// No description provided for @authMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get authMonth;
+
+  /// No description provided for @authYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year (B.E.)'**
+  String get authYear;
+
+  /// No description provided for @authDayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'DD'**
+  String get authDayHint;
+
+  /// No description provided for @authYearHint.
+  ///
+  /// In en, this message translates to:
+  /// **'2540'**
+  String get authYearHint;
+
+  /// No description provided for @authPickMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose month'**
+  String get authPickMonth;
+
+  /// No description provided for @authPickMonthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth month'**
+  String get authPickMonthTitle;
+
+  /// No description provided for @authAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age {years}'**
+  String authAge(int years);
+
+  /// No description provided for @authYearNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the Buddhist year, e.g. 2540'**
+  String get authYearNote;
+
+  /// No description provided for @authBirthIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in day, month and year'**
+  String get authBirthIncomplete;
+
+  /// No description provided for @authBirthYearFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a 4-digit Buddhist year, e.g. 2540'**
+  String get authBirthYearFormat;
+
+  /// No description provided for @authBirthNoSuch.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no {day} {month} in {year}'**
+  String authBirthNoSuch(int day, String month, String year);
+
+  /// No description provided for @authBirthFuture.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth can\'t be after today'**
+  String get authBirthFuture;
+
+  /// No description provided for @authBirthSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Check your connection and try again'**
+  String get authBirthSaveFailed;
+
+  /// No description provided for @authContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get authContinue;
+
+  /// No description provided for @authSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get authSave;
+
+  /// No description provided for @toastBirthSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Birth date saved'**
+  String get toastBirthSaved;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My account'**
+  String get accountTitle;
+
+  /// No description provided for @accountViaGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in with Google'**
+  String get accountViaGoogle;
+
+  /// No description provided for @accountViaPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in with phone number'**
+  String get accountViaPhone;
+
+  /// No description provided for @accountEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get accountEmail;
+
+  /// No description provided for @accountPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get accountPhone;
+
+  /// No description provided for @accountBirth.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth'**
+  String get accountBirth;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get accountSignOut;
+
+  /// No description provided for @accountSignOutSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Data on this device stays'**
+  String get accountSignOutSub;
+
+  /// No description provided for @signOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get signOutTitle;
+
+  /// No description provided for @signOutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data on this device stays, but you\'ll need to sign in again to keep using the app.'**
+  String get signOutBody;
+
+  /// No description provided for @toastSignedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out'**
+  String get toastSignedOut;
+
+  /// No description provided for @settingsAccountSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Account and profile'**
+  String get settingsAccountSub;
+
+  /// No description provided for @profileFallbackName.
+  ///
+  /// In en, this message translates to:
+  /// **'there'**
+  String get profileFallbackName;
 }
 
 class _AppLocalizationsDelegate

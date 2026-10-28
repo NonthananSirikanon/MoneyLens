@@ -11,9 +11,10 @@ import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../demo/demo_seed.dart';
 import '../../../demo/demo_store.dart';
 import '../../../l10n/l10n.dart';
+import '../../auth/application/session.dart';
+import '../../auth/presentation/account_screen.dart';
 
 /// App version shown in Settings (pubspec `version`).
 const appVersion = '0.1.0';
@@ -25,6 +26,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final session = ref.watch(sessionProvider);
     final prefs = ref.watch(appPreferencesProvider);
     final prefsController = ref.read(appPreferencesProvider.notifier);
     final accounts = ref.watch(
@@ -45,9 +47,10 @@ class SettingsScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, MlSpace.navClearance),
           children: [
             MlLargeTitle(l10n.settingsTitle),
-            // The profile card has no action in the prototype.
             MlCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              semanticLabel: l10n.accountTitle,
+              onPressed: () => context.push(AppRoutes.account),
               child: Row(
                 children: [
                   Container(
@@ -59,7 +62,11 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      demoProfileFullName.characters.first,
+                      accountName(
+                            session.user,
+                            fallback: l10n.profileFallbackName,
+                          ).characters.firstOrNull ??
+                          '',
                       style: MlText.h2.copyWith(fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -69,13 +76,18 @@ class SettingsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          demoProfileFullName,
+                          accountName(
+                            session.user,
+                            fallback: l10n.profileFallbackName,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: MlText.body.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
-                          l10n.settingsProfile,
+                          l10n.settingsAccountSub,
                           style: MlText.meta.copyWith(
                             fontWeight: FontWeight.w400,
                             color: MlColors.textSecondary,
@@ -83,6 +95,11 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  ),
+                  const Icon(
+                    MlIcons.chevronRight,
+                    size: 18,
+                    color: MlColors.textTertiary,
                   ),
                 ],
               ),

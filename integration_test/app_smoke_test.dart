@@ -1,21 +1,40 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:moneylens/app/app.dart';
 
 /// Launches the real app on a device or simulator: real SQLite startup and
-/// navigation through onboarding and every tab. Screens use the in-memory
-/// demo store (lib/demo); camera and photo pickers are simulated and still
-/// need manual device testing.
+/// navigation through sign-in and every tab. Sign-in uses the in-memory fake
+/// (OTP 123456) because no Supabase key is passed; the real SMS and Google
+/// flows need manual testing. Camera and photo pickers are simulated.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('onboarding leads to Home and every tab renders', (tester) async {
+  testWidgets('sign in, then every tab renders', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: MoneyLensApp()));
     await tester.pump(const Duration(seconds: 2));
 
-    // Thai is the default locale.
+    // Thai is the default locale. Onboarding leads to sign-in.
     await tester.tap(find.text('ข้าม'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('ดำเนินการต่อด้วยเบอร์โทร'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.enterText(find.byType(TextField).first, '0812345678');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('ส่งรหัส OTP'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.enterText(find.byType(TextField).first, '123456');
+    await tester.pump(const Duration(seconds: 1));
+
+    // Birth date, then permissions.
+    await tester.enterText(find.byType(TextField).at(0), '14');
+    await tester.enterText(find.byType(TextField).at(1), '2540');
+    await tester.tap(find.text('เลือกเดือน').first);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('มี.ค.'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('ดำเนินการต่อ'));
     await tester.pump(const Duration(seconds: 1));
     await tester.tap(find.text('อนุญาตและเริ่มใช้งาน'));
     await tester.pump(const Duration(seconds: 1));

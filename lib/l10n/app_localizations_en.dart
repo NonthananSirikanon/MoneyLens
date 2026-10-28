@@ -1138,4 +1138,218 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get securityLocalNote =>
       'Data stays on this device only · slip content and account numbers are never written to logs';
+
+  @override
+  String get authLoginTitle => 'Get started with\nMoneyLens';
+
+  @override
+  String get authLoginBody => 'Sign in to keep your data safe';
+
+  @override
+  String get authLocalNote =>
+      'Your financial data and slip images stay on your phone';
+
+  @override
+  String get authWithPhone => 'Continue with phone number';
+
+  @override
+  String get authWithGoogle => 'Continue with Google';
+
+  @override
+  String get authTerms =>
+      'By continuing, you accept the Terms of Use and Privacy Policy';
+
+  @override
+  String get authPhoneTitle => 'Phone number';
+
+  @override
+  String get authPhoneHeading => 'Enter your mobile number';
+
+  @override
+  String get authPhoneBody => 'We\'ll text a 6-digit code to confirm it\'s you';
+
+  @override
+  String get authPhoneLabel => 'Mobile number';
+
+  @override
+  String get authPhoneHint => 'No need to type the leading 0';
+
+  @override
+  String get authPhoneError =>
+      'Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)';
+
+  @override
+  String get authSendCode => 'Send code';
+
+  @override
+  String get authPhonePrivacy => 'We only use your number to sign you in';
+
+  @override
+  String get authOtpTitle => 'Verify code';
+
+  @override
+  String get authOtpHeading => 'Enter the 6-digit code';
+
+  @override
+  String authOtpSentTo(String phone) {
+    return 'Sent to $phone';
+  }
+
+  @override
+  String get authOtpField => '6-digit code';
+
+  @override
+  String get authChangeNumber => 'Change number';
+
+  @override
+  String authOtpWrong(int count) {
+    return 'Wrong code, $count tries left';
+  }
+
+  @override
+  String authOtpLocked(String time) {
+    return 'Too many wrong codes. Try again in $time';
+  }
+
+  @override
+  String get authOtpExpiredTitle => 'The code has expired';
+
+  @override
+  String get authOtpExpiredBody => 'Send a new code to get a fresh one';
+
+  @override
+  String authResendIn(String time) {
+    return 'Resend code in $time';
+  }
+
+  @override
+  String get authResend => 'Resend code';
+
+  @override
+  String get authNewCode => 'Send a new code';
+
+  @override
+  String get authConfirm => 'Confirm';
+
+  @override
+  String get authVerifying => 'Checking the code…';
+
+  @override
+  String get authErrTooMany => 'Too many requests. Please try again later';
+
+  @override
+  String get authErrNetwork =>
+      'Couldn\'t reach the server. Check your connection and try again';
+
+  @override
+  String get authErrUnknown => 'Something went wrong. Please try again';
+
+  @override
+  String get authBirthTitle => 'Your details';
+
+  @override
+  String get authBirthEditTitle => 'Edit birth date';
+
+  @override
+  String get authBirthHeading => 'Your date of birth';
+
+  @override
+  String get authBirthBody =>
+      'Used as your profile information and never shown to others';
+
+  @override
+  String get authDay => 'Day';
+
+  @override
+  String get authMonth => 'Month';
+
+  @override
+  String get authYear => 'Year (B.E.)';
+
+  @override
+  String get authDayHint => 'DD';
+
+  @override
+  String get authYearHint => '2540';
+
+  @override
+  String get authPickMonth => 'Choose month';
+
+  @override
+  String get authPickMonthTitle => 'Birth month';
+
+  @override
+  String authAge(int years) {
+    return 'Age $years';
+  }
+
+  @override
+  String get authYearNote => 'Use the Buddhist year, e.g. 2540';
+
+  @override
+  String get authBirthIncomplete => 'Fill in day, month and year';
+
+  @override
+  String get authBirthYearFormat => 'Enter a 4-digit Buddhist year, e.g. 2540';
+
+  @override
+  String authBirthNoSuch(int day, String month, String year) {
+    return 'There is no $day $month in $year';
+  }
+
+  @override
+  String get authBirthFuture => 'Date of birth can\'t be after today';
+
+  @override
+  String get authBirthSaveFailed =>
+      'Couldn\'t save. Check your connection and try again';
+
+  @override
+  String get authContinue => 'Continue';
+
+  @override
+  String get authSave => 'Save';
+
+  @override
+  String get toastBirthSaved => 'Birth date saved';
+
+  @override
+  String get accountTitle => 'My account';
+
+  @override
+  String get accountViaGoogle => 'Signed in with Google';
+
+  @override
+  String get accountViaPhone => 'Signed in with phone number';
+
+  @override
+  String get accountEmail => 'Email';
+
+  @override
+  String get accountPhone => 'Phone number';
+
+  @override
+  String get accountBirth => 'Date of birth';
+
+  @override
+  String get accountSignOut => 'Sign out';
+
+  @override
+  String get accountSignOutSub => 'Data on this device stays';
+
+  @override
+  String get signOutTitle => 'Sign out?';
+
+  @override
+  String get signOutBody =>
+      'Your data on this device stays, but you\'ll need to sign in again to keep using the app.';
+
+  @override
+  String get toastSignedOut => 'Signed out';
+
+  @override
+  String get settingsAccountSub => 'Account and profile';
+
+  @override
+  String get profileFallbackName => 'there';
 }

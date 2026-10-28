@@ -22,7 +22,14 @@ import '../features/transactions/application/entry_form.dart';
 import '../features/transactions/presentation/entry_screen.dart';
 import '../features/transactions/presentation/transaction_detail_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
+import '../features/auth/application/session.dart';
+import '../features/auth/presentation/account_screen.dart';
+import '../features/auth/presentation/birth_screen.dart';
+import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/otp_screen.dart';
+import '../features/auth/presentation/phone_screen.dart';
 import 'app_preferences.dart';
+import 'auth_redirect.dart';
 import 'shell/app_shell.dart';
 
 /// Route paths. Flows map the prototype's navigation verbs onto GoRouter:
@@ -42,6 +49,11 @@ abstract final class AppRoutes {
   static const accounts = '/accounts';
   static const dataSettings = '/data';
   static const securitySettings = '/security';
+  static const login = '/login';
+  static const phone = '/phone';
+  static const otp = '/otp';
+  static const birth = '/birth';
+  static const account = '/account';
 
   static String transaction(String id) => '/tx/$id';
   static String processing(String scanId) => '/processing/$scanId';
@@ -57,6 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Re-run the onboarding redirect whenever preferences change.
   final refresh = ValueNotifier(0);
   ref.listen(appPreferencesProvider, (_, _) => refresh.value++);
+  ref.listen(sessionProvider, (_, _) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
   GoRoute page(String path, Widget Function(GoRouterState s) build) => GoRoute(
@@ -67,18 +80,14 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: ref.read(appPreferencesProvider).onboardingDone
-        ? AppRoutes.home
-        : AppRoutes.onboarding,
+    // The redirect sends signed-out users to onboarding / sign-in.
+    initialLocation: AppRoutes.home,
     refreshListenable: refresh,
-    redirect: (context, state) {
-      final done = ref.read(appPreferencesProvider).onboardingDone;
-      final loc = state.matchedLocation;
-      final inOnboarding =
-          loc == AppRoutes.onboarding || loc == AppRoutes.permissions;
-      if (!done && !inOnboarding) return AppRoutes.onboarding;
-      return null;
-    },
+    redirect: (context, state) => authRedirect(
+      uri: state.uri,
+      status: ref.read(sessionProvider).status,
+      onboardingDone: ref.read(appPreferencesProvider).onboardingDone,
+    ),
     routes: [
       page(AppRoutes.onboarding, (_) => const OnboardingScreen()),
       page(AppRoutes.permissions, (_) => const PermissionsScreen()),
@@ -135,6 +144,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       page(AppRoutes.categories, (_) => const CategoriesScreen()),
       page(AppRoutes.accounts, (_) => const AccountsScreen()),
+      page(AppRoutes.login, (_) => const LoginScreen()),
+      page(AppRoutes.phone, (_) => const PhoneScreen()),
+      page(AppRoutes.otp, (_) => const OtpScreen()),
+      page(
+        AppRoutes.birth,
+        (s) => BirthScreen(edit: s.uri.queryParameters['edit'] == '1'),
+      ),
+      page(AppRoutes.account, (_) => const AccountScreen()),
       page(AppRoutes.dataSettings, (_) => const DataSettingsScreen()),
       page(AppRoutes.securitySettings, (_) => const SecuritySettingsScreen()),
     ],

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/errors/app_failure.dart';
+import '../features/auth/application/session.dart';
+import 'app_preferences.dart';
 import '../core/logging/app_logger.dart';
 import '../demo/demo_config.dart';
 import '../demo/demo_store.dart';
@@ -21,6 +23,17 @@ final appStartupProvider = FutureProvider<void>((ref) async {
   final logger = ref.watch(appLoggerProvider);
 
   await pipeline.recoverInterrupted();
+
+  // Restore the sign-in session before any screen is shown. A returning,
+  // fully signed-up user does not see onboarding again.
+  final session = ref.read(sessionProvider.notifier);
+  await session.initialized;
+  if (ref.read(sessionProvider).status == SessionStatus.ready) {
+    final prefs = ref.read(appPreferencesProvider);
+    ref
+        .read(appPreferencesProvider.notifier)
+        .finishOnboarding(permissionsGranted: prefs.permissionsGranted);
+  }
 
   if (ref.read(sampleDataEnabledProvider)) {
     await insertSampleLedger(

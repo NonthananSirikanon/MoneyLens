@@ -19,7 +19,6 @@ import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_surfaces.dart';
 import '../../../demo/demo_scenario.dart';
-import '../../../demo/demo_seed.dart';
 import '../../../demo/demo_store.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
@@ -28,7 +27,17 @@ import '../../slip_import/application/import_view_providers.dart';
 import '../../slip_import/presentation/import_flows.dart';
 import '../../transactions/presentation/transaction_tile.dart';
 import '../../transactions/application/transaction_view_providers.dart';
+import '../../auth/application/session.dart';
+import '../../auth/domain/auth_models.dart';
 import '../application/home_view_providers.dart';
+
+/// First name for the greeting: the first word of the Google name, or a
+/// neutral fallback (phone sign-in shares no name).
+String _firstName(AppUser? user, String fallback) {
+  final name = user?.displayName;
+  if (name == null || name.trim().isEmpty) return fallback;
+  return name.trim().split(RegExp(r'\s+')).first;
+}
 
 /// Home dashboard (prototype `is.home`).
 class DashboardScreen extends ConsumerWidget {
@@ -81,7 +90,10 @@ class DashboardScreen extends ConsumerWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              demoProfileFirstName,
+                              _firstName(
+                                ref.watch(sessionProvider).user,
+                                l10n.profileFallbackName,
+                              ),
                               overflow: TextOverflow.ellipsis,
                               style: MlText.h1.copyWith(
                                 fontWeight: FontWeight.w800,

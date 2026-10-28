@@ -32,10 +32,12 @@ class MlButton extends StatelessWidget {
     required this.onPressed,
     this.variant = MlButtonVariant.primary,
     this.icon,
+    this.leading,
     this.trailingIcon,
     this.height = 54,
     this.expand = true,
     this.enabled = true,
+    this.dimmed = false,
     this.fontWeight,
     this.horizontalPadding = MlSpace.xl,
   });
@@ -44,6 +46,9 @@ class MlButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final MlButtonVariant variant;
   final IconData? icon;
+
+  /// A custom widget before the label, used instead of [icon].
+  final Widget? leading;
   final IconData? trailingIcon;
   final double height;
   final bool expand;
@@ -51,6 +56,10 @@ class MlButton extends StatelessWidget {
   /// When false the button is shown at 40% opacity (`.btn.disabled`) and
   /// taps are ignored.
   final bool enabled;
+
+  /// Looks disabled (40%) but still takes taps, so a form can explain what
+  /// is wrong instead of staying silent.
+  final bool dimmed;
   final FontWeight? fontWeight;
   final double horizontalPadding;
 
@@ -71,7 +80,10 @@ class MlButton extends StatelessWidget {
       mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (icon != null) ...[
+        if (leading != null) ...[
+          leading!,
+          const SizedBox(width: 10),
+        ] else if (icon != null) ...[
           Icon(icon, size: 18, color: fg),
           const SizedBox(width: MlSpace.xs),
         ],
@@ -90,7 +102,7 @@ class MlButton extends StatelessWidget {
       ],
     );
     return Opacity(
-      opacity: enabled ? 1 : 0.4,
+      opacity: enabled && !dimmed ? 1 : 0.4,
       child: FTappable(
         semanticsLabel: label,
         onPress: enabled ? onPressed : null,

@@ -8,6 +8,9 @@ import 'package:moneylens/app/theme/icons.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
 import 'package:moneylens/demo/demo_config.dart';
+import 'package:moneylens/features/auth/application/session.dart';
+import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
+import 'package:moneylens/features/auth/domain/auth_models.dart';
 import 'package:moneylens/features/accounts/application/account_providers.dart';
 import 'package:moneylens/features/categories/application/category_providers.dart';
 import 'package:moneylens/features/transactions/application/transaction_providers.dart';
@@ -36,7 +39,21 @@ void main() {
     Locale locale = const Locale('en'),
     Future<void> Function()? startup,
     bool sample = true,
+    bool signedIn = true,
+    FakeAuthRepository? auth,
   }) async {
+    final authRepo =
+        auth ??
+        FakeAuthRepository(
+          signedIn: signedIn
+              ? const AppUser(
+                  id: 'u',
+                  method: SignInMethod.phone,
+                  phone: '+66812345678',
+                )
+              : null,
+          birthDate: signedIn ? DateTime.utc(1997, 3, 14) : null,
+        );
     tester.view.physicalSize = const Size(390 * 3, 844 * 3);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -46,6 +63,7 @@ void main() {
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
         sampleDataEnabledProvider.overrideWithValue(sample),
+        authRepositoryProvider.overrideWithValue(authRepo),
         // Drift stream queries and writes deadlock under the fake clock of
         // widget tests, so the ledger streams emit one-shot reads instead.
         // The store re-reads after every write, so the UI still updates.
@@ -91,19 +109,117 @@ void main() {
     return container;
   }
 
-  testWidgets('onboarding leads through permissions to Home', (tester) async {
-    await pumpApp(tester, onboarded: false);
+  testWidgets('signing in with a phone number leads to Home', (tester) async {
+    final auth = FakeAuthRepository();
+    final container = await pumpApp(
+      tester,
+      onboarded: false,
+      signedIn: false,
+      auth: auth,
+    );
     expect(find.text('Skip'), findsOneWidget);
 
+    // Skipping onboarding goes to sign-in, never straight into the app.
     await tapOn(tester, find.text('Skip'));
     await settle(tester);
-    expect(find.text('Let MoneyLens read your slips'), findsOneWidget);
+    expect(find.text('Continue with phone number'), findsOneWidget);
+    expect(find.text('Continue with Google'), findsOneWidget);
 
+    await tapOn(tester, find.text('Continue with phone number'));
+    await settle(tester);
+    await tester.enterText(input('Mobile number'), '0812345678');
+    await settle(tester);
+    await tapOn(tester, find.text('Send code'));
+    await settle(tester);
+    expect(auth.sentTo, ['+66812345678']);
+    expect(find.text('Enter the 6-digit code'), findsOneWidget);
+    expect(find.textContaining('81 ••• 5678'), findsOneWidget);
+
+    // A wrong code, then the right one.
+    await tester.enterText(input('6-digit code'), '000000');
+    await settle(tester);
+    expect(find.text('Wrong code, 4 tries left'), findsOneWidget);
+    await tester.enterText(input('6-digit code'), '12345');
+    await settle(tester);
+    await tester.enterText(input('6-digit code'), FakeAuthRepository.validCode);
+    await settle(tester);
+
+    // Signed in but no birth date yet: the app cannot be entered.
+    expect(find.text('Your date of birth'), findsOneWidget);
+    await tester.enterText(input('Day'), '31');
+    await tapOn(tester, find.text('Choose month'));
+    await settle(tester);
+    await tapOn(tester, find.text('Feb'));
+    await settle(tester);
+    await tester.enterText(input('Year (B.E.)'), '2540');
+    await settle(tester);
+    await tapOn(tester, find.text('Continue'));
+    await settle(tester);
+    expect(find.text('There is no 31 Feb in 2540'), findsOneWidget);
+
+    await tester.enterText(input('Day'), '14');
+    await settle(tester);
+    expect(find.text('Age 28'), findsNothing);
+    await tapOn(tester, find.text('February'));
+    await settle(tester);
+    await tapOn(tester, find.text('Mar'));
+    await settle(tester);
+    expect(find.text('Age 29'), findsOneWidget);
+    await tapOn(tester, find.text('Continue'));
+    await settle(tester);
+    expect(auth.birthDate, DateTime.utc(1997, 3, 14));
+
+    expect(find.text('Let MoneyLens read your slips'), findsOneWidget);
     await tapOn(tester, find.text('Allow and get started'));
     await settle(tester);
     expect(find.text('Total balance'), findsOneWidget);
     expect(find.text('฿26,520.00'), findsOneWidget); // sum of seed accounts
     expect(find.text('2 slips waiting for review'), findsOneWidget);
+    expect(container.read(sessionProvider).status, SessionStatus.ready);
+    await drain(tester);
+  });
+
+  testWidgets('signing in with Google needs a birth date too', (tester) async {
+    final auth = FakeAuthRepository();
+    await pumpApp(tester, onboarded: true, signedIn: false, auth: auth);
+    expect(find.text('Continue with Google'), findsOneWidget);
+
+    await tapOn(tester, find.text('Continue with Google'));
+    await settle(tester);
+    expect(find.text('Your date of birth'), findsOneWidget);
+  });
+
+  testWidgets('a signed-in user starts at Home and can sign out', (
+    tester,
+  ) async {
+    final container = await pumpApp(tester);
+    expect(find.text('Total balance'), findsOneWidget);
+
+    await tapOn(tester, find.text('Settings'));
+    await settle(tester);
+    expect(find.text('+66 81 ••• 5678'), findsOneWidget);
+    await tapOn(tester, find.text('+66 81 ••• 5678'));
+    await settle(tester);
+    expect(find.text('My account'), findsOneWidget);
+    expect(find.text('Signed in with phone number'), findsOneWidget);
+    expect(find.text('14 Mar 1997'), findsOneWidget);
+    expect(find.text('Date of birth'), findsOneWidget);
+
+    await tapOn(tester, find.text('Sign out'));
+    await settle(tester);
+    expect(find.text('Sign out?'), findsOneWidget);
+    await tapOn(tester, find.text('Cancel'));
+    await settle(tester);
+    expect(container.read(sessionProvider).isSignedIn, isTrue);
+
+    await tapOn(tester, find.text('Sign out'));
+    await settle(tester);
+    await tapOn(tester, find.text('Sign out').last);
+    await settle(tester);
+    expect(container.read(sessionProvider).status, SessionStatus.signedOut);
+    expect(find.text('Continue with phone number'), findsOneWidget);
+    // The data on the device is still there.
+    expect(container.read(demoStoreProvider).transactions, isNotEmpty);
     await drain(tester);
   });
 

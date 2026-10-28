@@ -1,8 +1,11 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/app_preferences.dart';
 import '../../../app/router.dart';
+import '../../auth/application/session.dart';
 import '../../../app/theme/icons.dart';
 import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
@@ -11,14 +14,14 @@ import '../../../l10n/l10n.dart';
 
 /// Three-slide introduction. "ข้าม" and the last slide's CTA go to the
 /// permission screen.
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   var _page = 0;
 
   static const _images = [
@@ -27,9 +30,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     MlImages.localData,
   ];
 
+  /// Signed-in users replaying onboarding go home; everyone else signs in.
+  void _finish() {
+    if (ref.read(sessionProvider).isSignedIn) {
+      ref
+          .read(appPreferencesProvider.notifier)
+          .finishOnboarding(
+            permissionsGranted: ref
+                .read(appPreferencesProvider)
+                .permissionsGranted,
+          );
+      context.go(AppRoutes.home);
+    } else {
+      context.go(AppRoutes.login);
+    }
+  }
+
   void _next() {
     if (_page == _images.length - 1) {
-      context.pushReplacement(AppRoutes.permissions);
+      _finish();
     } else {
       setState(() => _page++);
     }
@@ -67,8 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ? null
                         : FTappable(
                             semanticsLabel: l10n.onboardingSkip,
-                            onPress: () =>
-                                context.pushReplacement(AppRoutes.permissions),
+                            onPress: _finish,
                             child: Padding(
                               padding: const EdgeInsets.all(MlSpace.xxs),
                               child: Text(

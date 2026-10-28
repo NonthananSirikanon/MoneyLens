@@ -296,6 +296,7 @@ abstract final class MlImages {
   static const emptyAnalytics = 'assets/images/ill-empty2.png';
   static const saved = 'assets/images/ill-saved.png';
   static const receipt = 'assets/images/receipt.png';
+  static const hero = 'assets/images/ill-hero.png';
 }
 
 /// The slip photo, cropped to cover. [degraded] adds the blur/greyscale
