@@ -48,8 +48,9 @@ void main() {
           signedIn: signedIn
               ? const AppUser(
                   id: 'u',
-                  method: SignInMethod.phone,
-                  phone: '+66812345678',
+                  method: SignInMethod.password,
+                  username: 'somchai',
+                  displayName: 'somchai',
                 )
               : null,
           birthDate: signedIn ? DateTime.utc(1997, 3, 14) : null,
@@ -109,7 +110,7 @@ void main() {
     return container;
   }
 
-  testWidgets('signing in with a phone number leads to Home', (tester) async {
+  testWidgets('registering and signing in lead to Home', (tester) async {
     final auth = FakeAuthRepository();
     final container = await pumpApp(
       tester,
@@ -122,27 +123,27 @@ void main() {
     // Skipping onboarding goes to sign-in, never straight into the app.
     await tapOn(tester, find.text('Skip'));
     await settle(tester);
-    expect(find.text('Continue with phone number'), findsOneWidget);
+    expect(find.text('Sign in with username'), findsOneWidget);
     expect(find.text('Continue with Google'), findsOneWidget);
 
-    await tapOn(tester, find.text('Continue with phone number'));
+    // A name that is too short, then a mismatching password, then success.
+    await tapOn(tester, find.text('Register'));
     await settle(tester);
-    await tester.enterText(input('Mobile number'), '0812345678');
+    expect(find.text('Create an account'), findsOneWidget);
+    await tester.enterText(input('Username'), 'ab');
+    await tester.enterText(input('Password'), 'password1');
+    await tester.enterText(input('Confirm password'), 'password2');
+    await tapOn(tester, find.text('Register').last);
     await settle(tester);
-    await tapOn(tester, find.text('Send code'));
-    await settle(tester);
-    expect(auth.sentTo, ['+66812345678']);
-    expect(find.text('Enter the 6-digit code'), findsOneWidget);
-    expect(find.textContaining('81 ••• 5678'), findsOneWidget);
+    expect(find.text('Username must be 3–20 characters'), findsOneWidget);
+    expect(find.text("Passwords don't match"), findsOneWidget);
+    expect(container.read(sessionProvider).isSignedIn, isFalse);
 
-    // A wrong code, then the right one.
-    await tester.enterText(input('6-digit code'), '000000');
+    await tester.enterText(input('Username'), 'SomChai_01');
+    await tester.enterText(input('Confirm password'), 'password1');
+    await tapOn(tester, find.text('Register').last);
     await settle(tester);
-    expect(find.text('Wrong code, 4 tries left'), findsOneWidget);
-    await tester.enterText(input('6-digit code'), '12345');
-    await settle(tester);
-    await tester.enterText(input('6-digit code'), FakeAuthRepository.validCode);
-    await settle(tester);
+    expect(container.read(sessionProvider).user?.username, 'somchai_01');
 
     // Signed in but no birth date yet: the app cannot be entered.
     expect(find.text('Your date of birth'), findsOneWidget);
@@ -179,6 +180,38 @@ void main() {
     await drain(tester);
   });
 
+  testWidgets('sign-in checks the password and explains a wrong one', (
+    tester,
+  ) async {
+    final auth = FakeAuthRepository(accounts: {'somchai': 'password1'});
+    final container = await pumpApp(
+      tester,
+      onboarded: true,
+      signedIn: false,
+      auth: auth,
+    );
+    await tapOn(tester, find.text('Sign in with username'));
+    await settle(tester);
+
+    await tapOn(tester, find.text('Sign in').last);
+    await settle(tester);
+    expect(find.text('Enter a username'), findsOneWidget);
+    expect(find.text('Enter your password'), findsOneWidget);
+
+    await tester.enterText(input('Username'), 'somchai');
+    await tester.enterText(input('Password'), 'wrong-pass');
+    await tapOn(tester, find.text('Sign in').last);
+    await settle(tester);
+    expect(find.text('Wrong username or password'), findsOneWidget);
+    expect(container.read(sessionProvider).isSignedIn, isFalse);
+
+    await tester.enterText(input('Password'), 'password1');
+    await tapOn(tester, find.text('Sign in').last);
+    await settle(tester);
+    expect(container.read(sessionProvider).user?.username, 'somchai');
+    expect(find.text('Your date of birth'), findsOneWidget);
+  });
+
   testWidgets('signing in with Google needs a birth date too', (tester) async {
     final auth = FakeAuthRepository();
     await pumpApp(tester, onboarded: true, signedIn: false, auth: auth);
@@ -197,11 +230,11 @@ void main() {
 
     await tapOn(tester, find.text('Settings'));
     await settle(tester);
-    expect(find.text('+66 81 ••• 5678'), findsOneWidget);
-    await tapOn(tester, find.text('+66 81 ••• 5678'));
+    expect(find.text('somchai'), findsWidgets);
+    await tapOn(tester, find.text('somchai').first);
     await settle(tester);
     expect(find.text('My account'), findsOneWidget);
-    expect(find.text('Signed in with phone number'), findsOneWidget);
+    expect(find.text('Signed in with username'), findsOneWidget);
     expect(find.text('14 Mar 1997'), findsOneWidget);
     expect(find.text('Date of birth'), findsOneWidget);
 
@@ -217,7 +250,7 @@ void main() {
     await tapOn(tester, find.text('Sign out').last);
     await settle(tester);
     expect(container.read(sessionProvider).status, SessionStatus.signedOut);
-    expect(find.text('Continue with phone number'), findsOneWidget);
+    expect(find.text('Sign in with username'), findsOneWidget);
     // The data on the device is still there.
     expect(container.read(demoStoreProvider).transactions, isNotEmpty);
     await drain(tester);

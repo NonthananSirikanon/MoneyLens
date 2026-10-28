@@ -6,8 +6,8 @@ import 'package:moneylens/app/app.dart';
 
 /// Launches the real app on a device or simulator: real SQLite startup and
 /// navigation through sign-in and every tab. Sign-in uses the in-memory fake
-/// (OTP 123456) because no Supabase key is passed; the real SMS and Google
-/// flows need manual testing. Camera and photo pickers are simulated.
+/// because no Supabase key is passed; the real Supabase and Google flows
+/// need manual testing. Camera and photo pickers are simulated.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -18,13 +18,13 @@ void main() {
     // Thai is the default locale. Onboarding leads to sign-in.
     await tester.tap(find.text('ข้าม'));
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.text('ดำเนินการต่อด้วยเบอร์โทร'));
+    await tester.tap(find.text('ลงทะเบียน'));
     await tester.pump(const Duration(seconds: 1));
-    await tester.enterText(find.byType(TextField).first, '0812345678');
+    await tester.enterText(find.byType(TextField).at(0), 'somchai');
+    await tester.enterText(find.byType(TextField).at(1), 'password1');
+    await tester.enterText(find.byType(TextField).at(2), 'password1');
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.tap(find.text('ส่งรหัส OTP'));
-    await tester.pump(const Duration(seconds: 1));
-    await tester.enterText(find.byType(TextField).first, '123456');
+    await tester.tap(find.text('ลงทะเบียน').last);
     await tester.pump(const Duration(seconds: 1));
 
     // Birth date, then permissions.

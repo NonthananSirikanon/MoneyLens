@@ -10,12 +10,14 @@ abstract interface class AuthRepository {
   /// Emits the current user (or null) first, then every change.
   Stream<AppUser?> authChanges();
 
-  /// Sends a one-time code by SMS to [e164], e.g. `+66812345678`.
-  Future<void> sendPhoneOtp(String e164);
+  /// Creates the account and signs in. [username] must already pass
+  /// `Username.validate`. Throws [AuthFailure] with `usernameTaken`,
+  /// `weakPassword`, ….
+  Future<void> signUp(String username, String password);
 
-  /// Verifies the code; on success a session starts and [authChanges] emits.
-  /// Throws [AuthFailure] with `invalidCode`, `expiredCode`, ….
-  Future<void> verifyPhoneOtp(String e164, String code);
+  /// Throws [AuthFailure] with `invalidCredentials` for an unknown name or a
+  /// wrong password.
+  Future<void> signInWithPassword(String username, String password);
 
   /// Opens the Google sign-in. The session arrives later through
   /// [authChanges] (the OAuth redirect returns to the app).

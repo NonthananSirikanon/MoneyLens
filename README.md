@@ -94,11 +94,13 @@ Also simulated: permissions, Face ID and CSV export (toast only).
 
 Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|loading>`. Strings live in `lib/l10n/app_th.arb` (Thai, copied from the prototype) and `app_en.arb`; Settings → ภาษา switches the language.
 
-## Sign-in (phone OTP and Google)
+## Sign-in (username + password and Google)
 
-Sign-in is required before the app can be used: onboarding → sign-in → birth date → permissions → Home (design: `design/mockups`, board "Sign in & Profile"). Phone numbers are Thai mobiles entered as nine digits after `+66`; Google opens the browser and returns through `com.moneylens.app://login-callback/`.
+Sign-in is required before the app can be used: onboarding → sign-in or register → birth date → permissions → Home. Users register with a **username** (3–20 characters: a–z, 0–9, `_`) and a password of at least 8 characters, or continue with Google, which opens the browser and returns through `com.moneylens.app://login-callback/`. (The design in `design/mockups` still shows the earlier phone-OTP screens and has not been updated.)
 
-**Without a Supabase key the app uses an in-memory fake**: the one-time code is always `123456` and nothing is saved. That is what `flutter run`, the tests and the simulator smoke test use.
+Supabase Auth has no usernames, so a username is stored as the email `<name>@users.moneylens.app`. No mail is ever sent to it, so **a forgotten password cannot be recovered**; adding an optional recovery email is the way to fix that later.
+
+**Without a Supabase key the app uses an in-memory fake**: accounts live only until the app closes and nothing is saved. That is what `flutter run`, the tests and the simulator smoke test use.
 
 **To use the real backend**, pass the project's publishable key (never the `service_role`/secret key):
 
@@ -108,14 +110,14 @@ flutter run --dart-define=SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 
 `SUPABASE_URL` defaults to this project's URL. Before the real flows work, configure Supabase (Dashboard → Authentication):
 
-1. **Providers → Phone:** enable it and pick an SMS provider (e.g. Twilio). Check cost and Thai-number requirements first.
+1. **Providers → Email:** keep it enabled and turn **Confirm email off**. With it on, a new account can never sign in because the internal address cannot receive the confirmation.
 2. **Providers → Google:** create OAuth clients in Google Cloud and paste them in.
 3. **URL Configuration → Redirect URLs:** add `com.moneylens.app://login-callback/`.
-4. Push the `profiles` migration (`npx supabase@2.122.0 db push`); the birth date is saved there.
+4. Push the migrations (`npx supabase@2.122.0 db push`); the birth date is saved in `profiles`.
 
 Notes and limits:
 
-- The client-side tries counter and 5-minute lock on wrong codes only guide the UI; Supabase's own rate limits are the real protection. The mapping of provider error codes (expired code, rate limit) in `SupabaseAuthRepository` should be re-checked once SMS is enabled.
+- Supabase's own rate limits are the real protection against password guessing; the app only maps the "too many requests" response to a message. If Supabase rejects the internal email domain when registering, change `Username.emailHost`.
 - If the profile cannot be read (offline), a returning user is let in so that data on the device stays reachable; the birth-date check repeats on the next start.
 - The local database is **not yet per user**: signing out keeps the device data, and a different account signing in on the same device sees it. Per-user data comes with sync.
 

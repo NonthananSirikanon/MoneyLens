@@ -553,59 +553,8 @@
   "authLoginTitle": "Get started with\nMoneyLens",
   "authLoginBody": "Sign in to keep your data safe",
   "authLocalNote": "Your financial data and slip images stay on your phone",
-  "authWithPhone": "Continue with phone number",
   "authWithGoogle": "Continue with Google",
   "authTerms": "By continuing, you accept the Terms of Use and Privacy Policy",
-  "authPhoneTitle": "Phone number",
-  "authPhoneHeading": "Enter your mobile number",
-  "authPhoneBody": "We'll text a 6-digit code to confirm it's you",
-  "authPhoneLabel": "Mobile number",
-  "authPhoneHint": "No need to type the leading 0",
-  "authPhoneError": "Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)",
-  "authSendCode": "Send code",
-  "authPhonePrivacy": "We only use your number to sign you in",
-  "authOtpTitle": "Verify code",
-  "authOtpHeading": "Enter the 6-digit code",
-  "authOtpSentTo": "Sent to {phone}",
-  "@authOtpSentTo": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
-  "authOtpField": "6-digit code",
-  "authChangeNumber": "Change number",
-  "authOtpWrong": "Wrong code, {count} tries left",
-  "@authOtpWrong": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "authOtpLocked": "Too many wrong codes. Try again in {time}",
-  "@authOtpLocked": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "authOtpExpiredTitle": "The code has expired",
-  "authOtpExpiredBody": "Send a new code to get a fresh one",
-  "authResendIn": "Resend code in {time}",
-  "@authResendIn": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "authResend": "Resend code",
-  "authNewCode": "Send a new code",
-  "authConfirm": "Confirm",
-  "authVerifying": "Checking the code…",
   "authErrTooMany": "Too many requests. Please try again later",
   "authErrNetwork": "Couldn't reach the server. Check your connection and try again",
   "authErrUnknown": "Something went wrong. Please try again",
@@ -652,9 +601,7 @@
   "toastBirthSaved": "Birth date saved",
   "accountTitle": "My account",
   "accountViaGoogle": "Signed in with Google",
-  "accountViaPhone": "Signed in with phone number",
   "accountEmail": "Email",
-  "accountPhone": "Phone number",
   "accountBirth": "Date of birth",
   "accountSignOut": "Sign out",
   "accountSignOutSub": "Data on this device stays",
@@ -662,5 +609,33 @@
   "signOutBody": "Your data on this device stays, but you'll need to sign in again to keep using the app.",
   "toastSignedOut": "Signed out",
   "settingsAccountSub": "Account and profile",
-  "profileFallbackName": "there"
+  "profileFallbackName": "there",
+  "authWithPassword": "Sign in with username",
+  "authNoAccount": "Don't have an account?",
+  "authRegister": "Register",
+  "authHaveAccount": "Already have an account?",
+  "authSignIn": "Sign in",
+  "authSignInHeading": "Welcome back",
+  "authSignInBody": "Enter your username and password",
+  "authRegisterHeading": "Create an account",
+  "authRegisterBody": "Choose a username and password to sign in with",
+  "authUsername": "Username",
+  "authUsernameHint": "a–z, 0–9 and _, 3–20 characters",
+  "authUsernameEmpty": "Enter a username",
+  "authUsernameLength": "Username must be 3–20 characters",
+  "authUsernameChars": "Only a–z, 0–9 and _ (no spaces)",
+  "authPassword": "Password",
+  "authPasswordHint": "At least 8 characters",
+  "authPasswordConfirm": "Confirm password",
+  "authPasswordEmpty": "Enter your password",
+  "authPasswordShort": "Password must be at least 8 characters",
+  "authPasswordMismatch": "Passwords don't match",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authNoRecovery": "A forgotten password can't be recovered. Keep it somewhere safe",
+  "authErrInvalidCredentials": "Wrong username or password",
+  "authErrUsernameTaken": "That username is taken. Try another",
+  "authErrWeakPassword": "That password is too easy to guess. Try another",
+  "accountViaPassword": "Signed in with username",
+  "accountUsername": "Username"
 }

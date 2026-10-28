@@ -13,7 +13,7 @@ String? authRedirect({
   required bool onboardingDone,
 }) {
   final path = uri.path;
-  const signInPaths = {'/login', '/phone', '/otp'};
+  const signInPaths = {'/login', '/signin', '/register'};
   final isSignIn = signInPaths.contains(path);
   final isBirth = path == '/birth';
   final isEdit = uri.queryParameters['edit'] == '1';
