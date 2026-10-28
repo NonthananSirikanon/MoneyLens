@@ -124,6 +124,8 @@ class SyncEngine {
         );
       }
     });
+    // Raw statements do not tell Drift's watchers that the queue changed.
+    _db.notifyUpdates({const TableUpdate('sync_outbox')});
   }
 
   // ---------------------------------------------------------------- pull
