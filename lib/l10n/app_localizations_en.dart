@@ -1382,4 +1382,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get csvColSource => 'Source';
+
+  @override
+  String get analyticsPickMonthTitle => 'Choose month and year';
+
+  @override
+  String get analyticsPreviousYear => 'Previous year';
+
+  @override
+  String get analyticsNextYear => 'Next year';
 }

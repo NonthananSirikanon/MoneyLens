@@ -16,7 +16,10 @@ import 'package:moneylens/features/auth/domain/auth_models.dart';
 import 'package:moneylens/features/accounts/application/account_providers.dart';
 import 'package:moneylens/features/categories/application/category_providers.dart';
 import 'package:moneylens/features/transactions/application/transaction_providers.dart';
+import 'package:moneylens/demo/demo_models.dart';
 import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/features/analytics/application/analytics_view_providers.dart';
+import 'package:moneylens/features/transactions/domain/transaction_type.dart';
 import 'package:moneylens/infrastructure/database/app_database.dart';
 
 import '../support/test_support.dart';
@@ -434,21 +437,69 @@ void main() {
     await drain(tester);
   });
 
-  testWidgets('analytics cycles to an empty period', (tester) async {
-    await pumpApp(tester);
+  testWidgets('analytics: pick a month and year, empty period, reset', (
+    tester,
+  ) async {
+    final container = await pumpApp(tester);
     await tapOn(tester, find.text('Analytics'));
     await settle(tester);
     expect(find.text('Total expenses'), findsOneWidget);
 
+    // The pill opens a month and year picker instead of cycling.
     await tapOn(tester, find.text('Oct 2026'));
     await settle(tester);
-    await tapOn(tester, find.text('Sep 2026'));
+    expect(find.text('Choose month and year'), findsOneWidget);
+    expect(find.text('2026'), findsOneWidget);
+    // Nothing before the oldest transaction's year, nothing after today.
+    await tapOn(tester, find.byIcon(MlIcons.chevronLeft));
     await settle(tester);
+    expect(find.text('2026'), findsOneWidget);
+    // A future month cannot be chosen: the tap does nothing.
+    await tester.tap(find.text('Nov'), warnIfMissed: false);
+    await settle(tester);
+    expect(find.text('Choose month and year'), findsOneWidget);
+
+    await tapOn(tester, find.text('Sep'));
+    await settle(tester);
+    expect(find.text('Sep 2026'), findsOneWidget);
     expect(find.text('No data for this period'), findsOneWidget);
 
     await tapOn(tester, find.text('Change period'));
     await settle(tester);
+    expect(find.text('Oct 2026'), findsOneWidget);
     expect(find.text('Total expenses'), findsOneWidget);
+    expect(container.read(analyticsProvider).periodIndex, 0);
+  });
+
+  testWidgets('analytics: the picker can go back to an earlier year', (
+    tester,
+  ) async {
+    final container = await pumpApp(tester);
+    // An expense in Dec 2025 makes 2025 available.
+    await container
+        .read(demoStoreProvider.notifier)
+        .addTransaction(
+          TransactionInput(
+            type: TransactionType.expense,
+            amount: thb(55500),
+            accountId: 'kbank',
+            categoryId: 'default-expense-food',
+            merchant: 'Old shop',
+            occurredAt: ReportingTimeZone.bangkok.toUtc(2025, 12, 5, 12),
+          ),
+        );
+    await tapOn(tester, find.text('Analytics'));
+    await settle(tester);
+    await tapOn(tester, find.text('Oct 2026'));
+    await settle(tester);
+    await tapOn(tester, find.byIcon(MlIcons.chevronLeft));
+    await settle(tester);
+    expect(find.text('2025'), findsOneWidget);
+    await tapOn(tester, find.text('Dec'));
+    await settle(tester);
+    expect(find.text('Dec 2025'), findsOneWidget);
+    expect(find.text('฿555'), findsWidgets);
+    expect(container.read(analyticsProvider).periodIndex, 10);
   });
 
   testWidgets('settings language row switches to Thai', (tester) async {

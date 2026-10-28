@@ -2623,6 +2623,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Source'**
   String get csvColSource;
+
+  /// No description provided for @analyticsPickMonthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose month and year'**
+  String get analyticsPickMonthTitle;
+
+  /// No description provided for @analyticsPreviousYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous year'**
+  String get analyticsPreviousYear;
+
+  /// No description provided for @analyticsNextYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Next year'**
+  String get analyticsNextYear;
 }
 
 class _AppLocalizationsDelegate

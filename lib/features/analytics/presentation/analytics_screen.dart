@@ -14,6 +14,7 @@ import '../../../core/widgets/ml_surfaces.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../application/analytics_view_providers.dart';
+import 'month_picker_sheet.dart';
 
 /// "วิเคราะห์" tab: category breakdown and six-month trend.
 class AnalyticsScreen extends ConsumerWidget {
@@ -74,7 +75,12 @@ class _BreakdownView extends ConsumerWidget {
             MlPeriodButton(
               label: context.dateFormat.monthYear(b.month),
               leadingIcon: MlIcons.calendar,
-              onPressed: controller.cyclePeriod,
+              onPressed: () => showMonthPickerSheet(
+                context,
+                ref,
+                selected: b.month,
+                onSelected: controller.selectMonth,
+              ),
             ),
             if (!b.isEmpty || ui.periodIndex == 0)
               MlSegmented<AnalyticsMode>(

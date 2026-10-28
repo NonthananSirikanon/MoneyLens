@@ -21,7 +21,7 @@ class AnalyticsUiState {
 
   final AnalyticsTab tab;
 
-  /// 0 = current month, then the demo's past periods.
+  /// Months before the current one that the breakdown shows: 0 = this month.
   final int periodIndex;
   final AnalyticsMode mode;
 
@@ -49,10 +49,14 @@ class AnalyticsController extends Notifier<AnalyticsUiState> {
 
   void setMode(AnalyticsMode mode) => state = state.copyWith(mode: mode);
 
-  /// The period pill cycles through the available months, as in the
-  /// prototype (current → previous → a month without data).
-  void cyclePeriod() {
-    state = state.copyWith(periodIndex: (state.periodIndex + 1) % periodCount);
+  /// Shows [year]/[month] (Gregorian, 1–12) in the breakdown. Months after
+  /// the current one are not allowed and show the current month instead.
+  void selectMonth(int year, int month) {
+    final now = ReportingTimeZone.bangkok.wallClock(
+      ref.read(clockProvider).nowUtc(),
+    );
+    final ago = (now.year * 12 + now.month) - (year * 12 + month);
+    state = state.copyWith(periodIndex: ago < 0 ? 0 : ago);
   }
 
   void resetPeriod() => state = state.copyWith(periodIndex: 0);
@@ -63,8 +67,7 @@ class AnalyticsController extends Notifier<AnalyticsUiState> {
   void open(AnalyticsTab tab) => state = state.copyWith(tab: tab);
 }
 
-/// Periods the picker cycles through: the current month and the five
-/// before it.
+/// Months shown in the trend chart: the current month and the five before.
 const periodCount = 6;
 
 final analyticsProvider =

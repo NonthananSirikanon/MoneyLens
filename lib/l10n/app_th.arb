@@ -420,5 +420,8 @@
   "csvColCategory": "หมวดหมู่",
   "csvColMerchant": "ร้านค้า/ผู้รับ",
   "csvColNote": "หมายเหตุ",
-  "csvColSource": "แหล่งที่มา"
+  "csvColSource": "แหล่งที่มา",
+  "analyticsPickMonthTitle": "เลือกเดือนและปี",
+  "analyticsPreviousYear": "ปีก่อนหน้า",
+  "analyticsNextYear": "ปีถัดไป"
 }

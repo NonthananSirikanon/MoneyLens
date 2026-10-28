@@ -658,5 +658,8 @@
   "csvColCategory": "Category",
   "csvColMerchant": "Merchant / payee",
   "csvColNote": "Note",
-  "csvColSource": "Source"
+  "csvColSource": "Source",
+  "analyticsPickMonthTitle": "Choose month and year",
+  "analyticsPreviousYear": "Previous year",
+  "analyticsNextYear": "Next year"
 }

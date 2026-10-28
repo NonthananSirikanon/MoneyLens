@@ -1366,4 +1366,13 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get csvColSource => 'แหล่งที่มา';
+
+  @override
+  String get analyticsPickMonthTitle => 'เลือกเดือนและปี';
+
+  @override
+  String get analyticsPreviousYear => 'ปีก่อนหน้า';
+
+  @override
+  String get analyticsNextYear => 'ปีถัดไป';
 }
