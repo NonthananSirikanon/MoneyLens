@@ -213,15 +213,11 @@ class MlInput extends StatelessWidget {
     this.textInputAction,
     this.autofocus = false,
     this.autofillHints,
-    this.obscureText = false,
-    this.onSubmitted,
   });
 
   final TextEditingController controller;
   final String? placeholder;
   final ValueChanged<String>? onChanged;
-  final bool obscureText;
-  final ValueChanged<String>? onSubmitted;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final TextStyle? style;
@@ -246,10 +242,6 @@ class MlInput extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           onChanged: onChanged,
-          onSubmitted: onSubmitted,
-          obscureText: obscureText,
-          autocorrect: !obscureText,
-          enableSuggestions: !obscureText,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           textAlign: textAlign,

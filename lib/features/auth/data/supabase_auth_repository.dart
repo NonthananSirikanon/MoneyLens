@@ -3,15 +3,14 @@ import 'dart:io' show SocketException;
 
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
-import '../application/credentials.dart';
 import '../domain/auth_models.dart';
 import '../domain/auth_repository.dart';
 
-/// Supabase Auth (username + password, and Google) plus the `profiles`
-/// table. A username is stored as an internal email (see [Username]).
+/// Supabase Auth (phone OTP and Google) plus the `profiles` table.
 ///
 /// Error text from the provider is never surfaced or logged, only mapped to
-/// an [AuthFailureKind].
+/// an [AuthFailureKind]. The exact error codes of SMS providers should be
+/// re-checked against the real project once SMS is enabled.
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
 
@@ -49,19 +48,13 @@ class SupabaseAuthRepository implements AuthRepository {
   AppUser? _map(sb.User? u) {
     if (u == null) return null;
     final isGoogle = u.appMetadata['provider'] == 'google';
-    if (!isGoogle) {
-      final name = Username.fromAuthEmail(u.email);
-      return AppUser(
-        id: u.id,
-        method: SignInMethod.password,
-        username: name,
-        displayName: name,
-      );
-    }
     final name = u.userMetadata?['full_name'] ?? u.userMetadata?['name'];
     return AppUser(
       id: u.id,
-      method: SignInMethod.google,
+      method: isGoogle ? SignInMethod.google : SignInMethod.phone,
+      phone: (u.phone == null || u.phone!.isEmpty)
+          ? null
+          : (u.phone!.startsWith('+') ? u.phone : '+${u.phone}'),
       email: u.email,
       displayName: name is String && name.isNotEmpty ? name : null,
     );
@@ -75,13 +68,8 @@ class SupabaseAuthRepository implements AuthRepository {
       return await run();
     } on sb.AuthApiException catch (e) {
       final code = (e.code ?? '').toLowerCase();
-      switch (code) {
-        case 'user_already_exists' || 'email_exists':
-          throw const AuthFailure(AuthFailureKind.usernameTaken);
-        case 'invalid_credentials':
-          throw const AuthFailure(AuthFailureKind.invalidCredentials);
-        case 'weak_password':
-          throw const AuthFailure(AuthFailureKind.weakPassword);
+      if (code == 'otp_expired') {
+        throw const AuthFailure(AuthFailureKind.expiredCode);
       }
       if (e.statusCode == '429' || code.contains('rate_limit')) {
         throw const AuthFailure(AuthFailureKind.tooManyRequests);
@@ -99,24 +87,13 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signUp(String username, String password) => _guard(() async {
-    final res = await _auth.signUp(
-      email: Username.authEmail(username),
-      password: password,
-      data: {'username': Username.normalize(username)},
-    );
-    // With "Confirm email" on, no session starts and the user could never
-    // confirm the internal address. Say so rather than hang.
-    if (res.session == null) throw const AuthFailure(AuthFailureKind.unknown);
-  });
+  Future<void> sendPhoneOtp(String e164) =>
+      _guard(() => _auth.signInWithOtp(phone: e164));
 
   @override
-  Future<void> signInWithPassword(String username, String password) => _guard(
-    () => _auth.signInWithPassword(
-      email: Username.authEmail(username),
-      password: password,
-    ),
-    otherwise: AuthFailureKind.invalidCredentials,
+  Future<void> verifyPhoneOtp(String e164, String code) => _guard(
+    () => _auth.verifyOTP(phone: e164, token: code, type: sb.OtpType.sms),
+    otherwise: AuthFailureKind.invalidCode,
   );
 
   @override

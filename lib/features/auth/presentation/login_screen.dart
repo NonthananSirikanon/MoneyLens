@@ -14,7 +14,7 @@ import '../application/session.dart';
 import '../domain/auth_models.dart';
 import 'auth_widgets.dart';
 
-/// "เริ่มต้นกับ MoneyLens": sign in with a username, register, or use Google. There is no way to skip
+/// "เริ่มต้นกับ MoneyLens": choose phone or Google. There is no way to skip
 /// (sign-in is required).
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -99,10 +99,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 14),
                   MlButton(
-                    label: l10n.authWithPassword,
-                    icon: MlIcons.user,
+                    label: l10n.authWithPhone,
+                    icon: MlIcons.smartphone,
                     enabled: !_busy,
-                    onPressed: () => context.push(AppRoutes.signIn),
+                    onPressed: () => context.push(AppRoutes.phone),
                   ),
                   const SizedBox(height: 10),
                   MlButton(
@@ -111,12 +111,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     leading: const GoogleMark(),
                     enabled: !_busy,
                     onPressed: _google,
-                  ),
-                  const SizedBox(height: 4),
-                  AuthSwitchLink(
-                    text: l10n.authNoAccount,
-                    link: l10n.authRegister,
-                    onPressed: () => context.push(AppRoutes.register),
                   ),
                   const SizedBox(height: 14),
                   Text(

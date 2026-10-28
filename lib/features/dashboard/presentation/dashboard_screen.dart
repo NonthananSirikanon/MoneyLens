@@ -31,8 +31,8 @@ import '../../auth/application/session.dart';
 import '../../auth/domain/auth_models.dart';
 import '../application/home_view_providers.dart';
 
-/// First name for the greeting: the first word of the Google name or the
-/// username, or a neutral fallback.
+/// First name for the greeting: the first word of the Google name, or a
+/// neutral fallback (phone sign-in shares no name).
 String _firstName(AppUser? user, String fallback) {
   final name = user?.displayName;
   if (name == null || name.trim().isEmpty) return fallback;

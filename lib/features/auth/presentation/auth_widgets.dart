@@ -1,10 +1,8 @@
-import 'package:flutter/services.dart' show TextInputAction, TextInputType;
 import 'package:flutter/widgets.dart';
 
+import '../../../app/theme/icons.dart';
 import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
-import '../../../app/theme/icons.dart';
-import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_fields.dart';
 import '../../../l10n/l10n.dart';
 import '../domain/auth_models.dart';
@@ -52,17 +50,89 @@ class AuthHeading extends StatelessWidget {
   );
 }
 
+/// Six boxes showing a code. The real input is an invisible text field laid
+/// over them, so the keyboard, one-time-code autofill and paste all work.
+class OtpBoxes extends StatelessWidget {
+  const OtpBoxes({
+    super.key,
+    required this.code,
+    required this.input,
+    this.error = false,
+    this.disabled = false,
+    this.focused = true,
+  });
+
+  final String code;
+
+  /// The invisible field (an [MlInput] with zero opacity is added around it
+  /// here).
+  final Widget input;
+  final bool error;
+  final bool disabled;
+  final bool focused;
+
+  @override
+  Widget build(BuildContext context) {
+    final boxes = [
+      for (var i = 0; i < 6; i++)
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(left: i == 0 ? 0 : 8),
+            child: _box(i),
+          ),
+        ),
+    ];
+    return Stack(
+      children: [
+        Row(children: boxes),
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0,
+            child: IgnorePointer(ignoring: disabled, child: input),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _box(int i) {
+    final ch = i < code.length ? code[i] : '';
+    final on = focused && !disabled && !error && i == code.length;
+    final border = error
+        ? Border.all(color: MlColors.error, width: 1.5)
+        : on
+        ? Border.all(color: MlColors.borderStrong, width: 1.5)
+        : Border.all(color: MlColors.border);
+    return Container(
+      height: 56,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: disabled ? MlColors.soft : MlColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: border,
+      ),
+      child: Text(
+        disabled ? '' : ch,
+        style: MlText.amtL.copyWith(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: error ? MlColors.amountExpense : MlColors.textPrimary,
+        ),
+      ),
+    );
+  }
+}
+
 /// The user-facing message for a sign-in problem, or null when nothing needs
 /// to be said (the user cancelled).
 String? authFailureMessage(BuildContext context, AuthFailureKind kind) {
   final l10n = context.l10n;
   return switch (kind) {
     AuthFailureKind.cancelled => null,
-    AuthFailureKind.invalidCredentials => l10n.authErrInvalidCredentials,
-    AuthFailureKind.usernameTaken => l10n.authErrUsernameTaken,
-    AuthFailureKind.weakPassword => l10n.authErrWeakPassword,
     AuthFailureKind.tooManyRequests => l10n.authErrTooMany,
     AuthFailureKind.network => l10n.authErrNetwork,
+    AuthFailureKind.invalidCode ||
+    AuthFailureKind.expiredCode ||
     AuthFailureKind.unknown => l10n.authErrUnknown,
   };
 }
@@ -77,6 +147,10 @@ class AuthError extends StatelessWidget {
   Widget build(BuildContext context) =>
       MlHelpLine(text: text, tone: MlHelpTone.error);
 }
+
+/// `mm:ss` for countdowns.
+String clock(int seconds) =>
+    '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
 
 /// The G mark on the Google button: a plain letter, not the brand artwork.
 class GoogleMark extends StatelessWidget {
@@ -99,112 +173,6 @@ class GoogleMark extends StatelessWidget {
   );
 }
 
-/// A labelled single-line field for the username / password forms. With
-/// [secret] it hides the text and shows an eye button to reveal it.
-class AuthTextField extends StatefulWidget {
-  const AuthTextField({
-    super.key,
-    required this.controller,
-    required this.label,
-    this.hint,
-    this.error,
-    this.secret = false,
-    this.autofillHints,
-    this.textInputAction,
-    this.onSubmitted,
-    this.onChanged,
-    this.autofocus = false,
-  });
-
-  final TextEditingController controller;
-  final String label;
-
-  /// Neutral help under the field, replaced by [error] when there is one.
-  final String? hint;
-  final String? error;
-  final bool secret;
-  final Iterable<String>? autofillHints;
-  final TextInputAction? textInputAction;
-  final ValueChanged<String>? onSubmitted;
-  final ValueChanged<String>? onChanged;
-  final bool autofocus;
-
-  @override
-  State<AuthTextField> createState() => _AuthTextFieldState();
-}
-
-class _AuthTextFieldState extends State<AuthTextField> {
-  var _revealed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final hasError = widget.error != null;
-    return MlField(
-      label: widget.label,
-      help: widget.error ?? widget.hint,
-      helpTone: hasError ? MlHelpTone.error : MlHelpTone.neutral,
-      child: MlFieldBox(
-        height: 52,
-        state: hasError ? MlFieldState.error : MlFieldState.normal,
-        padding: const EdgeInsets.only(left: 16, right: 6),
-        child: Row(
-          children: [
-            Expanded(
-              child: MlInput(
-                controller: widget.controller,
-                semanticLabel: widget.label,
-                autofocus: widget.autofocus,
-                obscureText: widget.secret && !_revealed,
-                autofillHints: widget.autofillHints,
-                textInputAction: widget.textInputAction,
-                onSubmitted: widget.onSubmitted,
-                onChanged: widget.onChanged,
-                keyboardType: widget.secret
-                    ? TextInputType.visiblePassword
-                    : TextInputType.text,
-                style: MlText.body,
-              ),
-            ),
-            if (widget.secret)
-              MlIconButton(
-                icon: _revealed ? MlIcons.eyeOff : MlIcons.eye,
-                semanticLabel: _revealed
-                    ? l10n.authHidePassword
-                    : l10n.authShowPassword,
-                size: 40,
-                iconSize: 18,
-                onPressed: () => setState(() => _revealed = !_revealed),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// "Don't have an account? Register": a line of text with a link. Wraps
-/// instead of overflowing on narrow screens and long translations.
-class AuthSwitchLink extends StatelessWidget {
-  const AuthSwitchLink({
-    super.key,
-    required this.text,
-    required this.link,
-    required this.onPressed,
-  });
-
-  final String text;
-  final String link;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) => Wrap(
-    alignment: WrapAlignment.center,
-    crossAxisAlignment: WrapCrossAlignment.center,
-    spacing: 4,
-    children: [
-      Text(text, style: MlText.small.copyWith(color: MlColors.textSecondary)),
-      MlTextLink(label: link, onPressed: onPressed),
-    ],
-  );
-}
+/// Shown icon for the sign-in method rows.
+IconData methodIcon(SignInMethod m) =>
+    m == SignInMethod.phone ? MlIcons.smartphone : MlIcons.mail;

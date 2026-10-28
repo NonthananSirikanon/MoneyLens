@@ -1150,11 +1150,89 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your financial data and slip images stay on your phone';
 
   @override
+  String get authWithPhone => 'Continue with phone number';
+
+  @override
   String get authWithGoogle => 'Continue with Google';
 
   @override
   String get authTerms =>
       'By continuing, you accept the Terms of Use and Privacy Policy';
+
+  @override
+  String get authPhoneTitle => 'Phone number';
+
+  @override
+  String get authPhoneHeading => 'Enter your mobile number';
+
+  @override
+  String get authPhoneBody => 'We\'ll text a 6-digit code to confirm it\'s you';
+
+  @override
+  String get authPhoneLabel => 'Mobile number';
+
+  @override
+  String get authPhoneHint => 'No need to type the leading 0';
+
+  @override
+  String get authPhoneError =>
+      'Enter all 9 digits, e.g. 81 234 5678 (starts with 6, 8 or 9)';
+
+  @override
+  String get authSendCode => 'Send code';
+
+  @override
+  String get authPhonePrivacy => 'We only use your number to sign you in';
+
+  @override
+  String get authOtpTitle => 'Verify code';
+
+  @override
+  String get authOtpHeading => 'Enter the 6-digit code';
+
+  @override
+  String authOtpSentTo(String phone) {
+    return 'Sent to $phone';
+  }
+
+  @override
+  String get authOtpField => '6-digit code';
+
+  @override
+  String get authChangeNumber => 'Change number';
+
+  @override
+  String authOtpWrong(int count) {
+    return 'Wrong code, $count tries left';
+  }
+
+  @override
+  String authOtpLocked(String time) {
+    return 'Too many wrong codes. Try again in $time';
+  }
+
+  @override
+  String get authOtpExpiredTitle => 'The code has expired';
+
+  @override
+  String get authOtpExpiredBody => 'Send a new code to get a fresh one';
+
+  @override
+  String authResendIn(String time) {
+    return 'Resend code in $time';
+  }
+
+  @override
+  String get authResend => 'Resend code';
+
+  @override
+  String get authNewCode => 'Send a new code';
+
+  @override
+  String get authConfirm => 'Confirm';
+
+  @override
+  String get authVerifying => 'Checking the code…';
 
   @override
   String get authErrTooMany => 'Too many requests. Please try again later';
@@ -1242,7 +1320,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountViaGoogle => 'Signed in with Google';
 
   @override
+  String get accountViaPhone => 'Signed in with phone number';
+
+  @override
   String get accountEmail => 'Email';
+
+  @override
+  String get accountPhone => 'Phone number';
 
   @override
   String get accountBirth => 'Date of birth';
@@ -1268,91 +1352,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileFallbackName => 'there';
-
-  @override
-  String get authWithPassword => 'Sign in with username';
-
-  @override
-  String get authNoAccount => 'Don\'t have an account?';
-
-  @override
-  String get authRegister => 'Register';
-
-  @override
-  String get authHaveAccount => 'Already have an account?';
-
-  @override
-  String get authSignIn => 'Sign in';
-
-  @override
-  String get authSignInHeading => 'Welcome back';
-
-  @override
-  String get authSignInBody => 'Enter your username and password';
-
-  @override
-  String get authRegisterHeading => 'Create an account';
-
-  @override
-  String get authRegisterBody =>
-      'Choose a username and password to sign in with';
-
-  @override
-  String get authUsername => 'Username';
-
-  @override
-  String get authUsernameHint => 'a–z, 0–9 and _, 3–20 characters';
-
-  @override
-  String get authUsernameEmpty => 'Enter a username';
-
-  @override
-  String get authUsernameLength => 'Username must be 3–20 characters';
-
-  @override
-  String get authUsernameChars => 'Only a–z, 0–9 and _ (no spaces)';
-
-  @override
-  String get authPassword => 'Password';
-
-  @override
-  String get authPasswordHint => 'At least 8 characters';
-
-  @override
-  String get authPasswordConfirm => 'Confirm password';
-
-  @override
-  String get authPasswordEmpty => 'Enter your password';
-
-  @override
-  String get authPasswordShort => 'Password must be at least 8 characters';
-
-  @override
-  String get authPasswordMismatch => 'Passwords don\'t match';
-
-  @override
-  String get authShowPassword => 'Show password';
-
-  @override
-  String get authHidePassword => 'Hide password';
-
-  @override
-  String get authNoRecovery =>
-      'A forgotten password can\'t be recovered. Keep it somewhere safe';
-
-  @override
-  String get authErrInvalidCredentials => 'Wrong username or password';
-
-  @override
-  String get authErrUsernameTaken => 'That username is taken. Try another';
-
-  @override
-  String get authErrWeakPassword =>
-      'That password is too easy to guess. Try another';
-
-  @override
-  String get accountViaPassword => 'Signed in with username';
-
-  @override
-  String get accountUsername => 'Username';
 }

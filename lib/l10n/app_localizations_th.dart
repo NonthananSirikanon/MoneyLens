@@ -1134,11 +1134,89 @@ class AppLocalizationsTh extends AppLocalizations {
   String get authLocalNote => 'ข้อมูลการเงินและรูปสลิปเก็บในเครื่องของคุณ';
 
   @override
+  String get authWithPhone => 'ดำเนินการต่อด้วยเบอร์โทร';
+
+  @override
   String get authWithGoogle => 'ดำเนินการต่อด้วย Google';
 
   @override
   String get authTerms =>
       'เมื่อดำเนินการต่อ แปลว่าคุณยอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว';
+
+  @override
+  String get authPhoneTitle => 'เบอร์โทรศัพท์';
+
+  @override
+  String get authPhoneHeading => 'กรอกเบอร์มือถือของคุณ';
+
+  @override
+  String get authPhoneBody => 'เราจะส่งรหัส 6 หลักทาง SMS เพื่อยืนยันตัวตน';
+
+  @override
+  String get authPhoneLabel => 'เบอร์มือถือ';
+
+  @override
+  String get authPhoneHint => 'ไม่ต้องใส่ 0 ข้างหน้า';
+
+  @override
+  String get authPhoneError =>
+      'ใส่เบอร์ให้ครบ 9 หลัก เช่น 81 234 5678 (ขึ้นต้นด้วย 6, 8 หรือ 9)';
+
+  @override
+  String get authSendCode => 'ส่งรหัส OTP';
+
+  @override
+  String get authPhonePrivacy => 'เราใช้เบอร์ของคุณเพื่อเข้าสู่ระบบเท่านั้น';
+
+  @override
+  String get authOtpTitle => 'ยืนยันรหัส';
+
+  @override
+  String get authOtpHeading => 'กรอกรหัส 6 หลัก';
+
+  @override
+  String authOtpSentTo(String phone) {
+    return 'ส่งไปที่ $phone';
+  }
+
+  @override
+  String get authOtpField => 'รหัส OTP 6 หลัก';
+
+  @override
+  String get authChangeNumber => 'เปลี่ยนเบอร์';
+
+  @override
+  String authOtpWrong(int count) {
+    return 'รหัสไม่ถูกต้อง เหลืออีก $count ครั้ง';
+  }
+
+  @override
+  String authOtpLocked(String time) {
+    return 'ลองผิดหลายครั้งเกินไป ขอรหัสใหม่ได้ใน $time';
+  }
+
+  @override
+  String get authOtpExpiredTitle => 'รหัสหมดอายุแล้ว';
+
+  @override
+  String get authOtpExpiredBody => 'กดส่งรหัสใหม่เพื่อรับรหัสใหม่';
+
+  @override
+  String authResendIn(String time) {
+    return 'ส่งรหัสอีกครั้งใน $time';
+  }
+
+  @override
+  String get authResend => 'ส่งรหัสอีกครั้ง';
+
+  @override
+  String get authNewCode => 'ส่งรหัสใหม่';
+
+  @override
+  String get authConfirm => 'ยืนยัน';
+
+  @override
+  String get authVerifying => 'กำลังตรวจสอบรหัส…';
 
   @override
   String get authErrTooMany => 'ขอรหัสบ่อยเกินไป โปรดลองใหม่ภายหลัง';
@@ -1225,7 +1303,13 @@ class AppLocalizationsTh extends AppLocalizations {
   String get accountViaGoogle => 'เข้าสู่ระบบด้วย Google';
 
   @override
+  String get accountViaPhone => 'เข้าสู่ระบบด้วยเบอร์โทร';
+
+  @override
   String get accountEmail => 'อีเมล';
+
+  @override
+  String get accountPhone => 'เบอร์โทร';
 
   @override
   String get accountBirth => 'วันเกิด';
@@ -1251,89 +1335,4 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get profileFallbackName => 'คุณ';
-
-  @override
-  String get authWithPassword => 'เข้าสู่ระบบด้วยชื่อผู้ใช้';
-
-  @override
-  String get authNoAccount => 'ยังไม่มีบัญชี?';
-
-  @override
-  String get authRegister => 'ลงทะเบียน';
-
-  @override
-  String get authHaveAccount => 'มีบัญชีแล้ว?';
-
-  @override
-  String get authSignIn => 'เข้าสู่ระบบ';
-
-  @override
-  String get authSignInHeading => 'ยินดีต้อนรับกลับมา';
-
-  @override
-  String get authSignInBody => 'กรอกชื่อผู้ใช้และรหัสผ่านของคุณ';
-
-  @override
-  String get authRegisterHeading => 'สร้างบัญชีใหม่';
-
-  @override
-  String get authRegisterBody => 'ตั้งชื่อผู้ใช้และรหัสผ่านสำหรับเข้าใช้งาน';
-
-  @override
-  String get authUsername => 'ชื่อผู้ใช้';
-
-  @override
-  String get authUsernameHint => 'a–z, 0–9 และ _ ยาว 3–20 ตัว';
-
-  @override
-  String get authUsernameEmpty => 'ใส่ชื่อผู้ใช้';
-
-  @override
-  String get authUsernameLength => 'ชื่อผู้ใช้ต้องยาว 3–20 ตัว';
-
-  @override
-  String get authUsernameChars => 'ใช้ได้เฉพาะ a–z, 0–9 และ _ (ไม่มีช่องว่าง)';
-
-  @override
-  String get authPassword => 'รหัสผ่าน';
-
-  @override
-  String get authPasswordHint => 'อย่างน้อย 8 ตัว';
-
-  @override
-  String get authPasswordConfirm => 'ยืนยันรหัสผ่าน';
-
-  @override
-  String get authPasswordEmpty => 'ใส่รหัสผ่าน';
-
-  @override
-  String get authPasswordShort => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัว';
-
-  @override
-  String get authPasswordMismatch => 'รหัสผ่านไม่ตรงกัน';
-
-  @override
-  String get authShowPassword => 'แสดงรหัสผ่าน';
-
-  @override
-  String get authHidePassword => 'ซ่อนรหัสผ่าน';
-
-  @override
-  String get authNoRecovery =>
-      'ถ้าลืมรหัสผ่านจะกู้คืนไม่ได้ โปรดจดไว้ในที่ปลอดภัย';
-
-  @override
-  String get authErrInvalidCredentials => 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
-
-  @override
-  String get authErrUsernameTaken => 'ชื่อผู้ใช้นี้ถูกใช้แล้ว ลองชื่ออื่น';
-
-  @override
-  String get authErrWeakPassword => 'รหัสผ่านคาดเดาง่ายเกินไป ลองตั้งใหม่';
-
-  @override
-  String get accountViaPassword => 'เข้าสู่ระบบด้วยชื่อผู้ใช้';
-
-  @override
-  String get accountUsername => 'ชื่อผู้ใช้';
 }
