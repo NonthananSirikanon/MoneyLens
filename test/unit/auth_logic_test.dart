@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/app/auth_redirect.dart';
 import 'package:moneylens/features/auth/application/birth_date.dart';
+import 'package:moneylens/features/auth/application/account_deletion.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/auth/application/session.dart';
 import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
@@ -191,7 +192,7 @@ void main() {
       expect(c.read(sessionProvider).status, SessionStatus.needsBirthDate);
     });
   });
-  group('SessionController.deleteAccount', () {
+  group('AccountDeletion', () {
     const user = AppUser(id: 'u1', method: SignInMethod.google, email: 'a@b.c');
 
     Future<({ProviderContainer c, AppDatabase db, RecordingEraser eraser})>
@@ -201,7 +202,12 @@ void main() {
       final c = ProviderContainer(
         overrides: [
           authRepositoryProvider.overrideWithValue(repo),
-          appDatabaseProvider.overrideWithValue(db),
+          // Same shape as the real provider: the database depends on the
+          // session. (overrideWithValue would hide a circular dependency.)
+          appDatabaseProvider.overrideWith((ref) {
+            ref.watch(sessionProvider.select((s) => s.user?.id));
+            return db;
+          }),
           localDataEraserProvider.overrideWithValue(eraser),
         ],
       );
@@ -239,7 +245,8 @@ void main() {
       await addSlip(t.db, 'tx-1', 'slips/a.jpg');
       await addSlip(t.db, 'tx-2', 'assets/images/receipt.png');
 
-      await t.c.read(sessionProvider.notifier).deleteAccount();
+      await t.c.read(accountDeletionProvider).run();
+      await pumpEventQueue();
 
       expect(repo.accountDeleted, isTrue);
       expect(t.c.read(sessionProvider).status, SessionStatus.signedOut);
@@ -258,7 +265,7 @@ void main() {
       await addSlip(t.db, 'tx-1', 'slips/a.jpg');
 
       await expectLater(
-        t.c.read(sessionProvider.notifier).deleteAccount(),
+        t.c.read(accountDeletionProvider).run(),
         throwsA(
           isA<AuthFailure>().having(
             (e) => e.kind,

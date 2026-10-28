@@ -12,6 +12,7 @@ import '../../../core/widgets/ml_surfaces.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../sync/application/sync_controller.dart';
+import '../application/account_deletion.dart';
 import '../application/session.dart';
 import '../domain/auth_models.dart';
 import 'auth_widgets.dart';
@@ -55,7 +56,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 
     setState(() => _deleting = true);
     try {
-      await ref.read(sessionProvider.notifier).deleteAccount();
+      await ref.read(accountDeletionProvider).run();
       // The session is gone, so the router moves to the sign-in screen.
       showMlToast(l10n.toastAccountDeleted);
     } on AuthFailure catch (e) {
@@ -65,6 +66,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             ? l10n.accountDeleteNeedsInternet
             : (authFailureMessage(context, e.kind) ?? l10n.authErrUnknown),
       );
+    } on Object {
+      // Anything unexpected must not look like "nothing happened".
+      if (!mounted) return;
+      showMlToast(l10n.authErrUnknown);
     } finally {
       if (mounted) setState(() => _deleting = false);
     }
