@@ -3,7 +3,7 @@
 Offline-first personal finance app for iOS and Android. Payment slips are imported, read with OCR, and turned into transactions that the user must review before they are saved.
 
 This is the **initial scaffold** (ROADMAP week 1). The product, architecture, database, and plan documents are the source of truth:
-[PROJECT.md](PROJECT.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [ROADMAP.md](ROADMAP.md)
+[PROJECT.md](PROJECT.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [ROADMAP.md](ROADMAP.md) · [SYNC.md](SYNC.md) · [RUNNING.md](RUNNING.md) (how to run on an emulator)
 
 ## Requirements
 
