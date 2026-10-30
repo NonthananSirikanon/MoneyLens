@@ -4,12 +4,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/dates/clock.dart';
+import '../core/errors/app_failure.dart';
 import '../core/money/currency.dart';
+import '../core/money/money.dart';
 import '../features/accounts/application/account_providers.dart';
 import '../features/accounts/domain/account.dart';
 import '../features/categories/application/category_providers.dart';
 import '../features/categories/domain/category.dart';
 import '../features/slip_import/application/slip_import_providers.dart';
+import '../features/slip_import/domain/extracted_fields.dart';
 import '../features/slip_import/domain/scan_record.dart';
 import '../features/slip_import/domain/scan_status.dart';
 import '../features/transactions/application/transaction_providers.dart';
@@ -23,9 +26,9 @@ import 'demo_seed.dart';
 /// The app's UI store.
 ///
 /// Ledger data (transactions, accounts, categories) is mirrored from the
-/// Drift database and every change is written there. The slip queue is
-/// SIMULATED in memory (no camera, OCR or gallery adapter is wired yet) and
-/// is only populated in sample mode (`ML_SAMPLE_DATA`); see
+/// Drift database and every change is written there. The slip queue is the
+/// real one (`SlipImportPipeline`, OCR on the device) unless sample mode
+/// (`ML_SAMPLE_DATA`) is on, where it is SIMULATED in memory; see
 /// `demo_config.dart`.
 class DemoStore extends Notifier<DemoState> {
   final _timers = <Timer>[];
@@ -135,6 +138,7 @@ class DemoStore extends Notifier<DemoState> {
   /// slip, marks that scan confirmed. Returns the new transaction id.
   Future<String> addTransaction(TransactionInput input) async {
     final scan = state.scan(input.scanId);
+    if (scan != null && _real) return _confirmScan(scan, input);
     final tx = await ref
         .read(createTransactionProvider)
         .call(
@@ -158,6 +162,21 @@ class DemoStore extends Notifier<DemoState> {
       _setTitleKind(scan.id, ScanTitleKind.reading, reading: _readingFrom(tx));
     }
     return tx.id;
+  }
+
+  /// Real mode: saves the reviewed slip through `ConfirmScan`, which creates
+  /// the transaction and confirms the scan in one database transaction and
+  /// is safe to repeat.
+  Future<String> _confirmScan(ScanRecord scan, TransactionInput input) async {
+    final result = await ref
+        .read(confirmScanProvider)
+        .call(
+          scanId: scan.id,
+          // The repository sets the source (ocr) and the slip image itself.
+          reviewedDraft: _draft(input, source: TransactionSource.ocr),
+        );
+    await Future.wait([_refreshTransactions(), _refreshScans()]);
+    return result.transaction.id;
   }
 
   Future<void> updateTransaction(String id, TransactionInput input) async {
@@ -286,6 +305,134 @@ class DemoStore extends Notifier<DemoState> {
     return ids;
   }
 
+  bool get _real => !ref.read(sampleDataEnabledProvider);
+
+  // ------------------------------------------------------- real slip queue
+
+  var _scanSeq = 0;
+
+  /// Real mode: loads the queue from the database, and resumes any scan the
+  /// app was killed in the middle of. Does nothing in sample mode.
+  Future<void> loadScans() async {
+    if (!_real) return;
+    await _refreshScans();
+    for (final s in state.scans) {
+      if (s.status == ScanStatus.queued) unawaited(_process(s.id));
+    }
+  }
+
+  Future<void> _refreshScans() async {
+    if (!_real) return;
+    final seq = ++_scanSeq;
+    final repo = ref.read(scanRepositoryProvider);
+    final scans = await repo.findVisible();
+    // A duplicate points at the scan it repeats; show that scan's reading
+    // and, when it was saved, its transaction.
+    final byId = {for (final s in scans) s.id: s};
+    final originals = <String, ScanRecord>{};
+    for (final s in scans) {
+      final of = s.duplicateOfScanId;
+      if (s.status == ScanStatus.duplicate && of != null) {
+        final original = byId[of] ?? await repo.findById(of);
+        if (original != null) originals[s.id] = original;
+      }
+    }
+    if (!ref.mounted || seq != _scanSeq) return;
+    state = state.copyWith(
+      scans: scans,
+      scanDetails: {
+        for (final s in scans) s.id: _detailsOf(s, originals[s.id]),
+      },
+      ocrProgress: {for (final s in scans) s.id: _progressOf(s.status)},
+      transactionImportSources: {
+        ...state.transactionImportSources,
+        for (final s in scans)
+          if (s.transactionId != null) s.transactionId!: s.source,
+      },
+    );
+  }
+
+  /// There is no real percentage: report where the scan is, honestly.
+  static double _progressOf(ScanStatus status) => switch (status) {
+    ScanStatus.queued => 15,
+    ScanStatus.processing => 60,
+    _ => 100,
+  };
+
+  static ScanDetails _detailsOf(ScanRecord s, ScanRecord? original) {
+    final fields = s.extracted ?? original?.extracted;
+    return ScanDetails(
+      fileName: '',
+      reading: fields == null ? null : _readingOf(fields, s.createdAt),
+      duplicateOfTransactionId: original?.transactionId,
+      titleKind: fields == null
+          ? ScanTitleKind.fileName
+          : ScanTitleKind.reading,
+    );
+  }
+
+  /// What the review screen shows for what was read. Nothing here is a
+  /// verdict: confidence only decides how loudly a field is flagged.
+  static SlipReading _readingOf(ExtractedFields f, DateTime fallbackTime) {
+    FieldConfidence level(ExtractedField<Object?>? field) {
+      if (field == null) return FieldConfidence.missing;
+      return (field.confidence ?? 0) >= 0.8
+          ? FieldConfidence.verified
+          : FieldConfidence.uncertain;
+    }
+
+    final minor = f.amountMinor?.value;
+    return SlipReading(
+      merchant: f.merchant?.value ?? '',
+      amountText: minor == null
+          ? ''
+          : Money(minor, Currency.thb).toDecimalString(),
+      occurredAt: f.occurredAt?.value ?? fallbackTime,
+      providerReference: f.providerReference?.value,
+      confidence: {
+        ReadingField.amount: level(f.amountMinor),
+        ReadingField.date: level(f.occurredAt),
+        ReadingField.time: level(f.occurredAt),
+        ReadingField.merchant: level(f.merchant),
+        // A slip does not say which category the user files it under.
+        ReadingField.category: FieldConfidence.missing,
+      },
+    );
+  }
+
+  /// Runs the pipeline on a queued scan, refreshing the queue when it ends.
+  Future<void> _process(String scanId) async {
+    try {
+      await ref.read(slipImportPipelineProvider).process(scanId);
+    } on Object {
+      // The pipeline records the failure on the scan; nothing else to do.
+    }
+    await _refreshScans();
+  }
+
+  /// Real mode: lets the user pick or take a photo, stores it and starts
+  /// reading it in the background. Returns the new scan, or null when the
+  /// user cancelled. Throws [AppFailure] (permission denied, a file that is
+  /// not an image, ...).
+  Future<ScanRecord?> importFrom(ImportSource source) async {
+    final adapter = ref.read(imageSourcesProvider)[source];
+    if (adapter == null) throw const AppFailure(FailureCode.notImplemented);
+    final request = await adapter.acquire();
+    if (request == null) return null;
+    final scan = await ref.read(slipImportPipelineProvider).accept(request);
+    await _refreshScans();
+    unawaited(_process(scan.id));
+    return scan;
+  }
+
+  /// "This is not a duplicate": reads the slip after all and moves it to
+  /// review. Does nothing in sample mode.
+  Future<void> keepDuplicate(String scanId) async {
+    if (!_real) return;
+    await ref.read(slipImportPipelineProvider).keepDuplicate(scanId);
+    await _refreshScans();
+  }
+
   /// Simulates a camera capture and starts reading it. Returns the scan id.
   String captureFromCamera() {
     final id = _addScan(ImportSource.camera, 'IMG_2050.jpg');
@@ -295,15 +442,43 @@ class DemoStore extends Notifier<DemoState> {
 
   /// Re-reads a failed scan using its prepared retry result.
   void retryFailed(String scanId) {
+    if (_real) {
+      _updateScan(scanId, status: ScanStatus.processing);
+      unawaited(_retry(scanId));
+      return;
+    }
     final reading = state.scanDetails[scanId]?.retryReading;
     if (reading == null) return;
     _updateScan(scanId, status: ScanStatus.processing);
     _runOcr(scanId, reading);
   }
 
+  Future<void> _retry(String scanId) async {
+    try {
+      await ref.read(slipImportPipelineProvider).retry(scanId);
+    } on Object {
+      // Recorded on the scan.
+    }
+    await _refreshScans();
+  }
+
+  Future<void> _discardReal(String scanId) async {
+    try {
+      await ref.read(slipImportPipelineProvider).discard(scanId);
+    } on Object {
+      // Already gone or not discardable; the refresh shows the truth.
+    }
+    await _refreshScans();
+  }
+
   void discardScan(String scanId) {
     final scan = state.scan(scanId);
     if (scan == null) return;
+    if (_real) {
+      _updateScan(scanId, status: ScanStatus.discarded);
+      unawaited(_discardReal(scanId));
+      return;
+    }
     if (scan.status == ScanStatus.duplicate) {
       _setTitleKind(scanId, ScanTitleKind.discardedDuplicate);
     }
@@ -311,6 +486,10 @@ class DemoStore extends Notifier<DemoState> {
   }
 
   void removeScan(String scanId) {
+    if (_real) {
+      discardScan(scanId);
+      return;
+    }
     state = state.copyWith(
       scans: [
         for (final s in state.scans)

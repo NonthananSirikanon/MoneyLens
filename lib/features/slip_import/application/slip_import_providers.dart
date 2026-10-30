@@ -4,6 +4,7 @@ import '../../../core/dates/clock.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/utils/id_generator.dart';
 import '../../../infrastructure/database/app_database.dart';
+import '../../../infrastructure/ocr/platform_ocr_service.dart';
 import '../../../infrastructure/platform/gallery/image_picker_source.dart';
 import '../../../infrastructure/platform/share_sheet/share_sheet_source.dart';
 import '../../transactions/application/transaction_providers.dart';
@@ -11,7 +12,7 @@ import '../data/drift_scan_repository.dart';
 import '../data/fingerprint_duplicate_detector.dart';
 import '../data/local_slip_image_store.dart';
 import '../data/magic_byte_image_validator.dart';
-import '../data/unavailable_ocr_service.dart';
+import '../data/thai_slip_extraction_service.dart';
 import '../domain/import_ports.dart';
 import '../domain/scan_record.dart';
 import '../domain/scan_repository.dart';
@@ -32,11 +33,11 @@ final slipImageStoreProvider = Provider<SlipImageStore>(
 
 /// Swap this binding to plug in a real OCR engine.
 final ocrServiceProvider = Provider<OcrService>(
-  (ref) => const UnavailableOcrService(),
+  (ref) => const PlatformOcrService(),
 );
 
 final extractionServiceProvider = Provider<ExtractionService>(
-  (ref) => const EmptyExtractionService(),
+  (ref) => const ThaiSlipExtractionService(),
 );
 
 final imageSourcesProvider = Provider<Map<ImportSource, ImageSourceAdapter>>(

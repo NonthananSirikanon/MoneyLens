@@ -311,6 +311,7 @@ class SlipImage extends StatelessWidget {
     this.border = false,
     this.fit = BoxFit.cover,
     this.semanticLabel,
+    this.image,
   });
 
   final double? width;
@@ -321,6 +322,9 @@ class SlipImage extends StatelessWidget {
   final BoxFit fit;
   final String? semanticLabel;
 
+  /// The slip's own photo. Without it the bundled sample receipt is shown.
+  final ImageProvider? image;
+
   static const _greyscale = ColorFilter.matrix([
     0.6, 0.3, 0.1, 0, 0, //
     0.2, 0.7, 0.1, 0, 0,
@@ -330,18 +334,19 @@ class SlipImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget image = Image.asset(
-      MlImages.receipt,
+    Widget picture = Image(
+      image: image ?? const AssetImage(MlImages.receipt),
       width: width,
       height: height,
       fit: fit,
       semanticLabel: semanticLabel,
       excludeFromSemantics: semanticLabel == null,
+      errorBuilder: (_, _, _) => const ColoredBox(color: MlColors.soft),
     );
     if (degraded) {
-      image = ImageFiltered(
+      picture = ImageFiltered(
         imageFilter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-        child: ColorFiltered(colorFilter: _greyscale, child: image),
+        child: ColorFiltered(colorFilter: _greyscale, child: picture),
       );
     }
     return Container(
@@ -352,7 +357,7 @@ class SlipImage extends StatelessWidget {
         border: border ? Border.all(color: MlColors.border) : null,
       ),
       clipBehavior: Clip.antiAlias,
-      child: image,
+      child: picture,
     );
   }
 }

@@ -19,6 +19,7 @@ import '../application/entry_form.dart';
 import '../application/transaction_view_providers.dart';
 import '../domain/transaction_type.dart';
 import 'transaction_tile.dart';
+import '../../slip_import/presentation/scan_photo.dart';
 
 /// "รายละเอียดรายการ" (prototype `is.detail`).
 class TransactionDetailScreen extends ConsumerWidget {
@@ -164,10 +165,22 @@ class TransactionDetailScreen extends ConsumerWidget {
                     MlCard(
                       padding: const EdgeInsets.all(MlSpace.sm),
                       semanticLabel: l10n.slipOriginal,
-                      onPressed: () => showSlipViewer(context),
+                      onPressed: () => showSlipViewer(
+                        context,
+                        photo: (_) => ScanPhoto(
+                          attachmentPath: v.transaction.attachmentPath,
+                          radius: MlRadius.md,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                       child: Row(
                         children: [
-                          const SlipImage(width: 52, height: 68, radius: 10),
+                          ScanPhoto(
+                            attachmentPath: v.transaction.attachmentPath,
+                            width: 52,
+                            height: 68,
+                            radius: 10,
+                          ),
                           const SizedBox(width: MlSpace.sm),
                           Expanded(
                             child: Column(

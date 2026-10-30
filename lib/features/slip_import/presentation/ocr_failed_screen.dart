@@ -6,7 +6,6 @@ import '../../../app/router.dart';
 import '../../../app/theme/icons.dart';
 import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
-import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
@@ -14,6 +13,9 @@ import '../../../core/widgets/ml_surfaces.dart';
 import '../../../demo/demo_store.dart';
 import '../../../l10n/l10n.dart';
 import 'import_flows.dart';
+import 'scan_photo.dart';
+import '../application/import_view_providers.dart';
+import '../../../l10n/failure_messages.dart';
 
 /// "อ่านสลิปไม่สำเร็จ": tips plus retry, manual entry or delete.
 class OcrFailedScreen extends ConsumerWidget {
@@ -25,6 +27,7 @@ class OcrFailedScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final store = ref.read(demoStoreProvider.notifier);
+    final scan = ref.watch(scanViewProvider(scanId))?.scan;
     final tips = [
       (MlIcons.sun, MlColors.warning, l10n.ocrTipLight),
       (MlIcons.scanLine, MlColors.success, l10n.ocrTipVisible),
@@ -51,8 +54,9 @@ class OcrFailedScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(
-                      child: SlipImage(
+                    Center(
+                      child: ScanPhoto(
+                        attachmentPath: scan?.attachmentPath,
                         width: 110,
                         height: 146,
                         radius: 14,
@@ -67,6 +71,17 @@ class OcrFailedScreen extends ConsumerWidget {
                       style: MlText.h2.copyWith(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
+                    if (scan?.failureCode case final code?) ...[
+                      Text(
+                        l10n.failureMessage(code),
+                        textAlign: TextAlign.center,
+                        style: MlText.small.copyWith(
+                          color: MlColors.amountExpense,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                    ],
                     Text(
                       l10n.ocrFailedBody,
                       textAlign: TextAlign.center,

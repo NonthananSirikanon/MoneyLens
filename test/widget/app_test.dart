@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart' show TextField;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,9 +9,12 @@ import 'package:moneylens/app/app_preferences.dart';
 import 'package:moneylens/app/providers.dart';
 import 'package:moneylens/app/theme/icons.dart';
 import 'package:moneylens/core/dates/clock.dart';
+import 'package:moneylens/core/errors/app_failure.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
 import 'package:moneylens/demo/demo_config.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
+import 'package:moneylens/features/slip_import/application/slip_import_providers.dart';
+import 'package:moneylens/features/slip_import/domain/scan_status.dart';
 import 'package:moneylens/features/export/application/export_service.dart';
 import 'package:moneylens/features/auth/application/session.dart';
 import 'package:moneylens/features/auth/data/fake_auth_repository.dart';
@@ -48,6 +54,9 @@ void main() {
     FakeAuthRepository? auth,
     RecordingEraser? eraser,
     RecordingSharer? sharer,
+    StubOcrService? ocr,
+    FakeImageSource? camera,
+    FakeImageSource? gallery,
   }) async {
     final authRepo =
         auth ??
@@ -74,6 +83,14 @@ void main() {
         authRepositoryProvider.overrideWithValue(authRepo),
         localDataEraserProvider.overrideWithValue(eraser ?? RecordingEraser()),
         fileSharerProvider.overrideWithValue(sharer ?? RecordingSharer()),
+        // Slip import: no real camera, photo picker, OCR engine or disk.
+        imageSourcesProvider.overrideWithValue({
+          ImportSource.camera: camera ?? FakeImageSource(ImportSource.camera),
+          ImportSource.gallery:
+              gallery ?? FakeImageSource(ImportSource.gallery),
+        }),
+        ocrServiceProvider.overrideWithValue(ocr ?? StubOcrService()),
+        slipImageStoreProvider.overrideWithValue(MemorySlipImageStore()),
         // Drift stream queries and writes deadlock under the fake clock of
         // widget tests, so the ledger streams emit one-shot reads instead.
         // The store re-reads after every write, so the UI still updates.
@@ -585,11 +602,11 @@ void main() {
     expect(container.read(demoStoreProvider).transactions, isEmpty);
     expect(container.read(demoStoreProvider).scans, isEmpty);
 
-    // Slip import is not available without a real OCR engine.
+    // Scanning opens the system camera; cancelling it leaves everything as is.
     await tapOn(tester, find.text('Scan slip'));
     await settle(tester);
-    expect(find.text('This feature is being tested'), findsOneWidget);
-    await drain(tester);
+    expect(container.read(demoStoreProvider).scans, isEmpty);
+    expect(find.text('Total balance'), findsOneWidget);
 
     await tapOn(tester, find.text('Add manually').first);
     await settle(tester);
@@ -602,6 +619,74 @@ void main() {
     final s = container.read(demoStoreProvider);
     expect(s.transactions.single.accountId, 'default-cash');
     expect(s.balanceOf('default-cash'), -15000);
+  });
+
+  testWidgets('scanning a real slip: read, review, save', (tester) async {
+    final slipText = File('test/fixtures/slips/kbank_transfer.txt')
+        .readAsStringSync();
+    final camera = FakeImageSource(ImportSource.camera, bytes: fakeJpeg(3));
+    final container = await pumpApp(
+      tester,
+      sample: false,
+      camera: camera,
+      ocr: StubOcrService(text: slipText),
+    );
+
+    await tapOn(tester, find.text('Scan slip'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 200));
+    expect(camera.calls, 1);
+
+    // The read finishes and the review form opens with what was found.
+    expect(find.text('Review transaction'), findsOneWidget);
+    final filled = find
+        .byType(TextField)
+        .evaluate()
+        .map((e) => (e.widget as TextField).controller?.text)
+        .toList();
+    expect(filled, containsAll(['1250.50', 'นาย สมชาย ทดสอบ']));
+    expect(
+      container.read(demoStoreProvider).scans.single.status,
+      ScanStatus.needsReview,
+    );
+
+    // The category is the user's to pick; saving without it is refused.
+    await tapOn(tester, find.text('Confirm and save'));
+    await settle(tester);
+    expect(container.read(demoStoreProvider).transactions, isEmpty);
+    await tapOn(tester, find.text('Choose a category'));
+    await settle(tester);
+    await tapOn(tester, find.text('อาหารและเครื่องดื่ม'));
+    await settle(tester);
+    await tapOn(tester, find.text('Confirm and save'));
+    await settle(tester);
+
+    expect(find.text('Saved'), findsOneWidget);
+    final s = container.read(demoStoreProvider);
+    expect(s.transactions.single.amount, thb(125050));
+    expect(s.transactions.single.scanRecordId, s.scans.single.id);
+    expect(s.scans.single.status, ScanStatus.confirmed);
+    expect(s.balanceOf('default-cash'), -125050);
+    await drain(tester);
+  });
+
+  testWidgets('a slip that cannot be read says why', (tester) async {
+    await pumpApp(
+      tester,
+      sample: false,
+      gallery: FakeImageSource(ImportSource.gallery, bytes: fakeJpeg(4)),
+      ocr: StubOcrService(failWith: FailureCode.unreadableImage),
+    );
+    await tapOn(tester, find.text('Scan slip'));
+    await settle(tester);
+    // The camera is empty (cancelled); use the photo picker from the add sheet.
+    await tapOn(tester, find.byIcon(MlIcons.plus));
+    await settle(tester);
+    await tapOn(tester, find.text('Choose from Photos'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 200));
+
+    expect(find.text("The details couldn't be read"), findsOneWidget);
+    expect(find.text('The image could not be read.'), findsOneWidget);
+    await drain(tester);
   });
 
   testWidgets('startup failure shows a retryable error', (tester) async {

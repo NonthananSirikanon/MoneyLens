@@ -60,13 +60,18 @@ class DriftScanRepository implements ScanRepository {
     return rows.map(_toDomain).toList();
   }
 
+  SimpleSelectStatement<$ScanRecordsTable, ScanRecordRow> get _visibleQuery =>
+      _db.select(_db.scanRecords)
+        ..where((s) => s.status.equals(ScanStatus.discarded.dbValue).not())
+        ..orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
+
   @override
-  Stream<List<ScanRecord>> watchVisible() {
-    final query = _db.select(_db.scanRecords)
-      ..where((s) => s.status.equals(ScanStatus.discarded.dbValue).not())
-      ..orderBy([(s) => OrderingTerm.desc(s.createdAt)]);
-    return query.watch().map((rows) => rows.map(_toDomain).toList());
-  }
+  Stream<List<ScanRecord>> watchVisible() =>
+      _visibleQuery.watch().map((rows) => rows.map(_toDomain).toList());
+
+  @override
+  Future<List<ScanRecord>> findVisible() async =>
+      (await _visibleQuery.get()).map(_toDomain).toList();
 
   @override
   Future<ScanRecord> transition(

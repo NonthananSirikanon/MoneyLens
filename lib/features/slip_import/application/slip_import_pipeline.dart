@@ -43,6 +43,15 @@ class SlipImportPipeline {
   /// Throws [AppFailure] when the file itself is rejected; no scan record
   /// is created for it. Every failure after that is recorded on the scan.
   Future<ScanRecord> ingest(ImportRequest request) async {
+    final scan = await accept(request);
+    return process(scan.id);
+  }
+
+  /// The first half of [ingest]: validate, store the image and create the
+  /// scan as `queued`, without reading it yet. The caller then runs
+  /// [process], which lets the UI show the scan straight away while it is
+  /// being read.
+  Future<ScanRecord> accept(ImportRequest request) async {
     final format = _validator.validate(request.bytes);
     final stored = await _store.save(request.bytes, format);
     final scan = await _scans.create(
@@ -52,7 +61,7 @@ class SlipImportPipeline {
       imageFingerprint: stored.fingerprint,
     );
     _logger.event('scan_created', {'source': request.source, 'format': format});
-    return process(scan.id);
+    return scan;
   }
 
   /// Processes a `queued` scan. Safe to call again after [retry].
@@ -104,6 +113,26 @@ class SlipImportPipeline {
       await _scans.transition(scanId, ScanStatus.queued);
     }
     return process(scanId);
+  }
+
+  /// "This is not a duplicate": reads a `duplicate` scan after all and moves
+  /// it to review. Throws [AppFailure] (the scan stays a duplicate) when the
+  /// image cannot be read.
+  Future<ScanRecord> keepDuplicate(String scanId) async {
+    final scan = await _scans.findById(scanId);
+    if (scan == null) throw const AppFailure(FailureCode.notFound);
+    if (scan.status != ScanStatus.duplicate) return scan;
+    final path = scan.attachmentPath;
+    if (path == null) throw const AppFailure(FailureCode.unreadableImage);
+    final ocrResult = await _ocr.recognize(await _store.resolve(path));
+    final fields = await _extraction.extract(ocrResult);
+    _logger.event('scan_duplicate_kept');
+    return _scans.transition(
+      scanId,
+      ScanStatus.needsReview,
+      extracted: fields,
+      processorVersion: processorVersion,
+    );
   }
 
   /// Removes a scan from the workflow and deletes its app-owned image.

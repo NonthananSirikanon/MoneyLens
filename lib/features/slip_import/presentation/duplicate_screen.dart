@@ -7,7 +7,6 @@ import '../../../app/theme/icons.dart';
 import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../core/dates/reporting_time_zone.dart';
-import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
@@ -17,6 +16,7 @@ import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../transactions/application/entry_form.dart';
 import '../application/import_view_providers.dart';
+import 'scan_photo.dart';
 
 /// "อาจเป็นรายการซ้ำ": the new slip side by side with the saved match.
 class DuplicateScreen extends ConsumerWidget {
@@ -124,7 +124,11 @@ class DuplicateScreen extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: MlSpace.xs),
-                            const SlipImage(height: 96, radius: 10),
+                            ScanPhoto(
+                              attachmentPath: view.scan.attachmentPath,
+                              height: 96,
+                              radius: 10,
+                            ),
                             for (final (k, v, hot) in kv) ...[
                               const SizedBox(height: MlSpace.xs),
                               Text(
@@ -180,10 +184,22 @@ class DuplicateScreen extends ConsumerWidget {
               label: l10n.duplicateKeep,
               variant: MlButtonVariant.outline,
               height: 52,
-              onPressed: () => context.pushReplacement(
-                AppRoutes.entry,
-                extra: ScanEntryArgs(scanId),
-              ),
+              onPressed: () async {
+                try {
+                  // Real slips are read after all and sent to review.
+                  await ref
+                      .read(demoStoreProvider.notifier)
+                      .keepDuplicate(scanId);
+                } on Object {
+                  if (context.mounted) showMlToast(l10n.failureGeneric);
+                  return;
+                }
+                if (!context.mounted) return;
+                context.pushReplacement(
+                  AppRoutes.entry,
+                  extra: ScanEntryArgs(scanId),
+                );
+              },
             ),
           ],
         ),

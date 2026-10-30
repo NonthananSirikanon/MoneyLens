@@ -11,6 +11,7 @@ import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../application/import_view_providers.dart';
 import '../domain/scan_status.dart';
+import 'scan_photo.dart';
 
 /// Pill colours and icon per status (`.pill--*`).
 ({Color bg, Color fg, Color? iconColor, IconData icon}) scanStatusStyle(
@@ -88,10 +89,16 @@ String scanTitle(BuildContext context, ScanView v) {
   final d = v.details;
   final r = d?.reading;
   return switch (d?.titleKind) {
-    ScanTitleKind.reading when r != null => '${r.merchant} · ฿${r.amountText}',
+    ScanTitleKind.reading when r != null && r.merchant.isNotEmpty =>
+      r.amountText.isEmpty ? r.merchant : '${r.merchant} · ฿${r.amountText}',
+    ScanTitleKind.reading when r != null && r.amountText.isNotEmpty =>
+      '฿${r.amountText}',
     ScanTitleKind.discardedDuplicate when r != null =>
       context.l10n.queueDuplicateTitle(r.amountText),
-    _ => d?.fileName ?? '',
+    _ =>
+      (d?.fileName.isNotEmpty ?? false)
+          ? d!.fileName
+          : context.l10n.queueUntitledSlip,
   };
 }
 
@@ -125,7 +132,8 @@ class ScanTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            SlipImage(
+            ScanPhoto(
+              attachmentPath: view.scan.attachmentPath,
               width: 44,
               height: 58,
               degraded: status == ScanStatus.failed,

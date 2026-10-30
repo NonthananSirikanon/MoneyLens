@@ -84,13 +84,20 @@ The screens implement `design/mockups/prototype.html` using the design system in
 
 **Transactions, accounts, categories, balances and reports use the real Drift database.** `DemoStore` (`lib/demo/demo_store.dart`) mirrors the database for the UI and writes every change back through the repositories. A fresh install starts empty with a default cash account and the default categories. Balances are `opening balance + transactions` (`AccountBalanceCalculator`), and reports come from `ReportCalculator`.
 
-**Slip import is still simulated.** There is no OCR engine or camera/gallery adapter wired to the screens yet, so a normal run shows camera and gallery as "soon" and never invents a reading. To try the whole slip flow, run in sample mode, which loads the prototype's sample accounts and transactions into the database and enables the simulated slip queue, camera and gallery:
+**Slip import is real.** Choosing photos (or sharing images into the app) saves the image, reads it with the on-device OCR engine, extracts amount, date, payee and type, and opens the review screen with the fields it could not read left blank and the doubtful ones highlighted. Nothing is saved until the user confirms. Sample mode (below) still loads the prototype's accounts and a simulated slip queue.
+
+| Platform | Engine | Notes |
+|---|---|---|
+| iOS | Apple Vision (`VNRecognizeTextRequest`, `th-TH` + `en-US`), iOS 16+ | Not yet run inside the app on a device. The same recognizer read all 12 real sample slips correctly in a standalone check. |
+| Android | Tesseract4Android 4.9.0, Thai model (`tessdata_fast`, Apache-2.0) bundled in `android/app/src/main/assets/tessdata/` | On the 12 real sample slips: amount 10/12, date 7/12, payee 11/12. Misses are left blank or flagged, never invented. |
+
+Both sit behind the `moneylens/ocr` platform channel (`PlatformOcrService`) and `ThaiSlipExtractionService` turns the text into fields. Test fixtures in `test/fixtures/slips/` are invented text, not real slips. OCR text is never logged or stored.
 
 ```sh
-flutter run --dart-define=ML_SAMPLE_DATA=true
+flutter run --dart-define=ML_SAMPLE_DATA=true   # sample mode with the simulated queue
 ```
 
-Also simulated: permissions, Face ID and CSV export (toast only).
+Also simulated: permissions and Face ID.
 
 Preview states with `flutter run --dart-define=ML_SCENARIO=<offline|dbError|loading>`. Strings live in `lib/l10n/app_th.arb` (Thai, copied from the prototype) and `app_en.arb`; Settings → ภาษา switches the language.
 
@@ -148,14 +155,14 @@ The schema is at version 3, and its snapshots are in `drift_schemas/`. See [lib/
 | dev: `build_runner`, `drift_dev` | Code generation and schema dumps |
 | dev: `integration_test` | On-device smoke test |
 
-The following are deliberately **not added yet**. `fl_chart` waits until a chart exists. `flutter_secure_storage` waits until a secret exists. No Share Sheet intake package or OCR engine has been chosen (see the limitations below).
+The following are deliberately **not added yet**. `fl_chart` waits until a chart exists. `flutter_secure_storage` waits until a secret exists. No Share Sheet intake package has been chosen (see the limitations below).
 
 ## Known limitations (not implemented yet)
 
-- **OCR:** `UnavailableOcrService` is a placeholder. Every import ends in a visible, retryable `failed` state with "Text recognition is not available yet". The OCR engine is chosen in the ROADMAP week 2 spike, and the engine binding goes in `ocrServiceProvider`.
-- **Extraction:** `EmptyExtractionService` returns no fields, so the review step will ask the user to fill in everything.
+- **OCR accuracy on Android:** Tesseract misreads some dates (for example a month abbreviation) and amounts on slips with a dark header. A wrong value that parses cleanly is not always flagged, so the review screen is mandatory. Apple Vision is more accurate but not yet verified inside the iOS app.
+- **Extraction:** heuristics for Thai transfer and bill slips from KBank, SCB, Krungthai, KKP, TTB, GSB and similar layouts. Unknown layouts fall back to blank fields.
 - **Share Sheet:** not wired. Android needs an `ACTION_SEND` intent filter. iOS needs a Share Extension target and an App Group. `UnavailableShareSheetSource` emits nothing, but the app already sends whatever it emits through the shared pipeline.
 - **Automatic photo discovery:** not attempted. It is a validation gate (PROJECT.md SL-12), and `ImportSource.discovery` is reserved.
-- **Review screen on real slips, CSV export, period picker:** the screens exist but work on simulated slips (sample mode) or only show a toast. Manual entry, edit, delete, accounts and categories are real. `ConfirmScan` is not yet used by the review screen, which confirms mock slips through the same transaction use cases.
 - **Duplicate detection:** only exact image fingerprints are checked. Provider-reference and transaction-fingerprint layers are planned for week 8.
-- **Camera and gallery** have been built but not exercised on a physical device. Only the simulator smoke test has run.
+- **Camera and gallery** import has run on an Android emulator only, not on a physical device or iOS.
+- **Release builds** need the `INTERNET` permission in the main Android manifest (added); debug builds get it automatically.

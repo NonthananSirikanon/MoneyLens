@@ -15,6 +15,7 @@ import 'package:moneylens/core/utils/id_generator.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/export/domain/file_sharer.dart';
 import 'package:moneylens/features/slip_import/domain/import_ports.dart';
+import 'package:moneylens/features/slip_import/domain/scan_status.dart';
 import 'package:moneylens/features/transactions/domain/transaction.dart';
 import 'package:moneylens/features/transactions/domain/transaction_repository.dart';
 import 'package:moneylens/features/transactions/domain/transaction_type.dart';
@@ -87,16 +88,42 @@ class MemorySlipImageStore implements SlipImageStore {
 }
 
 class StubOcrService implements OcrService {
-  StubOcrService({this.failWith});
+  StubOcrService({this.failWith, this.text = 'stub'});
 
-  final FailureCode? failWith;
+  /// Set (or clear) between calls to make the next read fail or succeed.
+  FailureCode? failWith;
+
+  /// What the "engine" reads.
+  String text;
   var calls = 0;
 
   @override
   Future<OcrResult> recognize(String absoluteImagePath) async {
     calls++;
     if (failWith case final code?) throw AppFailure(code);
-    return const OcrResult(text: 'stub', engineId: 'stub');
+    return OcrResult(text: text, engineId: 'stub');
+  }
+}
+
+/// A camera or gallery that hands back a fixed image (or none, as if the
+/// user cancelled), or refuses.
+class FakeImageSource implements ImageSourceAdapter {
+  FakeImageSource(this.source, {this.bytes, this.failWith});
+
+  @override
+  final ImportSource source;
+
+  /// The picked image; null means the user cancelled.
+  Uint8List? bytes;
+  FailureCode? failWith;
+  var calls = 0;
+
+  @override
+  Future<ImportRequest?> acquire() async {
+    calls++;
+    if (failWith case final code?) throw AppFailure(code);
+    final b = bytes;
+    return b == null ? null : ImportRequest(source: source, bytes: b);
   }
 }
 

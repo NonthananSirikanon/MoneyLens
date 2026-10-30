@@ -359,20 +359,25 @@ void showMlToast(String message) {
   );
 }
 
-/// Full-screen original-slip viewer (`sh.viewer`).
-Future<void> showSlipViewer(BuildContext context) =>
-    Navigator.of(context, rootNavigator: true).push(
-      PageRouteBuilder<void>(
-        opaque: false,
-        barrierDismissible: true,
-        pageBuilder: (context, _, _) => const _SlipViewer(),
-        transitionsBuilder: (context, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
-      ),
-    );
+/// Full-screen original-slip viewer (`sh.viewer`). [photo] builds the slip's
+/// own picture; without it the sample receipt is shown.
+Future<void> showSlipViewer(
+  BuildContext context, {
+  Widget Function(BuildContext context)? photo,
+}) => Navigator.of(context, rootNavigator: true).push(
+  PageRouteBuilder<void>(
+    opaque: false,
+    barrierDismissible: true,
+    pageBuilder: (context, _, _) => _SlipViewer(photo: photo),
+    transitionsBuilder: (context, animation, _, child) =>
+        FadeTransition(opacity: animation, child: child),
+  ),
+);
 
 class _SlipViewer extends StatelessWidget {
-  const _SlipViewer();
+  const _SlipViewer({this.photo});
+
+  final Widget Function(BuildContext context)? photo;
 
   @override
   Widget build(BuildContext context) {
@@ -405,11 +410,13 @@ class _SlipViewer extends StatelessWidget {
               Expanded(
                 child: InteractiveViewer(
                   maxScale: 4,
-                  child: SlipImage(
-                    radius: MlRadius.md,
-                    fit: BoxFit.contain,
-                    semanticLabel: l10n.slipOriginal,
-                  ),
+                  child:
+                      photo?.call(context) ??
+                      SlipImage(
+                        radius: MlRadius.md,
+                        fit: BoxFit.contain,
+                        semanticLabel: l10n.slipOriginal,
+                      ),
                 ),
               ),
             ],

@@ -14,24 +14,58 @@ import '../../transactions/application/entry_form.dart';
 import '../application/import_view_providers.dart';
 import '../domain/scan_status.dart';
 
-/// "กำลังอ่านสลิป": five pipeline steps driven by the (simulated) OCR
-/// progress. Opens the review form when the read finishes; leaving early
-/// keeps the slip in the queue.
-class ProcessingScreen extends ConsumerWidget {
+/// "กำลังอ่านสลิป": five pipeline steps driven by the OCR progress (real:
+/// where the scan is; sample mode: simulated). Opens the review form when
+/// the read finishes, or the screen that explains why it did not; leaving
+/// early keeps the slip in the queue.
+class ProcessingScreen extends ConsumerStatefulWidget {
   const ProcessingScreen({super.key, required this.scanId});
 
   final String scanId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProcessingScreen> createState() => _ProcessingScreenState();
+}
+
+class _ProcessingScreenState extends ConsumerState<ProcessingScreen> {
+  var _left = false;
+
+  String get scanId => widget.scanId;
+
+  @override
+  void initState() {
+    super.initState();
+    // A fast read can end before this screen is on show, and then there is
+    // no change left to listen for.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _follow(ref.read(scanViewProvider(scanId))?.scan.status);
+    });
+  }
+
+  /// Moves on to the screen that matches how the read ended.
+  void _follow(ScanStatus? status) {
+    if (_left) return;
+    final route = switch (status) {
+      ScanStatus.needsReview => AppRoutes.entry,
+      ScanStatus.duplicate => AppRoutes.duplicate(scanId),
+      ScanStatus.failed => AppRoutes.ocrFailed(scanId),
+      _ => null,
+    };
+    if (route == null) return;
+    _left = true;
+    context.pushReplacement(
+      route,
+      extra: status == ScanStatus.needsReview ? ScanEntryArgs(scanId) : null,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final pct = ref.watch(ocrProgressProvider(scanId));
 
     ref.listen(scanViewProvider(scanId), (prev, next) {
-      if (prev?.scan.status != ScanStatus.needsReview &&
-          next?.scan.status == ScanStatus.needsReview) {
-        context.pushReplacement(AppRoutes.entry, extra: ScanEntryArgs(scanId));
-      }
+      if (prev?.scan.status != next?.scan.status) _follow(next?.scan.status);
     });
 
     final steps = [

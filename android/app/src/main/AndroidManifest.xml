@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sign-in and sync talk to Supabase. Debug and profile builds get this
+         from their own manifests; a release build needs it here. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="MoneyLens"
         android:name="${applicationName}"

@@ -44,6 +44,12 @@ kotlin {
     }
 }
 
+dependencies {
+    // On-device Thai text recognition for payment slips (Android has no
+    // built-in Thai OCR; Apple Vision is used on iOS).
+    implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
+}
+
 flutter {
     source = "../.."
 }

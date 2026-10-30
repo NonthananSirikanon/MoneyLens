@@ -31,7 +31,7 @@ class SlipReading {
     required this.merchant,
     required this.amountText,
     required this.occurredAt,
-    required this.accountId,
+    this.accountId,
     this.categoryId,
     this.providerReference,
     this.confidence = const {},
@@ -42,7 +42,10 @@ class SlipReading {
 
   /// UTC instant printed on the slip.
   final DateTime occurredAt;
-  final String accountId;
+
+  /// The account the slip belongs to, when known (a slip does not say; the
+  /// review screen then offers the most used account).
+  final String? accountId;
   final String? categoryId;
   final String? providerReference;
   final Map<ReadingField, FieldConfidence> confidence;

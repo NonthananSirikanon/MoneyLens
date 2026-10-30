@@ -1383,4 +1383,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String analyticsWholeYear(String year) {
     return 'ทั้งปี $year';
   }
+
+  @override
+  String get queueUntitledSlip => 'สลิปที่นำเข้า';
 }

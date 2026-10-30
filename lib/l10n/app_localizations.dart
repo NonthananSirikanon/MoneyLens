@@ -2653,6 +2653,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All of {year}'**
   String analyticsWholeYear(String year);
+
+  /// No description provided for @queueUntitledSlip.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported slip'**
+  String get queueUntitledSlip;
 }
 
 class _AppLocalizationsDelegate

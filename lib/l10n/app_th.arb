@@ -425,5 +425,6 @@
   "analyticsPreviousYear": "ปีก่อนหน้า",
   "analyticsNextYear": "ปีถัดไป",
   "analyticsAllYear": "ทั้งปี",
-  "analyticsWholeYear": "ทั้งปี {year}"
+  "analyticsWholeYear": "ทั้งปี {year}",
+  "queueUntitledSlip": "สลิปที่นำเข้า"
 }

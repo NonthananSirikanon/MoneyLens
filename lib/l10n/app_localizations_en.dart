@@ -1399,4 +1399,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String analyticsWholeYear(String year) {
     return 'All of $year';
   }
+
+  @override
+  String get queueUntitledSlip => 'Imported slip';
 }

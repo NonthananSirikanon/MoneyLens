@@ -20,6 +20,9 @@ abstract interface class ScanRepository {
   /// excluded.
   Stream<List<ScanRecord>> watchVisible();
 
+  /// One-shot read of what [watchVisible] shows.
+  Future<List<ScanRecord>> findVisible();
+
   /// Moves a scan to [next], enforcing [ScanStatus.canTransitionTo].
   ///
   /// Throws `AppFailure(invalidScanState)` for an illegal move. Moving to

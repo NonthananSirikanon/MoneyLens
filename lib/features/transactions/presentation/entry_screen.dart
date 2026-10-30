@@ -25,6 +25,7 @@ import '../../categories/domain/category.dart';
 import '../../dashboard/application/home_view_providers.dart';
 import '../application/entry_form.dart';
 import '../domain/transaction_type.dart';
+import '../../slip_import/presentation/scan_photo.dart';
 
 /// Add / edit / slip-review form (prototype `is.review`, one screen with
 /// three modes).
@@ -190,6 +191,9 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
       appPreferencesProvider.select((p) => p.hideBalances),
     );
     final fromSlip = d.mode == EntryMode.scan;
+    final slipPath = d.scanId == null
+        ? null
+        : store.scan(d.scanId!)?.attachmentPath;
 
     final title = switch (d.mode) {
       EntryMode.scan => l10n.entryTitleReview,
@@ -235,8 +239,16 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
                   children: [
                     FTappable(
                       semanticsLabel: l10n.viewSlip,
-                      onPress: () => showSlipViewer(context),
-                      child: const SlipImage(
+                      onPress: () => showSlipViewer(
+                        context,
+                        photo: (_) => ScanPhoto(
+                          attachmentPath: slipPath,
+                          radius: MlRadius.md,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      child: ScanPhoto(
+                        attachmentPath: slipPath,
                         width: 72,
                         height: 94,
                         radius: MlRadius.md,
