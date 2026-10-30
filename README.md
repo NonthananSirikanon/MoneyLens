@@ -89,7 +89,7 @@ The screens implement `design/mockups/prototype.html` using the design system in
 | Platform | Engine | Notes |
 |---|---|---|
 | iOS | Apple Vision (`VNRecognizeTextRequest`, `th-TH` + `en-US`), iOS 16+ | Not yet run inside the app on a device. The same recognizer read all 12 real sample slips correctly in a standalone check. |
-| Android | Tesseract4Android 4.9.0, Thai model (`tessdata_fast`, Apache-2.0) bundled in `android/app/src/main/assets/tessdata/` | On the 12 real sample slips: amount 10/12, date 7/12, payee 11/12. Misses are left blank or flagged, never invented. |
+| Android | Tesseract4Android 4.9.0, Thai model (`tessdata_fast`, Apache-2.0) bundled in `android/app/src/main/assets/tessdata/` | Reads each slip up to three times, preparing the image differently each pass (`SlipOcr.kt`), and stops once two readings agree; the extractor votes per field. On the 12 real sample slips: amount 12/12, date and time 11/12, payee exact 10/12 (the other two off by one or two letters). A value only one pass found is flagged. |
 
 Both sit behind the `moneylens/ocr` platform channel (`PlatformOcrService`) and `ThaiSlipExtractionService` turns the text into fields. Test fixtures in `test/fixtures/slips/` are invented text, not real slips. OCR text is never logged or stored.
 
@@ -159,7 +159,7 @@ The following are deliberately **not added yet**. `fl_chart` waits until a chart
 
 ## Known limitations (not implemented yet)
 
-- **OCR accuracy on Android:** Tesseract misreads some dates (for example a month abbreviation) and amounts on slips with a dark header. A wrong value that parses cleanly is not always flagged, so the review screen is mandatory. Apple Vision is more accurate but not yet verified inside the iOS app.
+- **OCR accuracy on Android:** measured on only 12 real slips, so expect lower on unseen layouts. Very small images (a 236×500 screenshot) still lose the month, and payee names can be off by a letter. The review screen stays mandatory. Apple Vision is more accurate but not yet verified inside the iOS app. The bench that chose the passes (preprocessing × model × page mode, then voting) ran on a Mac with the same Tesseract model and is not in the repo, because it needs the real slips.
 - **Extraction:** heuristics for Thai transfer and bill slips from KBank, SCB, Krungthai, KKP, TTB, GSB and similar layouts. Unknown layouts fall back to blank fields.
 - **Share Sheet:** not wired. Android needs an `ACTION_SEND` intent filter. iOS needs a Share Extension target and an App Group. `UnavailableShareSheetSource` emits nothing, but the app already sends whatever it emits through the shared pipeline.
 - **Automatic photo discovery:** not attempted. It is a validation gate (PROJECT.md SL-12), and `ImportSource.discovery` is reserved.

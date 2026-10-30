@@ -19,7 +19,116 @@ class ThaiSlipExtractionService implements ExtractionService {
   const ThaiSlipExtractionService();
 
   @override
-  Future<ExtractedFields> extract(OcrResult ocr) async => parse(ocr.text);
+  Future<ExtractedFields> extract(OcrResult ocr) async =>
+      ocr.alternatives.isEmpty
+      ? parse(ocr.text)
+      : combine([ocr.text, ...ocr.alternatives]);
+
+  /// Several readings of one slip (the image prepared in different ways
+  /// before OCR): each field takes the value most readings agree on, ties
+  /// going to the earlier reading. A value that only one reading found is
+  /// marked uncertain, so the review screen highlights it.
+  static ExtractedFields combine(List<String> texts) {
+    final readings = [for (final t in texts) parse(t)];
+    if (readings.length == 1) return readings.single;
+    final amount = _vote([for (final r in readings) r.amountMinor]);
+    final date = _vote([for (final r in readings) r.occurredAt]);
+    final merchant = _votePayee([for (final r in readings) r.merchant]);
+    final type = _vote([for (final r in readings) r.type]);
+    return ExtractedFields(
+      amountMinor: amount,
+      currencyCode: amount == null ? null : 'THB',
+      occurredAt: date,
+      type: amount == null && date == null && merchant == null ? null : type,
+      merchant: merchant,
+      providerReference: _vote([for (final r in readings) r.providerReference]),
+    );
+  }
+
+  /// Whether two readings already agree on amount, date and payee, so a
+  /// further reading could not change the result.
+  static bool readingsAgree(String a, String b) {
+    final x = parse(a);
+    final y = parse(b);
+    return x.amountMinor != null &&
+        x.amountMinor!.value == y.amountMinor?.value &&
+        x.occurredAt != null &&
+        x.occurredAt!.value == y.occurredAt?.value &&
+        x.merchant != null &&
+        y.merchant != null &&
+        _nameKey(x.merchant!.value) == _nameKey(y.merchant!.value);
+  }
+
+  /// Confidence of a value that only one reading found.
+  static const _singleReading = 0.6;
+
+  static ExtractedField<T>? _vote<T>(
+    List<ExtractedField<T>?> fields, {
+    Object? Function(T value)? key,
+  }) {
+    final read = fields.nonNulls.toList();
+    if (read.isEmpty) return null;
+    Object? keyOf(ExtractedField<T> f) => key == null ? f.value : key(f.value);
+    List<ExtractedField<T>> best = const [];
+    for (final f in read) {
+      final agreeing = [
+        for (final o in read)
+          if (keyOf(o) == keyOf(f)) o,
+      ];
+      if (agreeing.length > best.length) best = agreeing;
+    }
+    final confidence = best
+        .map((f) => f.confidence ?? 0)
+        .reduce((a, b) => a > b ? a : b);
+    return ExtractedField(
+      best.first.value,
+      confidence: best.length >= 2
+          ? confidence
+          : (confidence < _singleReading ? confidence : _singleReading),
+    );
+  }
+
+  /// Names rarely come out identical: spelling slips differ per reading.
+  /// When no two readings agree, the reading closest to all the others is
+  /// taken, marked uncertain.
+  static ExtractedField<String>? _votePayee(
+    List<ExtractedField<String>?> fields,
+  ) {
+    final agreed = _vote(fields, key: _nameKey);
+    final read = fields.nonNulls.toList();
+    if (agreed == null || read.length < 3) return agreed;
+    if (read.where((f) => _nameKey(f.value) == _nameKey(agreed.value)).length >=
+        2) {
+      return agreed;
+    }
+    double closeness(String a) => read.fold(
+      0,
+      (sum, o) => sum + _similarity(_nameKey(a), _nameKey(o.value)),
+    );
+    var medoid = read.first;
+    for (final f in read.skip(1)) {
+      if (closeness(f.value) > closeness(medoid.value)) medoid = f;
+    }
+    return ExtractedField(medoid.value, confidence: agreed.confidence);
+  }
+
+  static String _nameKey(String name) => name.replaceAll(RegExp(r'\s+'), '');
+
+  /// 1 minus the edit distance over the longer length.
+  static double _similarity(String a, String b) {
+    if (a.isEmpty || b.isEmpty) return 0;
+    var prev = List<int>.generate(b.length + 1, (j) => j);
+    for (var i = 1; i <= a.length; i++) {
+      final cur = [i];
+      for (var j = 1; j <= b.length; j++) {
+        final cost = a.codeUnitAt(i - 1) == b.codeUnitAt(j - 1) ? 0 : 1;
+        final best = [prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost];
+        cur.add(best.reduce((x, y) => x < y ? x : y));
+      }
+      prev = cur;
+    }
+    return 1 - prev.last / (a.length > b.length ? a.length : b.length);
+  }
 
   /// Pure parsing, separate so tests can call it without async.
   static ExtractedFields parse(String text) {
@@ -51,10 +160,15 @@ class ThaiSlipExtractionService implements ExtractionService {
 
   /// Some engines (Tesseract) write "ำ" as two characters, nikhahit + sara
   /// aa ("จํานวน"), which no label would match. Zero-width characters are
-  /// dropped for the same reason.
+  /// dropped for the same reason. Slips print Arabic digits, so Thai digits
+  /// in the text are misreadings of them ("๐" for "0").
   static String _normalize(String text) => text
       .replaceAll('\u0E4D\u0E32', '\u0E33')
-      .replaceAll(RegExp('[\u200B-\u200D\uFEFF]'), '');
+      .replaceAll(RegExp('[\u200B-\u200D\uFEFF]'), '')
+      .replaceAllMapped(
+        RegExp('[\u0E50-\u0E59]'),
+        (m) => '${m.group(0)!.codeUnitAt(0) - 0x0E50}',
+      );
 
   // ------------------------------------------------------------------ type
 
@@ -96,16 +210,15 @@ class ThaiSlipExtractionService implements ExtractionService {
         continue;
       }
       final labelled = RegExp(r'จำนวน(เงิน)?\s*:?').hasMatch(line);
-      var found = _money.allMatches(line).toList();
-      var fromNext = false;
+      var source = _repairSeparators(line);
+      var found = _money.allMatches(source).toList();
       if (found.isEmpty && labelled && i + 1 < lines.length) {
-        found = _money.allMatches(lines[i + 1]).toList();
-        fromNext = true;
+        source = _repairSeparators(lines[i + 1]);
+        found = _money.allMatches(source).toList();
       }
       for (final m in found) {
         final minor = _minor(m);
         if (minor == null || minor == 0) continue;
-        final source = fromNext ? lines[i + 1] : line;
         candidates.add((
           minor: minor,
           labelled: labelled,
@@ -124,6 +237,19 @@ class ThaiSlipExtractionService implements ExtractionService {
     }
     return ExtractedField(candidates.first.minor, confidence: 0.6);
   }
+
+  /// OCR doubles or swaps separators in large amounts: "1,.000.00",
+  /// "1.000.00". A separator before exactly three digits that are followed
+  /// by the decimals is a thousands comma.
+  static String _repairSeparators(String line) => line
+      .replaceAllMapped(
+        RegExp(r'(\d)[,.]{2}(\d{3})(?=[,.]\d)'),
+        (m) => '${m[1]},${m[2]}',
+      )
+      .replaceAllMapped(
+        RegExp(r'(?<![\d.,])(\d{1,3})\.(\d{3})\.(\d{2})(?!\d)'),
+        (m) => '${m[1]},${m[2]}.${m[3]}',
+      );
 
   static int? _minor(RegExpMatch m) {
     final major = int.tryParse(m.group(1)!.replaceAll(',', ''));
@@ -164,7 +290,7 @@ class ThaiSlipExtractionService implements ExtractionService {
   /// A date: day, a month word (exact, or any short run of Thai letters,
   /// dots and vowel marks that [_monthOf] can resolve) and a year.
   static final _dateRe = RegExp(
-    r'(\d{1,2})\s*([\u0E00-\u0E7F.]{2,12})\s*(\d{2,4})(?!\d)',
+    r'(\d{1,2})\s*([\u0E00-\u0E7F.]{2,12})[\s=\-]*(\d{2,4})(?!\d)',
   );
   static final _timeRe = RegExp(
     r'(?<!\d)([01]?\d|2[0-3])\s*[:.\-]\s*([0-5]\d)(?!\d)',
@@ -192,8 +318,9 @@ class ThaiSlipExtractionService implements ExtractionService {
     final hasI = word.contains('\u0E35'); // ี
     final hasE = word.contains('\u0E34'); // ิ
     final hasLead = word.contains('เ');
-    return switch (skeleton) {
-      'มค' => hasI ? 3 : (word.contains('\u0E31') ? null : 1),
+    final shared = word.contains('\u0E31');
+    final month = switch (skeleton) {
+      'มค' => hasI ? 3 : (shared ? null : 1),
       'มย' => hasLead ? 4 : (hasE ? 6 : null),
       'กพ' => 2,
       'พค' => 5,
@@ -205,6 +332,32 @@ class ThaiSlipExtractionService implements ExtractionService {
       'ธค' => 12,
       _ => null,
     };
+    return month ?? _monthWithExtraLetter(skeleton);
+  }
+
+  /// Consonant pairs that name exactly one month.
+  static const _unambiguous = {
+    'กพ': 2,
+    'พค': 5,
+    'กค': 7,
+    'สค': 8,
+    'กย': 9,
+    'ตค': 10,
+    'พย': 11,
+    'ธค': 12,
+  };
+
+  /// A month abbreviation with one stray letter ("ธร.ค." for ธ.ค.): dropping
+  /// one letter must leave exactly one month, never ม.ค./มี.ค. or
+  /// เม.ย./มิ.ย. (those need their vowel to be told apart).
+  static int? _monthWithExtraLetter(String skeleton) {
+    if (skeleton.length != 3) return null;
+    final found = <int>{};
+    for (var i = 0; i < 3; i++) {
+      final month = _unambiguous[skeleton.replaceRange(i, i + 1, '')];
+      if (month != null) found.add(month);
+    }
+    return found.length == 1 ? found.single : null;
   }
 
   static bool _hasDate(String line) =>
@@ -217,7 +370,10 @@ class ThaiSlipExtractionService implements ExtractionService {
           .where((m) => _monthOf(m.group(2)!) != null)
           .firstOrNull;
       if (m == null) continue;
-      final month = _monthOf(m.group(2)!)!;
+      final word = m.group(2)!;
+      final month = _monthOf(word)!;
+      // A month recovered from a misreading is shown as uncertain.
+      final exact = _months[word] ?? _months['$word.'];
       final day = int.parse(m.group(1)!);
       final year = _gregorianYear(int.parse(m.group(3)!), m.group(3)!.length);
       if (day < 1 || day > 31) continue;
@@ -234,7 +390,7 @@ class ThaiSlipExtractionService implements ExtractionService {
       if (local.month != month || local.day != day) continue;
       return ExtractedField(
         ReportingTimeZone.bangkok.toUtc(year, month, day, hour, minute),
-        confidence: t == null ? 0.6 : 0.9,
+        confidence: t == null || exact == null ? 0.6 : 0.9,
       );
     }
     return null;
@@ -250,7 +406,7 @@ class ThaiSlipExtractionService implements ExtractionService {
   // ------------------------------------------------------------ counterparty
 
   static final _title = RegExp(
-    r'^[๐-๙]?\s*(น\.ส\.|นางสาว|นาย|นาง|ด\.ช\.|ด\.ญ\.|Mr\.?|Ms\.?|Mrs\.?)',
+    r'^[0-9]?\s*(น\.ส\.|นางสาว|นาย|นาง|ด\.ช\.|ด\.ญ\.|Mr\.?|Ms\.?|Mrs\.?)',
   );
   static final _business = RegExp(
     r'^(บริษัท|บจก\.?|หจก\.?|ห้างหุ้นส่วน|ร้าน|คาเฟ่|โรงพยาบาล|มูลนิธิ)',
@@ -324,10 +480,46 @@ class ThaiSlipExtractionService implements ExtractionService {
     return '$first $next';
   }
 
-  static String _clean(String name) => name
-      .replaceFirst(RegExp(r'^[๐-๙]\s*'), '')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
+  /// A title within the first few characters: what comes before it is an
+  /// icon or a stray mark read as text ("(6) นาย…", "แนาย…").
+  static final _titleNearStart = RegExp(
+    r'^.{1,5}?(?=น\.ส\.|นางสาว|นาย|นาง|ด\.ช\.|ด\.ญ\.)',
+  );
+
+  /// A token with no Thai letter but with a symbol: an account number, an
+  /// icon or masking read as text ("%-8782", "“*\"", "(6)", "=").
+  static final _junkToken = RegExp(
+    '^[^\u0E01-\u0E2E]*[^\\w\\s\u0E00-\u0E7F.][^\u0E01-\u0E2E]*\$',
+  );
+
+  static String _clean(String name) {
+    final tokens = name
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim()
+        // "น.ส." is often read as "บ.ส.", sometimes with a stray mark.
+        .replaceAll(
+          RegExp('(?<![\u0E00-\u0E7F])บ\\.[\u0E38\u0E39]?ส\\.'),
+          'น.ส.',
+        )
+        .split(' ');
+    while (tokens.length > 1 && _junkToken.hasMatch(tokens.first)) {
+      tokens.removeAt(0);
+    }
+    // People's names never end in a number; a stray digit is a misread mark.
+    final person = _title.hasMatch(tokens.join(' '));
+    while (tokens.length > 1 &&
+        (_junkToken.hasMatch(tokens.last) ||
+            (person && RegExp(r'^[0-9]+$').hasMatch(tokens.last)))) {
+      tokens.removeLast();
+    }
+    // A lone letter or digit before a name is a misread icon ("ซ น.ส.…").
+    if (tokens.length > 2 &&
+        RegExp('^[\u0E01-\u0E2E0-9]\$').hasMatch(tokens.first) &&
+        _isName(tokens.sublist(1).join(' '))) {
+      tokens.removeAt(0);
+    }
+    return tokens.join(' ').replaceFirst(_titleNearStart, '');
+  }
 
   // -------------------------------------------------------------- reference
 

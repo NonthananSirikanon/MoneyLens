@@ -292,5 +292,94 @@ void main() {
     test('an amount without a comma separator', () {
       expect(p('จำนวน: 2000.00 บาท').amountMinor?.value, 200000);
     });
+
+    test('doubled or dotted thousands separators are repaired', () {
+      expect(p('1,.000.00 บาท').amountMinor?.value, 100000);
+      expect(p('จำนวนเงิน 2.500.00 บาท').amountMinor?.value, 250000);
+    });
+
+    test('Thai digits are read as the digits they stand for', () {
+      expect(p('จำนวนเงิน ๕๐.๐๐ บาท').amountMinor?.value, 5000);
+    });
+  });
+
+  group('OCR slips Tesseract makes', () {
+    ExtractedFields p(String text) => ThaiSlipExtractionService.parse(text);
+
+    test('a month with one stray letter is found, but flagged', () {
+      final d = p('จำนวนเงิน\n10.00\n29 ธร.ค. 68, 13:39 น.').occurredAt!;
+      expect(d.value, bangkok(2025, 12, 29, 13, 39));
+      expect(d.confidence, lessThan(0.8));
+    });
+
+    test('a stray letter that leaves two possible months is not guessed', () {
+      // Dropping one letter of "มคย" leaves ม.ค./มี.ค. or เม.ย./มิ.ย.,
+      // which only a vowel tells apart.
+      expect(p('จำนวนเงิน\n10.00\n5 ม.ค.ย 2569 10:00').occurredAt, isNull);
+    });
+
+    test('a mark between the month and the year', () {
+      expect(
+        p('จำนวนเงิน\n10.00\n21 ก.ย=2569 18:57').occurredAt?.value,
+        bangkok(2026, 9, 21, 18, 57),
+      );
+    });
+
+    test('icons and masked account numbers around a name are dropped', () {
+      String? payee(String line) =>
+          p('จาก นาย สมชาย ทดสอบ\nไปยัง\n$line\nจำนวนเงิน 10.00')
+              .merchant
+              ?.value;
+      expect(payee('(6) นาย ประยุทธ ตัวอย่าง %-8782'), 'นาย ประยุทธ ตัวอย่าง');
+      expect(payee('แนายประยุทธ ตัวอย่าง'), 'นายประยุทธ ตัวอย่าง');
+      expect(payee('= บ.ส.สมหญิง ตัวอย่าง'), 'น.ส.สมหญิง ตัวอย่าง');
+      expect(payee('ซ น.ส.สมหญิง ตัวอย่าง'), 'น.ส.สมหญิง ตัวอย่าง');
+      expect(payee('นายประยุทธ ตัวอย่าง 1'), 'นายประยุทธ ตัวอย่าง');
+    });
+  });
+
+  group('several readings of one slip', () {
+    const a =
+        'ไปยัง\nนาย ประยุทธ ตัวอย่าง\nจำนวนเงิน 50.00 บาท\n'
+        '29 มี.ค. 2569 - 19:21 น.';
+    const b =
+        'ไปยัง\nนาย ประยุทธ ตัวอย่าง\nจำนวนเงิน 50.00 บาท\n'
+        '29 มี.ค. 2569 - 19:21 น.';
+    // A third reading that misread the amount and lost the date.
+    const c = 'ไปยัง\nนาย ประยุทธ ตัวอยาง\nจำนวนเงิน 30.00 บาท';
+
+    test('each field takes the value most readings agree on', () {
+      final f = ThaiSlipExtractionService.combine([c, a, b]);
+      expect(f.amountMinor?.value, 5000);
+      expect(f.amountMinor?.confidence, greaterThanOrEqualTo(0.8));
+      expect(f.occurredAt?.value, bangkok(2026, 3, 29, 19, 21));
+      expect(f.merchant?.value, 'นาย ประยุทธ ตัวอย่าง');
+    });
+
+    test('a value only one reading found is kept but flagged', () {
+      final f = ThaiSlipExtractionService.combine([
+        c,
+        'ไปยัง\nนาย ประยุทธ ตัวอย่าง\nจำนวนเงิน\n29 มี.ค. 2569 - 19:21 น.',
+      ]);
+      expect(f.occurredAt?.value, bangkok(2026, 3, 29, 19, 21));
+      expect(f.occurredAt?.confidence, lessThan(0.8));
+      expect(f.amountMinor?.value, 3000);
+      expect(f.amountMinor?.confidence, lessThan(0.8));
+    });
+
+    test('when no two names match, the one closest to the rest wins', () {
+      final f = ThaiSlipExtractionService.combine([
+        'ไปยัง\nนาย ประยุทธ ตัวอยาง',
+        'ไปยัง\nนาย ประยุทธ ตัวอย่าง',
+        'ไปยัง\nนาย ประยุทร ตัวอย่าง',
+      ]);
+      expect(f.merchant?.value, 'นาย ประยุทธ ตัวอย่าง');
+      expect(f.merchant?.confidence, lessThan(0.8));
+    });
+
+    test('two readings agree when amount, date and payee match', () {
+      expect(ThaiSlipExtractionService.readingsAgree(a, b), isTrue);
+      expect(ThaiSlipExtractionService.readingsAgree(a, c), isFalse);
+    });
   });
 }

@@ -56,12 +56,20 @@ abstract interface class SlipImageStore {
 }
 
 class OcrResult {
-  const OcrResult({required this.text, required this.engineId});
+  const OcrResult({
+    required this.text,
+    required this.engineId,
+    this.alternatives = const [],
+  });
 
   /// Sensitive. Never log it; persist only under a documented retention
   /// policy.
   final String text;
   final String engineId;
+
+  /// Further readings of the same image, prepared differently before OCR.
+  /// The extractor compares them with [text]. Same sensitivity as [text].
+  final List<String> alternatives;
 }
 
 /// Replaceable OCR provider (ARCHITECTURE.md §5.3).

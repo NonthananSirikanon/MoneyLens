@@ -10,7 +10,8 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        // Text recognition for slips: the path in, the recognised text out.
+        // Text recognition for slips: the path and the pass (how the image is
+        // prepared, see SlipOcr) in, the recognised text out.
         // Errors carry only a code, never the text or the path.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "moneylens/ocr")
             .setMethodCallHandler { call, result ->
@@ -23,9 +24,10 @@ class MainActivity : FlutterActivity() {
                     result.error("bad_arguments", null, null)
                     return@setMethodCallHandler
                 }
+                val pass = call.argument<Int>("pass") ?: 0
                 ocrThread.execute {
                     try {
-                        val text = SlipOcr.recognize(applicationContext, path)
+                        val text = SlipOcr.recognize(applicationContext, path, pass)
                         runOnUiThread { result.success(text) }
                     } catch (e: IllegalArgumentException) {
                         runOnUiThread { result.error("unreadable_image", null, null) }

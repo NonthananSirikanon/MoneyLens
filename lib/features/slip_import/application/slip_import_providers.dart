@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/clock.dart';
@@ -31,9 +32,17 @@ final slipImageStoreProvider = Provider<SlipImageStore>(
   (ref) => LocalSlipImageStore(ref.watch(idGeneratorProvider)),
 );
 
-/// Swap this binding to plug in a real OCR engine.
+/// Swap this binding to plug in another OCR engine.
+///
+/// Tesseract (Android) reads each slip up to three times, preparing the
+/// image differently each time, and stops after two readings that agree.
+/// Apple Vision reads it once.
 final ocrServiceProvider = Provider<OcrService>(
-  (ref) => const PlatformOcrService(),
+  (ref) => PlatformOcrService(
+    passes: defaultTargetPlatform == TargetPlatform.android ? 3 : 1,
+    enough: (readings) =>
+        ThaiSlipExtractionService.readingsAgree(readings[0], readings[1]),
+  ),
 );
 
 final extractionServiceProvider = Provider<ExtractionService>(
