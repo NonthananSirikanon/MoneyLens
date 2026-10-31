@@ -95,3 +95,10 @@ class DuplicateCheck {
 abstract interface class DuplicateDetector {
   Future<DuplicateCheck> check(ScanRecord scan);
 }
+
+/// Second duplicate layer: compares what was read from a slip with what is
+/// already saved (DATABASE.md section 6). On-device only. It needs the
+/// extracted fields, so it runs after OCR, unlike [DuplicateDetector].
+abstract interface class ReadingDuplicateDetector {
+  Future<DuplicateCheck> check(ScanRecord scan, ExtractedFields fields);
+}

@@ -14,7 +14,9 @@ import 'package:moneylens/core/money/money.dart';
 import 'package:moneylens/core/utils/id_generator.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/export/domain/file_sharer.dart';
+import 'package:moneylens/features/slip_import/domain/extracted_fields.dart';
 import 'package:moneylens/features/slip_import/domain/import_ports.dart';
+import 'package:moneylens/features/slip_import/domain/scan_record.dart';
 import 'package:moneylens/features/slip_import/domain/scan_status.dart';
 import 'package:moneylens/features/transactions/domain/transaction.dart';
 import 'package:moneylens/features/transactions/domain/transaction_repository.dart';
@@ -87,6 +89,15 @@ class MemorySlipImageStore implements SlipImageStore {
   Future<void> delete(String relativePath) async => files.remove(relativePath);
 }
 
+/// Never flags a slip by what was read; for tests of other pipeline steps.
+class NoReadingDuplicates implements ReadingDuplicateDetector {
+  const NoReadingDuplicates();
+
+  @override
+  Future<DuplicateCheck> check(ScanRecord scan, ExtractedFields fields) async =>
+      DuplicateCheck.none;
+}
+
 class StubOcrService implements OcrService {
   StubOcrService({this.failWith, this.text = 'stub'});
 
@@ -143,6 +154,10 @@ class FakeTransactionRepository implements TransactionRepository {
 
   @override
   Future<List<MoneyTransaction>> findAll() async => [..._items];
+
+  @override
+  Future<List<MoneyTransaction>> findWithProviderReference() async =>
+      _items.where((t) => t.providerReference != null).toList();
 
   @override
   Future<MoneyTransaction?> findById(String id) async =>

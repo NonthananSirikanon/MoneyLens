@@ -12,6 +12,7 @@ import '../../transactions/application/transaction_providers.dart';
 import '../data/drift_scan_repository.dart';
 import '../data/fingerprint_duplicate_detector.dart';
 import '../data/local_slip_image_store.dart';
+import '../data/reference_duplicate_detector.dart';
 import '../data/magic_byte_image_validator.dart';
 import '../data/thai_slip_extraction_service.dart';
 import '../domain/import_ports.dart';
@@ -67,6 +68,9 @@ final slipImportPipelineProvider = Provider<SlipImportPipeline>((ref) {
     store: ref.watch(slipImageStoreProvider),
     scans: scans,
     duplicates: FingerprintDuplicateDetector(scans),
+    readingDuplicates: ReferenceDuplicateDetector(
+      ref.watch(transactionRepositoryProvider),
+    ),
     ocr: ref.watch(ocrServiceProvider),
     extraction: ref.watch(extractionServiceProvider),
     ids: ref.watch(idGeneratorProvider),

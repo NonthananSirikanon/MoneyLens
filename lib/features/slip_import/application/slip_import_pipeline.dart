@@ -9,8 +9,9 @@ import '../domain/scan_status.dart';
 /// The single processing pipeline for every import source
 /// (ARCHITECTURE.md §5, PROJECT.md SL-04).
 ///
-/// validate → store → scan record (queued) → processing → duplicate check →
-/// OCR → extraction → `needs_review`, or `duplicate` / `failed`.
+/// validate → store → scan record (queued) → processing → image duplicate
+/// check → OCR → extraction → reading duplicate check → `needs_review`, or
+/// `duplicate` / `failed`.
 ///
 /// It never confirms a transaction. Confirmation is a separate user action
 /// (see `ConfirmScan`).
@@ -20,6 +21,7 @@ class SlipImportPipeline {
     required this._store,
     required this._scans,
     required this._duplicates,
+    required this._readingDuplicates,
     required this._ocr,
     required this._extraction,
     required this._ids,
@@ -34,6 +36,7 @@ class SlipImportPipeline {
   final SlipImageStore _store;
   final ScanRepository _scans;
   final DuplicateDetector _duplicates;
+  final ReadingDuplicateDetector _readingDuplicates;
   final OcrService _ocr;
   final ExtractionService _extraction;
   final IdGenerator _ids;
@@ -73,7 +76,7 @@ class SlipImportPipeline {
       // Exact re-imports are caught before spending OCR effort.
       final duplicate = await _duplicates.check(scan);
       if (duplicate.isDuplicate) {
-        _logger.event('scan_duplicate');
+        _logger.event('scan_duplicate', {'layer': 'image'});
         return await _scans.transition(
           scanId,
           ScanStatus.duplicate,
@@ -86,6 +89,20 @@ class SlipImportPipeline {
       if (path == null) throw const AppFailure(FailureCode.unreadableImage);
       final ocrResult = await _ocr.recognize(await _store.resolve(path));
       final fields = await _extraction.extract(ocrResult);
+
+      // A different file of a slip that is already saved (a screenshot of
+      // it, a second photo) is caught from what was read.
+      final sameReading = await _readingDuplicates.check(scan, fields);
+      if (sameReading.isDuplicate) {
+        _logger.event('scan_duplicate', {'layer': 'reading'});
+        return await _scans.transition(
+          scanId,
+          ScanStatus.duplicate,
+          extracted: fields,
+          duplicateOfScanId: sameReading.duplicateOfScanId,
+          processorVersion: processorVersion,
+        );
+      }
 
       _logger.event('scan_needs_review', {
         'missingFields': fields.missingRequiredFields.length,

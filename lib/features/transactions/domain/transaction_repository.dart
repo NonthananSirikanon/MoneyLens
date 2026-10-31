@@ -13,6 +13,14 @@ abstract interface class TransactionRepository {
 
   Future<MoneyTransaction?> findById(String id);
 
+  /// Every transaction that has a provider reference, in no set order.
+  /// Used to spot a slip that was already saved.
+  ///
+  /// Transactions are hard-deleted today. If sync ever adds soft delete
+  /// (a `deleted_at` marker), this must skip deleted rows, or a deleted
+  /// payment would keep blocking its slip.
+  Future<List<MoneyTransaction>> findWithProviderReference();
+
   /// Transactions whose `occurredAt` falls within [range].
   Stream<List<MoneyTransaction>> watchInRange(DateRange range);
 

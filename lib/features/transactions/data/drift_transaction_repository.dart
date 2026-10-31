@@ -43,6 +43,14 @@ class DriftTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Future<List<MoneyTransaction>> findWithProviderReference() async {
+    final rows = await (_db.select(
+      _db.transactions,
+    )..where((t) => t.providerReference.isNotNull())).get();
+    return rows.map(_toDomain).toList();
+  }
+
+  @override
   Future<MoneyTransaction?> findById(String id) async {
     final row = await (_db.select(
       _db.transactions,

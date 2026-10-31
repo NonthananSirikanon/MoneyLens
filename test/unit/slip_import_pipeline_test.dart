@@ -32,6 +32,7 @@ void main() {
     store: store,
     scans: scans,
     duplicates: FingerprintDuplicateDetector(scans),
+    readingDuplicates: const NoReadingDuplicates(),
     ocr: ocr,
     extraction: const EmptyExtractionService(),
     ids: SequentialIds(),
