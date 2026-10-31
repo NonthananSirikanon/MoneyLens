@@ -26,8 +26,9 @@ class SlipImportPipeline {
     required this._logger,
   });
 
-  /// Recorded on each scan for debugging and evaluation.
-  static const processorVersion = 'scaffold-0';
+  /// Recorded on each scan for debugging and evaluation. Bump it whenever
+  /// the way a slip is read changes, so older scans stay comparable.
+  static const processorVersion = 'ocr-vote-1';
 
   final ImageValidator _validator;
   final SlipImageStore _store;

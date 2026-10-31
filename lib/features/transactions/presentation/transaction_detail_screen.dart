@@ -48,7 +48,7 @@ class TransactionDetailScreen extends ConsumerWidget {
       ),
     );
     if (!confirmed || !context.mounted) return;
-    await ref.read(demoStoreProvider.notifier).deleteTransaction(v.id);
+    await ref.read(appStoreProvider.notifier).deleteTransaction(v.id);
     if (!context.mounted) return;
     context.pop();
     showMlToast(l10n.toastDeleted);
@@ -76,7 +76,7 @@ class TransactionDetailScreen extends ConsumerWidget {
       v.accountDetails?.mask,
     );
     final importSource = ref.watch(
-      demoStoreProvider.select((s) => s.transactionImportSources[v.id]),
+      appStoreProvider.select((s) => s.transactionImportSources[v.id]),
     );
     final source = v.transaction.scanRecordId == null && importSource == null
         ? l10n.sourceManual

@@ -30,9 +30,9 @@ class SettingsScreen extends ConsumerWidget {
     final prefs = ref.watch(appPreferencesProvider);
     final prefsController = ref.read(appPreferencesProvider.notifier);
     final accounts = ref.watch(
-      demoStoreProvider.select((s) => s.accounts.length),
+      appStoreProvider.select((s) => s.accounts.length),
     );
-    final scans = ref.watch(demoStoreProvider.select((s) => s.scans.length));
+    final scans = ref.watch(appStoreProvider.select((s) => s.scans.length));
     final theme = switch (prefs.theme) {
       ThemePreference.light => l10n.themeLight,
       ThemePreference.dark => l10n.themeDark,

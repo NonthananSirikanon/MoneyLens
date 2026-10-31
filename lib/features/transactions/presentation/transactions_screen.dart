@@ -46,7 +46,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   Future<void> _openCategoryFilter() {
     final l10n = context.l10n;
-    final state = ref.read(demoStoreProvider);
+    final state = ref.read(appStoreProvider);
     final filter = ref.read(transactionFilterProvider);
     final controller = ref.read(transactionFilterProvider.notifier);
     return showMlPickSheet(
@@ -85,7 +85,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final groups = ref.watch(transactionGroupsProvider);
     final hasAny = ref.watch(hasTransactionsProvider);
     final category = ref.watch(
-      demoStoreProvider.select((s) => s.category(filter.categoryId)),
+      appStoreProvider.select((s) => s.category(filter.categoryId)),
     );
 
     // Keep the field in sync when the filter is changed elsewhere

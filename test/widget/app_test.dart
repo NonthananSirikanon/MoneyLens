@@ -220,7 +220,7 @@ void main() {
     expect(container.read(sessionProvider).status, SessionStatus.signedOut);
     expect(find.text('Continue with Google'), findsOneWidget);
     // The data on the device is still there.
-    expect(container.read(demoStoreProvider).transactions, isNotEmpty);
+    expect(container.read(appStoreProvider).transactions, isNotEmpty);
     await drain(tester);
   });
 
@@ -335,7 +335,7 @@ void main() {
 
   testWidgets('manual entry validates, then saves', (tester) async {
     final container = await pumpApp(tester);
-    final before = container.read(demoStoreProvider).balanceOf('kbank');
+    final before = container.read(appStoreProvider).balanceOf('kbank');
 
     await tapOn(tester, find.text('Add manually').first);
     await settle(tester);
@@ -357,7 +357,7 @@ void main() {
 
     expect(find.text('Saved'), findsOneWidget);
     expect(
-      container.read(demoStoreProvider).balanceOf('kbank'),
+      container.read(appStoreProvider).balanceOf('kbank'),
       before - 15000,
     );
   });
@@ -449,7 +449,7 @@ void main() {
     await tapOn(tester, find.text('Delete permanently'));
     await settle(tester);
 
-    expect(container.read(demoStoreProvider).transaction('tx-1'), isNull);
+    expect(container.read(appStoreProvider).transaction('tx-1'), isNull);
     expect(find.text('Transaction deleted'), findsOneWidget);
     await drain(tester);
   });
@@ -510,7 +510,7 @@ void main() {
     final container = await pumpApp(tester);
     // An expense in Dec 2025 makes 2025 available.
     await container
-        .read(demoStoreProvider.notifier)
+        .read(appStoreProvider.notifier)
         .addTransaction(
           TransactionInput(
             type: TransactionType.expense,
@@ -589,7 +589,7 @@ void main() {
     expect(find.text('1234'), findsOneWidget); // digits only, max 4
     await tapOn(tester, find.text('Save account'));
     await settle(tester);
-    expect(container.read(demoStoreProvider).accounts.length, 5);
+    expect(container.read(appStoreProvider).accounts.length, 5);
     await drain(tester);
   });
 
@@ -599,13 +599,13 @@ void main() {
     final container = await pumpApp(tester, sample: false);
     expect(find.text('Total balance'), findsOneWidget);
     expect(find.textContaining('slips waiting'), findsNothing);
-    expect(container.read(demoStoreProvider).transactions, isEmpty);
-    expect(container.read(demoStoreProvider).scans, isEmpty);
+    expect(container.read(appStoreProvider).transactions, isEmpty);
+    expect(container.read(appStoreProvider).scans, isEmpty);
 
     // Scanning opens the system camera; cancelling it leaves everything as is.
     await tapOn(tester, find.text('Scan slip'));
     await settle(tester);
-    expect(container.read(demoStoreProvider).scans, isEmpty);
+    expect(container.read(appStoreProvider).scans, isEmpty);
     expect(find.text('Total balance'), findsOneWidget);
 
     await tapOn(tester, find.text('Add manually').first);
@@ -616,7 +616,7 @@ void main() {
     await settle(tester);
 
     expect(find.text('Saved'), findsOneWidget);
-    final s = container.read(demoStoreProvider);
+    final s = container.read(appStoreProvider);
     expect(s.transactions.single.accountId, 'default-cash');
     expect(s.balanceOf('default-cash'), -15000);
   });
@@ -645,14 +645,14 @@ void main() {
         .toList();
     expect(filled, containsAll(['1250.50', 'นาย สมชาย ทดสอบ']));
     expect(
-      container.read(demoStoreProvider).scans.single.status,
+      container.read(appStoreProvider).scans.single.status,
       ScanStatus.needsReview,
     );
 
     // The category is the user's to pick; saving without it is refused.
     await tapOn(tester, find.text('Confirm and save'));
     await settle(tester);
-    expect(container.read(demoStoreProvider).transactions, isEmpty);
+    expect(container.read(appStoreProvider).transactions, isEmpty);
     await tapOn(tester, find.text('Choose a category'));
     await settle(tester);
     await tapOn(tester, find.text('อาหารและเครื่องดื่ม'));
@@ -661,7 +661,7 @@ void main() {
     await settle(tester);
 
     expect(find.text('Saved'), findsOneWidget);
-    final s = container.read(demoStoreProvider);
+    final s = container.read(appStoreProvider);
     expect(s.transactions.single.amount, thb(125050));
     expect(s.transactions.single.scanRecordId, s.scans.single.id);
     expect(s.scans.single.status, ScanStatus.confirmed);

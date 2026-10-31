@@ -16,7 +16,7 @@ class ScanView {
 
 /// Every imported slip, newest first (SL-10 queue).
 final scanViewsProvider = Provider<List<ScanView>>((ref) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   return [
     for (final scan in s.scans)
       ScanView(scan: scan, details: s.scanDetails[scan.id]),
@@ -24,7 +24,7 @@ final scanViewsProvider = Provider<List<ScanView>>((ref) {
 });
 
 final scanViewProvider = Provider.family<ScanView?, String>((ref, id) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   final scan = s.scan(id);
   return scan == null
       ? null
@@ -33,11 +33,11 @@ final scanViewProvider = Provider.family<ScanView?, String>((ref, id) {
 
 /// Simulated OCR progress (0–100) for [scanId].
 final ocrProgressProvider = Provider.family<double, String>(
-  (ref, scanId) => ref.watch(demoStoreProvider).ocrProgress[scanId] ?? 0,
+  (ref, scanId) => ref.watch(appStoreProvider).ocrProgress[scanId] ?? 0,
 );
 
 /// Pending scans in queue order (needs review or possible duplicate).
 final pendingScansProvider = Provider<List<ScanRecord>>((ref) {
-  ref.watch(demoStoreProvider);
-  return ref.read(demoStoreProvider.notifier).pending;
+  ref.watch(appStoreProvider);
+  return ref.read(appStoreProvider.notifier).pending;
 });

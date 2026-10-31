@@ -29,7 +29,7 @@ void main() {
   late ProviderContainer container;
   late StubOcrService ocr;
   late FakeImageSource gallery;
-  late DemoStore store;
+  late AppStore store;
 
   setUp(() async {
     db = openTestDatabase();
@@ -50,11 +50,11 @@ void main() {
       await db.close();
     });
     // Let the ledger load, as app startup does.
-    await container.read(demoStoreProvider.notifier).loadScans();
-    store = container.read(demoStoreProvider.notifier);
+    await container.read(appStoreProvider.notifier).loadScans();
+    store = container.read(appStoreProvider.notifier);
   });
 
-  DemoState st() => container.read(demoStoreProvider);
+  DemoState st() => container.read(appStoreProvider);
 
   /// Waits until the background read of [id] ends.
   Future<ScanRecord> settled(String id) async {

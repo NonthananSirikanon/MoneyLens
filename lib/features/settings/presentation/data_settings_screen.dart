@@ -125,7 +125,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
       confirmLabel: l10n.wipeConfirm,
     );
     if (!confirmed) return;
-    await ref.read(demoStoreProvider.notifier).wipeAll();
+    await ref.read(appStoreProvider.notifier).wipeAll();
     if (!context.mounted) return;
     showMlToast(l10n.toastWiped);
   }
@@ -144,7 +144,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
             .length ??
         0;
     final slipImages = ref.watch(
-      demoStoreProvider.select(
+      appStoreProvider.select(
         (s) => s.transactions.where((t) => t.attachmentPath != null).length,
       ),
     );

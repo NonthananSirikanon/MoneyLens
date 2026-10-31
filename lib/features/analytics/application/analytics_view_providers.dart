@@ -146,7 +146,7 @@ DateTime _monthsAgo(DateTime nowUtc, int monthsAgo) {
 }
 
 final breakdownProvider = Provider<Breakdown>((ref) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   final ui = ref.watch(analyticsProvider);
   final now = ref.watch(clockProvider).nowUtc();
   final tz = ReportingTimeZone.bangkok;
@@ -203,7 +203,7 @@ class TrendPoint {
 
 /// Six months of income vs expense, oldest first.
 final trendProvider = Provider<List<TrendPoint>>((ref) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   final now = ref.watch(clockProvider).nowUtc();
   final tz = ReportingTimeZone.bangkok;
   final months = [

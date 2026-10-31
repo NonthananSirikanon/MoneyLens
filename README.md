@@ -82,7 +82,7 @@ lib/
 
 The screens implement `design/mockups/prototype.html` using the design system in `design/mockups/index.html`, built on Forui. Tokens and text styles are in `lib/app/theme/`, and the shared widgets (`Ml*`) are in `lib/core/widgets/`.
 
-**Transactions, accounts, categories, balances and reports use the real Drift database.** `DemoStore` (`lib/demo/demo_store.dart`) mirrors the database for the UI and writes every change back through the repositories. A fresh install starts empty with a default cash account and the default categories. Balances are `opening balance + transactions` (`AccountBalanceCalculator`), and reports come from `ReportCalculator`.
+**Transactions, accounts, categories, balances and reports use the real Drift database.** `AppStore` (`lib/demo/demo_store.dart`, the app's UI store despite the folder name) mirrors the database for the UI and writes every change back through the repositories. A fresh install starts empty with a default cash account and the default categories. Balances are `opening balance + transactions` (`AccountBalanceCalculator`), and reports come from `ReportCalculator`.
 
 **Slip import is real.** Choosing photos (or sharing images into the app) saves the image, reads it with the on-device OCR engine, extracts amount, date, payee and type, and opens the review screen with the fields it could not read left blank and the doubtful ones highlighted. Nothing is saved until the user confirms. Sample mode (below) still loads the prototype's accounts and a simulated slip queue.
 

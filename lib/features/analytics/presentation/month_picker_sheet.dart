@@ -28,7 +28,7 @@ Future<void> showMonthPickerSheet(
     ref.read(clockProvider).nowUtc(),
   );
   // The same list the breakdown is computed from.
-  final transactions = ref.read(demoStoreProvider).transactions;
+  final transactions = ref.read(appStoreProvider).transactions;
   var minYear = now.year;
   for (final t in transactions) {
     final year = ReportingTimeZone.bangkok.wallClock(t.occurredAt).year;

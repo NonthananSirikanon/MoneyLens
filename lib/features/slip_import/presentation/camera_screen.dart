@@ -317,7 +317,7 @@ class CameraPreviewScreen extends ConsumerWidget {
                     horizontalPadding: MlSpace.sm,
                     onPressed: () {
                       final id = ref
-                          .read(demoStoreProvider.notifier)
+                          .read(appStoreProvider.notifier)
                           .captureFromCamera();
                       context.pushReplacement(AppRoutes.processing(id));
                     },

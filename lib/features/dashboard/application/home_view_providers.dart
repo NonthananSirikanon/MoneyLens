@@ -44,14 +44,14 @@ MonthTotals currentMonthTotals(DemoState s, DateTime nowUtc) {
 
 final monthTotalsProvider = Provider<MonthTotals>(
   (ref) => currentMonthTotals(
-    ref.watch(demoStoreProvider),
+    ref.watch(appStoreProvider),
     ref.watch(clockProvider).nowUtc(),
   ),
 );
 
 /// Number of transactions per category.
 final categoryCountsProvider = Provider<Map<String, int>>((ref) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   final counts = <String, int>{};
   for (final t in s.transactions) {
     final id = t.categoryId;
@@ -85,7 +85,7 @@ class TopCategory {
 }
 
 final topCategoriesProvider = Provider<List<TopCategory>>((ref) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   final totals = ref.watch(monthTotalsProvider);
   final counts = ref.watch(categoryCountsProvider);
   final entries =
@@ -111,7 +111,7 @@ final topCategoriesProvider = Provider<List<TopCategory>>((ref) {
 
 /// Spend per day of the current month up to today (index 0 = the 1st).
 final dailySpendProvider = Provider<List<int>>((ref) {
-  final s = ref.watch(demoStoreProvider);
+  final s = ref.watch(appStoreProvider);
   final now = ref.watch(clockProvider).nowUtc();
   final tz = ReportingTimeZone.bangkok;
   return const ReportCalculator().dailyExpense(

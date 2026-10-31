@@ -48,8 +48,8 @@ final appStartupProvider = FutureProvider<void>((ref) async {
   ]);
   // Build the store now that its sources have data, and load the slip queue
   // (resuming any slip the app was closed in the middle of reading).
-  ref.read(demoStoreProvider);
-  await ref.read(demoStoreProvider.notifier).loadScans();
+  ref.read(appStoreProvider);
+  await ref.read(appStoreProvider.notifier).loadScans();
 
   // Shared images take the same pipeline as camera and gallery imports.
   final subscription = ref.watch(shareSheetSourceProvider).incoming.listen((
@@ -59,7 +59,7 @@ final appStartupProvider = FutureProvider<void>((ref) async {
       pipeline
           .ingest(request)
           .then<void>(
-            (_) => ref.read(demoStoreProvider.notifier).loadScans(),
+            (_) => ref.read(appStoreProvider.notifier).loadScans(),
             onError: (Object e) {
               logger.event('share_import_rejected', {
                 'code': e is AppFailure ? e.code : FailureCode.unexpected,

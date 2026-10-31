@@ -230,11 +230,11 @@ class EntryFormController extends Notifier<EntryDraft> {
 
   final EntryArgs args;
 
-  DemoStore get _store => ref.read(demoStoreProvider.notifier);
+  AppStore get _store => ref.read(appStoreProvider.notifier);
 
   @override
   EntryDraft build() {
-    final s = ref.read(demoStoreProvider);
+    final s = ref.read(appStoreProvider);
     final today = ReportingTimeZone.bangkok.wallClock(
       ref.read(clockProvider).nowUtc(),
     );
@@ -385,7 +385,7 @@ class EntryFormController extends Notifier<EntryDraft> {
   /// Switching type keeps a category of the matching kind, otherwise picks
   /// the prototype's default; a transfer never targets its own source.
   void setType(TransactionType type) {
-    final s = ref.read(demoStoreProvider);
+    final s = ref.read(appStoreProvider);
     final current = s.category(state.categoryId);
     final keep =
         current != null &&

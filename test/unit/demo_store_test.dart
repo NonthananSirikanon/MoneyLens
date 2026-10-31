@@ -41,7 +41,7 @@ void main() {
   );
 
   test('sample balances match the prototype', () async {
-    final s = (await container()).read(demoStoreProvider);
+    final s = (await container()).read(appStoreProvider);
     expect(s.balanceOf('kbank'), 1825000);
     expect(s.balanceOf('scb'), 642000);
     expect(s.balanceOf('truemoney'), 0);
@@ -56,7 +56,7 @@ void main() {
     expect(before.expense, 65400); // 80 + 120 + 45 + 349 + 60 baht
     expect(before.transfers, 300000); // 2,000 + 1,000 baht
 
-    final store = c.read(demoStoreProvider.notifier);
+    final store = c.read(appStoreProvider.notifier);
     await store.addTransaction(input(TransactionType.expense, 5000));
     await store.addTransaction(input(TransactionType.transfer, 70000));
 
@@ -73,30 +73,30 @@ void main() {
   test('a saved transaction is visible as soon as the call returns', () async {
     final c = await container();
     final id = await c
-        .read(demoStoreProvider.notifier)
+        .read(appStoreProvider.notifier)
         .addTransaction(input(TransactionType.expense, 12300));
-    expect(c.read(demoStoreProvider).transaction(id)!.amount, thb(12300));
+    expect(c.read(appStoreProvider).transaction(id)!.amount, thb(12300));
   });
 
   test('editing and deleting keep the balance correct', () async {
     final c = await container();
-    final store = c.read(demoStoreProvider.notifier);
-    final before = c.read(demoStoreProvider).balanceOf('kbank');
+    final store = c.read(appStoreProvider.notifier);
+    final before = c.read(appStoreProvider).balanceOf('kbank');
 
     await store.updateTransaction(
       'tx-1',
       input(TransactionType.expense, 10000),
     ); // Grab 80 -> 100 baht
-    expect(c.read(demoStoreProvider).balanceOf('kbank'), before - 2000);
+    expect(c.read(appStoreProvider).balanceOf('kbank'), before - 2000);
 
     await store.deleteTransaction('tx-1');
-    expect(c.read(demoStoreProvider).balanceOf('kbank'), before + 8000);
-    expect(c.read(demoStoreProvider).transaction('tx-1'), isNull);
+    expect(c.read(appStoreProvider).balanceOf('kbank'), before + 8000);
+    expect(c.read(appStoreProvider).transaction('tx-1'), isNull);
   });
 
   test('new categories and accounts are saved to the database', () async {
     final c = await container();
-    final store = c.read(demoStoreProvider.notifier);
+    final store = c.read(appStoreProvider.notifier);
     await store.addCategory(
       name: 'Pets',
       kind: CategoryKind.expense,
@@ -109,7 +109,7 @@ void main() {
       last4: '4321',
       openingBalanceMinor: 50000,
     );
-    final s = c.read(demoStoreProvider);
+    final s = c.read(appStoreProvider);
     expect(s.categories.any((x) => x.name == 'Pets' && !x.isDefault), isTrue);
     final account = s.accounts.firstWhere((a) => a.name == 'Krungsri');
     expect(account.lastFour, '4321');
@@ -119,7 +119,7 @@ void main() {
 
   test('wiping removes user data and restores the defaults', () async {
     final c = await container();
-    final store = c.read(demoStoreProvider.notifier);
+    final store = c.read(appStoreProvider.notifier);
     await store.addCategory(
       name: 'Pets',
       kind: CategoryKind.expense,
@@ -128,7 +128,7 @@ void main() {
     );
     await store.wipeAll();
 
-    final s = c.read(demoStoreProvider);
+    final s = c.read(appStoreProvider);
     expect(s.transactions, isEmpty);
     expect(s.scans, isEmpty);
     expect(s.accounts.map((a) => a.id), ['default-cash']);
@@ -140,15 +140,15 @@ void main() {
   group('simulated slip queue', () {
     test('a capture is read, then needs review', () async {
       final c = await container();
-      final store = c.read(demoStoreProvider.notifier);
+      final store = c.read(appStoreProvider.notifier);
       fakeAsync((async) {
         final id = store.captureFromCamera();
         expect(
-          c.read(demoStoreProvider).scan(id)!.status,
+          c.read(appStoreProvider).scan(id)!.status,
           ScanStatus.processing,
         );
         async.elapse(const Duration(seconds: 3));
-        final s = c.read(demoStoreProvider);
+        final s = c.read(appStoreProvider);
         expect(s.scan(id)!.status, ScanStatus.needsReview);
         expect(s.scanDetails[id]!.reading!.merchant, 'Café Amazon สาขาสามย่าน');
       });
@@ -156,16 +156,16 @@ void main() {
 
     test('retrying a failed read uses its prepared result', () async {
       final c = await container();
-      final store = c.read(demoStoreProvider.notifier);
+      final store = c.read(appStoreProvider.notifier);
       fakeAsync((async) {
         store.retryFailed('s3');
         expect(
-          c.read(demoStoreProvider).scan('s3')!.status,
+          c.read(appStoreProvider).scan('s3')!.status,
           ScanStatus.processing,
         );
         async.elapse(const Duration(seconds: 3));
         expect(
-          c.read(demoStoreProvider).scan('s3')!.status,
+          c.read(appStoreProvider).scan('s3')!.status,
           ScanStatus.needsReview,
         );
       });
@@ -173,10 +173,10 @@ void main() {
 
     test('discarding a duplicate leaves one pending slip', () async {
       final c = await container();
-      final store = c.read(demoStoreProvider.notifier);
+      final store = c.read(appStoreProvider.notifier);
       store.discardScan('s2');
       expect(
-        c.read(demoStoreProvider).scan('s2')!.status,
+        c.read(appStoreProvider).scan('s2')!.status,
         ScanStatus.discarded,
       );
       expect(store.pending.map((s) => s.id), ['s1']);

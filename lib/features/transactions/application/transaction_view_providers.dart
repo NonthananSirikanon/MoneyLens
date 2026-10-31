@@ -175,7 +175,7 @@ final transactionLoadProvider =
 
 /// The filtered list, grouped by day.
 final transactionGroupsProvider = Provider<List<TransactionDayGroup>>((ref) {
-  final state = ref.watch(demoStoreProvider);
+  final state = ref.watch(appStoreProvider);
   final filter = ref.watch(transactionFilterProvider);
   final q = filter.query.trim().toLowerCase();
 
@@ -214,14 +214,14 @@ final transactionViewProvider = Provider.family<TransactionView?, String>((
   ref,
   id,
 ) {
-  final state = ref.watch(demoStoreProvider);
+  final state = ref.watch(appStoreProvider);
   final t = state.transaction(id);
   return t == null ? null : transactionViewOf(state, t);
 });
 
 /// The four most recent transactions for Home.
 final recentTransactionViewsProvider = Provider<List<TransactionView>>((ref) {
-  final state = ref.watch(demoStoreProvider);
+  final state = ref.watch(appStoreProvider);
   return [
     for (final t in state.transactions.take(4)) transactionViewOf(state, t),
   ];
@@ -230,5 +230,5 @@ final recentTransactionViewsProvider = Provider<List<TransactionView>>((ref) {
 /// Whether any transaction exists at all (distinguishes "empty" from "no
 /// matches").
 final hasTransactionsProvider = Provider<bool>(
-  (ref) => ref.watch(demoStoreProvider).transactions.isNotEmpty,
+  (ref) => ref.watch(appStoreProvider).transactions.isNotEmpty,
 );

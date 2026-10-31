@@ -26,7 +26,7 @@ class OcrFailedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final store = ref.read(demoStoreProvider.notifier);
+    final store = ref.read(appStoreProvider.notifier);
     final scan = ref.watch(scanViewProvider(scanId))?.scan;
     final tips = [
       (MlIcons.sun, MlColors.warning, l10n.ocrTipLight),

@@ -51,7 +51,7 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final kind = ref.watch(_categoryTabProvider);
-    final store = ref.watch(demoStoreProvider);
+    final store = ref.watch(appStoreProvider);
     final counts = ref.watch(categoryCountsProvider);
     final categories = store.categories.where((c) => c.kind == kind).toList();
     return ColoredBox(
@@ -173,7 +173,7 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
     final name = _name.text.trim();
     if (name.isEmpty) return;
     await ref
-        .read(demoStoreProvider.notifier)
+        .read(appStoreProvider.notifier)
         .addCategory(
           name: name,
           kind: _kind,

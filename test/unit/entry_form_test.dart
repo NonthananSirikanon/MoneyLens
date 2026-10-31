@@ -81,7 +81,7 @@ void main() {
     test('a manual expense saves and lowers the account balance', () async {
       final c = await container();
       const args = ManualEntryArgs();
-      final before = c.read(demoStoreProvider).balanceOf('kbank');
+      final before = c.read(appStoreProvider).balanceOf('kbank');
       final form = c.read(entryFormProvider(args).notifier);
       form
         ..setAmount('150')
@@ -89,7 +89,7 @@ void main() {
       final saved = await form.save();
 
       expect(saved, isNotNull);
-      final state = c.read(demoStoreProvider);
+      final state = c.read(appStoreProvider);
       expect(state.balanceOf('kbank'), before - 15000);
       expect(
         state.transaction(saved!.transactionId)!.categoryId,
@@ -115,7 +115,7 @@ void main() {
       () async {
         final c = await container();
         const args = ManualEntryArgs(TransactionType.transfer);
-        final store = c.read(demoStoreProvider);
+        final store = c.read(appStoreProvider);
         final total = store.totalBalance;
         final from = store.balanceOf('kbank');
         final to = store.balanceOf('truemoney');
@@ -125,7 +125,7 @@ void main() {
           ..setMerchant('Top up');
         expect(await form.save(), isNotNull);
 
-        final after = c.read(demoStoreProvider);
+        final after = c.read(appStoreProvider);
         expect(after.balanceOf('kbank'), from - 50000);
         expect(after.balanceOf('truemoney'), to + 50000);
         expect(after.totalBalance, total);
@@ -151,10 +151,10 @@ void main() {
       final saved = await form.save();
 
       expect(saved, isNotNull);
-      final state = c.read(demoStoreProvider);
+      final state = c.read(appStoreProvider);
       expect(state.scan('s1')!.status, ScanStatus.confirmed);
       expect(state.scan('s1')!.transactionId, saved!.transactionId);
-      expect(c.read(demoStoreProvider.notifier).pending.map((s) => s.id), [
+      expect(c.read(appStoreProvider.notifier).pending.map((s) => s.id), [
         's2',
       ]);
     });
@@ -168,7 +168,7 @@ void main() {
       final saved = await form.save();
 
       expect(saved!.transactionId, 'tx-2');
-      final t = c.read(demoStoreProvider).transaction('tx-2')!;
+      final t = c.read(appStoreProvider).transaction('tx-2')!;
       expect(t.amount.minor, 13000);
       expect(t.attachmentPath, isNotNull);
     });

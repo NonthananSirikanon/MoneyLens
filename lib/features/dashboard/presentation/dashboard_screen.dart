@@ -222,7 +222,7 @@ class _BalanceCard extends ConsumerWidget {
     final hide = ref.watch(
       appPreferencesProvider.select((p) => p.hideBalances),
     );
-    final balance = ref.watch(demoStoreProvider.select((s) => s.totalBalance));
+    final balance = ref.watch(appStoreProvider.select((s) => s.totalBalance));
     final totals = ref.watch(monthTotalsProvider);
     final muted = MlText.caption.copyWith(color: MlColors.balanceMuted);
 

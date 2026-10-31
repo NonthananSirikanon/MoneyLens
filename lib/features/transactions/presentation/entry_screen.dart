@@ -74,7 +74,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
   Future<void> _pickCategory(EntryDraft d) {
     final l10n = context.l10n;
-    final s = ref.read(demoStoreProvider);
+    final s = ref.read(appStoreProvider);
     final counts = ref.read(categoryCountsProvider);
     final kind = d.type == TransactionType.income
         ? CategoryKind.income
@@ -101,7 +101,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     String selected,
     ValueChanged<String> onPick,
   ) {
-    final s = ref.read(demoStoreProvider);
+    final s = ref.read(appStoreProvider);
     final hide = ref.read(appPreferencesProvider).hideBalances;
     return showMlPickSheet(
       context,
@@ -186,7 +186,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final d = ref.watch(entryFormProvider(widget.args));
-    final store = ref.watch(demoStoreProvider);
+    final store = ref.watch(appStoreProvider);
     final hide = ref.watch(
       appPreferencesProvider.select((p) => p.hideBalances),
     );
@@ -741,7 +741,7 @@ class _AccountBox extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(demoStoreProvider);
+    final s = ref.watch(appStoreProvider);
     final account = s.account(accountId);
     final details = s.accountDetails[accountId];
     final name = details?.shortName ?? account?.name ?? '';

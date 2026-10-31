@@ -30,7 +30,7 @@ import 'demo_seed.dart';
 /// real one (`SlipImportPipeline`, OCR on the device) unless sample mode
 /// (`ML_SAMPLE_DATA`) is on, where it is SIMULATED in memory; see
 /// `demo_config.dart`.
-class DemoStore extends Notifier<DemoState> {
+class AppStore extends Notifier<DemoState> {
   final _timers = <Timer>[];
   var _idCounter = 0;
 
@@ -601,4 +601,4 @@ final demoSeedProvider = Provider<DemoSeed>(
   (ref) => DemoSeed(ref.watch(clockProvider).nowUtc()),
 );
 
-final demoStoreProvider = NotifierProvider<DemoStore, DemoState>(DemoStore.new);
+final appStoreProvider = NotifierProvider<AppStore, DemoState>(AppStore.new);

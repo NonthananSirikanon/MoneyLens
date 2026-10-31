@@ -38,7 +38,7 @@ abstract final class ImportFlows {
     final l10n = context.l10n;
     try {
       final scan = await ref
-          .read(demoStoreProvider.notifier)
+          .read(appStoreProvider.notifier)
           .importFrom(source);
       if (scan == null || !context.mounted) return;
       final route = AppRoutes.processing(scan.id);
@@ -88,7 +88,7 @@ abstract final class ImportFlows {
       replace ? context.pushReplacement(route) : context.push(route);
       return;
     }
-    ref.read(demoStoreProvider.notifier).importFromGallery();
+    ref.read(appStoreProvider.notifier).importFromGallery();
     showMlToast(context.l10n.toastImportedPhotos(2));
     replace
         ? context.pushReplacement(AppRoutes.queue)

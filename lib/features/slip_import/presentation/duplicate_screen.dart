@@ -30,7 +30,7 @@ class DuplicateScreen extends ConsumerWidget {
     final view = ref.watch(scanViewProvider(scanId));
     final reading = view?.details?.reading;
     final original = ref.watch(
-      demoStoreProvider.select(
+      appStoreProvider.select(
         (s) => s.transaction(view?.details?.duplicateOfTransactionId),
       ),
     );
@@ -174,7 +174,7 @@ class DuplicateScreen extends ConsumerWidget {
             MlButton(
               label: l10n.duplicateDiscard,
               onPressed: () {
-                ref.read(demoStoreProvider.notifier).discardScan(scanId);
+                ref.read(appStoreProvider.notifier).discardScan(scanId);
                 context.pop();
                 showMlToast(l10n.toastDuplicateDiscarded);
               },
@@ -188,7 +188,7 @@ class DuplicateScreen extends ConsumerWidget {
                 try {
                   // Real slips are read after all and sent to review.
                   await ref
-                      .read(demoStoreProvider.notifier)
+                      .read(appStoreProvider.notifier)
                       .keepDuplicate(scanId);
                 } on Object {
                   if (context.mounted) showMlToast(l10n.failureGeneric);

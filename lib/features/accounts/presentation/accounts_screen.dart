@@ -29,7 +29,7 @@ class AccountsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final s = ref.watch(demoStoreProvider);
+    final s = ref.watch(appStoreProvider);
     final hide = ref.watch(
       appPreferencesProvider.select((p) => p.hideBalances),
     );
@@ -192,7 +192,7 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
     if (name.isEmpty) return;
     final opening = Money.tryParse(_balance.text, Currency.thb)?.minor ?? 0;
     await ref
-        .read(demoStoreProvider.notifier)
+        .read(appStoreProvider.notifier)
         .addAccount(
           name: name,
           kind: _kind,
