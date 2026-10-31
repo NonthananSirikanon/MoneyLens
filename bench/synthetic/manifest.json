@@ -1,0 +1,15 @@
+{
+  "note": "Invented slips only. Pass files are OCR text, one per reading of the same slip; paths are relative to this file.",
+  "cases": [
+    {"id":"kbank_clean_single","passes":["../../test/fixtures/slips/kbank_transfer.txt"],
+     "expected":{"amountMinor":125050,"occurredAt":"2026-02-12T02:05:00Z","merchant":"นาย สมชาย ทดสอบ"}},
+    {"id":"kbank_amount_misread_in_one_of_three","passes":["../../test/fixtures/slips/kbank_transfer.txt","kbank_amount_misread.txt","../../test/fixtures/slips/kbank_transfer.txt"],
+     "expected":{"amountMinor":125050,"occurredAt":"2026-02-12T02:05:00Z","merchant":"นาย สมชาย ทดสอบ"}},
+    {"id":"kbank_date_misread_in_one_of_three","passes":["../../test/fixtures/slips/kbank_transfer.txt","kbank_date_misread.txt","../../test/fixtures/slips/kbank_transfer.txt"],
+     "expected":{"amountMinor":125050,"occurredAt":"2026-02-12T02:05:00Z","merchant":"นาย สมชาย ทดสอบ"}},
+    {"id":"scb_payee_misread_in_one_of_three","passes":["../../test/fixtures/slips/scb_transfer.txt","scb_payee_misread.txt","../../test/fixtures/slips/scb_transfer.txt"],
+     "expected":{"amountMinor":15000,"occurredAt":"2026-09-21T11:57:00Z","merchant":"น.ส. สมหญิง ตัวอย่าง"}},
+    {"id":"ttb_clean_single","passes":["../../test/fixtures/slips/ttb_transfer.txt"],
+     "expected":{"amountMinor":100000,"occurredAt":"2026-05-27T09:28:00Z","merchant":"นาย ประยุทธ ตัวอย่าง"}}
+  ]
+}

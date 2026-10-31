@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Real slips and their recorded OCR text: never commit.
+/bench/private/*
+!/bench/private/.gitkeep
