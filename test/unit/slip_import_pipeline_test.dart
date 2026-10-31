@@ -51,6 +51,13 @@ void main() {
     expect(await db.select(db.transactions).get(), isEmpty);
   });
 
+  test('processorVersion is pinned to ocr-vote-1', () {
+    // Bump this literal in SlipImportPipeline AND update this test whenever
+    // the OCR passes or the voting logic change, so old scans stay
+    // distinguishable from new ones.
+    expect(SlipImportPipeline.processorVersion, 'ocr-vote-1');
+  });
+
   test('every source goes through the same pipeline (SL-04)', () async {
     final p = pipeline(StubOcrService());
     var salt = 0;
