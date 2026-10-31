@@ -76,7 +76,7 @@ class SlipImportPipeline {
       // Exact re-imports are caught before spending OCR effort.
       final duplicate = await _duplicates.check(scan);
       if (duplicate.isDuplicate) {
-        _logger.event('scan_duplicate', {'layer': 'image'});
+        _logger.event('scan_duplicate', {'layer': DuplicateLayer.image});
         return await _scans.transition(
           scanId,
           ScanStatus.duplicate,
@@ -94,7 +94,7 @@ class SlipImportPipeline {
       // it, a second photo) is caught from what was read.
       final sameReading = await _readingDuplicates.check(scan, fields);
       if (sameReading.isDuplicate) {
-        _logger.event('scan_duplicate', {'layer': 'reading'});
+        _logger.event('scan_duplicate', {'layer': DuplicateLayer.reading});
         return await _scans.transition(
           scanId,
           ScanStatus.duplicate,

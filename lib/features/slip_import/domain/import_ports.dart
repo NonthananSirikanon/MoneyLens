@@ -82,6 +82,10 @@ abstract interface class ExtractionService {
   Future<ExtractedFields> extract(OcrResult ocr);
 }
 
+/// Which duplicate layer flagged a scan. An enum so it can be logged
+/// (the logger redacts every string).
+enum DuplicateLayer { image, reading }
+
 class DuplicateCheck {
   const DuplicateCheck({this.duplicateOfScanId});
 

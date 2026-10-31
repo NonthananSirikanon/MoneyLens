@@ -123,6 +123,19 @@ void main() {
       },
     );
 
+    test(
+      'a reference that merely contains the saved one: not flagged',
+      () async {
+        // Everything else equal; only the references differ, one containing
+        // the other. Equality, not substring, decides.
+        expect(await check(reading(reference: 'X$ref')), isNull);
+        expect(
+          await check(reading(), txs: [saved(reference: 'X$ref')]),
+          isNull,
+        );
+      },
+    );
+
     test('a 7-character reference is too weak, even if identical', () async {
       expect(
         await check(

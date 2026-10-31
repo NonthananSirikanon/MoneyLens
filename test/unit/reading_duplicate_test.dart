@@ -242,14 +242,28 @@ void main() {
     expect(await db.select(db.transactions).get(), hasLength(1));
   });
 
-  test('flagging a duplicate logs no slip content', () async {
-    await save(await share('kbank_transfer'));
-    await share('kbank_transfer');
+  test(
+    'the two duplicate layers log differently and no slip content',
+    () async {
+      await save(await share('kbank_transfer'));
+      final byReading = await share('kbank_transfer');
+      expect(byReading.status, ScanStatus.duplicate);
+      // The exact same file again: caught by the image layer, before OCR.
+      ocr.text = slip('kbank_transfer');
+      final byImage = await pipeline.ingest(
+        ImportRequest(source: ImportSource.gallery, bytes: fakeJpeg(salt)),
+      );
+      expect(byImage.status, ScanStatus.duplicate);
 
-    final log = logLines.join('\n');
-    expect(log, contains('scan_duplicate'));
-    for (final secret in ['AOR00000', '1250', '1,250', 'สมชาย', '012345']) {
-      expect(log, isNot(contains(secret)));
-    }
-  });
+      final dupLines = logLines.where((l) => l.startsWith('scan_duplicate '));
+      expect(dupLines.toList(), [
+        'scan_duplicate {layer: reading}',
+        'scan_duplicate {layer: image}',
+      ]);
+      final log = logLines.join('\n');
+      for (final secret in ['AOR00000', '1250', '1,250', 'สมชาย', '012345']) {
+        expect(log, isNot(contains(secret)));
+      }
+    },
+  );
 }
