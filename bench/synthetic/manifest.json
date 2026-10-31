@@ -10,6 +10,13 @@
     {"id":"scb_payee_misread_in_one_of_three","passes":["../../test/fixtures/slips/scb_transfer.txt","scb_payee_misread.txt","../../test/fixtures/slips/scb_transfer.txt"],
      "expected":{"amountMinor":15000,"occurredAt":"2026-09-21T11:57:00Z","merchant":"น.ส. สมหญิง ตัวอย่าง"}},
     {"id":"ttb_clean_single","passes":["../../test/fixtures/slips/ttb_transfer.txt"],
-     "expected":{"amountMinor":100000,"occurredAt":"2026-05-27T09:28:00Z","merchant":"นาย ประยุทธ ตัวอย่าง"}}
-  ]
-}
+     "expected":{"amountMinor":100000,"occurredAt":"2026-05-27T09:28:00Z","merchant":"นาย ประยุทธ ตัวอย่าง"}},
+    {"id":"bbl_clean_single","passes":["../../test/fixtures/slips/bbl_transfer.txt"],
+     "expected":{"amountMinor":425000,"occurredAt":"2026-08-12T07:35:00Z","merchant":"น.ส. สมหญิง ตัวอย่าง"}},
+    {"id":"krungsri_clean_single","passes":["../../test/fixtures/slips/krungsri_transfer.txt"],
+     "expected":{"amountMinor":235000,"occurredAt":"2026-10-09T01:41:00Z","merchant":"นาย วิชัย ตัวอย่าง"}},
+    {"id":"gsb_mymo_clean_single","passes":["../../test/fixtures/slips/gsb_mymo_transfer.txt"],
+     "expected":{"amountMinor":80000,"occurredAt":"2026-11-03T10:20:00Z","merchant":"น.ส. สมหญิง ตัวอย่าง"}},
+    {"id":"truemoney_clean_single","passes":["../../test/fixtures/slips/truemoney_transfer.txt"],
+     "expected":{"amountMinor":15000,"occurredAt":"2026-12-15T14:03:00Z","merchant":"นาย วิชัย ตัวอย่าง"}}
+  ]}

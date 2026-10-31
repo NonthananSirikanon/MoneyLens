@@ -102,6 +102,34 @@ void main() {
       'บริษัท ตัวอย่างการบิน จำกัด',
       false,
     ),
+    (
+      'bbl_transfer',
+      425000,
+      bangkok(2026, 8, 12, 14, 35),
+      'น.ส. สมหญิง ตัวอย่าง',
+      true,
+    ),
+    (
+      'krungsri_transfer',
+      235000,
+      bangkok(2026, 10, 9, 8, 41),
+      'นาย วิชัย ตัวอย่าง',
+      true,
+    ),
+    (
+      'gsb_mymo_transfer',
+      80000,
+      bangkok(2026, 11, 3, 17, 20),
+      'น.ส. สมหญิง ตัวอย่าง',
+      true,
+    ),
+    (
+      'truemoney_transfer',
+      15000,
+      bangkok(2026, 12, 15, 21, 3),
+      'นาย วิชัย ตัวอย่าง',
+      true,
+    ),
   ];
 
   for (final (name, amount, at, payee, hasRef) in cases) {

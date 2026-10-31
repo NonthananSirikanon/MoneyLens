@@ -6,11 +6,12 @@ import '../domain/import_ports.dart';
 /// Reads the text of a Thai bank-transfer or bill-payment slip into
 /// candidate fields (amount, date and time, payee, reference).
 ///
-/// The slips of KBank, SCB, Krungthai, KKP, ttb and GSB differ in layout but
+/// The slips of KBank, SCB, Krungthai, KKP, ttb, GSB, Bangkok Bank, Krungsri
+/// and TrueMoney Wallet (tested on invented look-alikes) differ in layout but
 /// share a few anchors: a "จำนวน(เงิน)" label or an amount followed by
 /// "บาท", a Thai-month date with a Buddhist-era year, a "ไปยัง" (to) label
-/// before the payee, and a "รหัสอ้างอิง / เลขที่รายการ / เลขที่สลิป"
-/// reference. Everything here is a *candidate*: the review screen always
+/// before the payee, and a reference labelled "รหัสอ้างอิง", "เลขที่รายการ",
+/// "เลขที่สลิป" or "หมายเลขอ้างอิง". Everything here is a *candidate*: the review screen always
 /// shows it to the user before anything is saved.
 ///
 /// The text is untrusted data; this class only reads it with patterns and
@@ -532,6 +533,7 @@ class ThaiSlipExtractionService implements ExtractionService {
       RegExp('เลขที่รายการ'),
       RegExp('เลขที่สลิป'),
       RegExp('รหัสธุรกรรม'),
+      RegExp('หมายเลขอ้างอิง'),
     ]) {
       for (var i = 0; i < lines.length; i++) {
         if (!label.hasMatch(lines[i])) continue;

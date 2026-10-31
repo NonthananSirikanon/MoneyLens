@@ -16,7 +16,10 @@ recorded, one text file per pass.
 
 Invented slips only (the text fixtures in `test/fixtures/slips/` plus small
 hand-made misreadings). `manifest.json` lists, per slip, the pass files and
-the expected values. This run must be 100% or the test fails. Some cases show
+the expected values. This run must be 100% or the test fails. The slip layouts (including Bangkok
+Bank, Krungsri, GSB MyMo and TrueMoney) are approximations written from
+general knowledge, not copies of real slips, so 100% here says nothing about
+accuracy on real slips. Some cases show
 voting rescuing a misread pass; a mutation check (dropping the good passes)
 turns the amount case red.
 
