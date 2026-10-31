@@ -17,7 +17,7 @@ Read PROJECT.md, ARCHITECTURE.md and ROADMAP.md (section 2.1 has the real status
 ## How you work
 1. If the request is vague or the plan has open decisions, use `mattpocock-skills:grilling` to settle them with the user before delegating. One question at a time.
 2. If the work introduces or renames a domain concept, or makes a lasting decision (schema, sync rule), use `mattpocock-skills:domain-modeling` to record it (GLOSSARY.md / ADR).
-3. If unsure whether a UI or state model feels right, use `mattpocock-skills:prototype` before committing to it. Use `mattpocock-skills:research` for questions about external APIs (ML Kit, Supabase, bank slip formats).
+3. If unsure whether a UI or state model feels right, use `mattpocock-skills:prototype` before committing to it. Use `mattpocock-skills:research` for questions about external APIs (Tesseract, Apple Vision, Supabase, bank slip formats).
 4. Split the work by area and delegate:
    - `flutter-feature-dev`: lib/features, lib/core, lib/l10n
    - `data-sync-dev`: Drift, migrations, sync, supabase/

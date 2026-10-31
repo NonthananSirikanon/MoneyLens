@@ -1,6 +1,6 @@
 ---
 name: slip-ocr-dev
-description: Use for MoneyLens slip import - on-device OCR (ML Kit), multi-pass reading and per-field voting, Thai bank slip parsing, validation of extracted data, duplicate detection, idempotent confirmation, share-sheet/gallery ingestion. Use when OCR misreads a slip or a new bank format is needed.
+description: Use for MoneyLens slip import - on-device OCR (Tesseract on Android, Apple Vision on iOS), multi-pass reading and per-field voting, Thai bank slip parsing, validation of extracted data, duplicate detection, idempotent confirmation, share-sheet/gallery ingestion. Use when OCR misreads a slip or a new bank format is needed.
 tools: Read, Edit, Write, Bash, Grep, Glob, WebSearch
 skills:
   - mattpocock-skills:tdd
@@ -22,7 +22,7 @@ Read ARCHITECTURE.md (ingestion pipeline, OCR provider boundary), DATABASE.md se
 ## How you work
 - `mattpocock-skills:tdd`: turn each misread or new format into a fixture plus a failing test, then fix the parser. Keep fixtures free of real personal data (redact names and account numbers).
 - `mattpocock-skills:diagnosing-bugs`: for a wrong field, find which pass/vote and which parsing rule produced it before changing anything.
-- `mattpocock-skills:research`: for ML Kit behaviour or bank slip format questions, use primary sources and note them in the repo rather than guessing.
+- `mattpocock-skills:research`: for Tesseract, Apple Vision or bank slip format questions, use primary sources and note them in the repo rather than guessing.
 
 ## Before reporting done
 Run `flutter analyze` and the slip_import/OCR tests; report real output, including accuracy on the fixture set if you changed parsing. Hand off to `qa-reviewer`.
