@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../app/theme/icons.dart';
-import '../../../demo/demo_models.dart';
+import '../../../app/app_state.dart';
 import '../../../l10n/l10n.dart';
 import '../domain/account.dart';
 

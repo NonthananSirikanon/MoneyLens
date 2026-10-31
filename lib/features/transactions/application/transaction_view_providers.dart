@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/reporting_time_zone.dart';
-import '../../../demo/demo_models.dart';
+import '../../../app/app_state.dart';
 import '../../../demo/demo_scenario.dart';
 import '../../../app/app_store.dart';
 import '../../accounts/domain/account.dart';

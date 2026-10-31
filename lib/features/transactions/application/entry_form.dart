@@ -5,7 +5,7 @@ import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/money/currency.dart';
 import '../../../core/money/money.dart';
-import '../../../demo/demo_models.dart';
+import '../../../app/app_state.dart';
 import '../../../app/app_store.dart';
 import '../../categories/domain/category.dart';
 import '../domain/transaction_type.dart';

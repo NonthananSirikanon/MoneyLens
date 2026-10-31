@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
-import '../../../demo/demo_models.dart';
+import '../../../app/app_state.dart';
 import '../../../app/app_store.dart';
 import '../../analytics/application/report_calculator.dart';
 import '../../categories/domain/category.dart';

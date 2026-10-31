@@ -4,7 +4,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
-import 'package:moneylens/demo/demo_models.dart';
+import 'package:moneylens/app/app_state.dart';
 import 'package:moneylens/app/app_store.dart';
 import 'package:moneylens/features/accounts/domain/account.dart';
 import 'package:moneylens/features/categories/domain/category.dart';
@@ -175,10 +175,7 @@ void main() {
       final c = await container();
       final store = c.read(appStoreProvider.notifier);
       store.discardScan('s2');
-      expect(
-        c.read(appStoreProvider).scan('s2')!.status,
-        ScanStatus.discarded,
-      );
+      expect(c.read(appStoreProvider).scan('s2')!.status, ScanStatus.discarded);
       expect(store.pending.map((s) => s.id), ['s1']);
     });
   });

@@ -8,7 +8,7 @@ import '../features/slip_import/domain/scan_status.dart';
 import '../features/transactions/domain/transaction.dart';
 import '../features/transactions/domain/transaction_type.dart';
 
-/// Prototype-only models for the in-memory demo store.
+/// Models for the app store.
 ///
 /// Ledger entities reuse the domain classes (`MoneyTransaction`, `Account`,
 /// `Category`, `ScanRecord`) so screens can later be pointed at the Drift

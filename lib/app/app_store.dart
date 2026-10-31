@@ -20,7 +20,7 @@ import '../features/transactions/domain/transaction.dart';
 import '../features/transactions/domain/transaction_type.dart';
 import '../infrastructure/database/app_database.dart';
 import '../demo/demo_config.dart';
-import '../demo/demo_models.dart';
+import 'app_state.dart';
 import '../demo/demo_seed.dart';
 
 /// The app's UI store.

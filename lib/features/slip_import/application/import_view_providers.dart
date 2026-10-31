@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../demo/demo_models.dart';
+import '../../../app/app_state.dart';
 import '../../../app/app_store.dart';
 import '../domain/scan_record.dart';
 

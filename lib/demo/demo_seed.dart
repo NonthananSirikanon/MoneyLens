@@ -6,7 +6,7 @@ import '../features/slip_import/domain/scan_record.dart';
 import '../features/slip_import/domain/scan_status.dart';
 import '../features/transactions/domain/transaction.dart';
 import '../features/transactions/domain/transaction_type.dart';
-import 'demo_models.dart';
+import '../app/app_state.dart';
 
 /// Mock data copied from `design/mockups/prototype.html` (CATS, ACCS, TX,
 /// SCANS, BASE, PERIODS, TREND, DAILY, CAM_RESULT, GAL_RESULTS).
