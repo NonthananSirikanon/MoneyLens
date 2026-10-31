@@ -30,7 +30,7 @@ object SlipOcr {
     private const val LANGUAGES = "tha"
     private val models = listOf("tha.traineddata")
 
-    private enum class Channel { LUMINANCE, DARKEST }
+    internal enum class Channel { LUMINANCE, DARKEST }
 
     /** Scale to [longSide] on the longest side, or to [width] across. */
     private class Prep(val channel: Channel, val longSide: Int = 0, val width: Int = 0)
@@ -152,7 +152,7 @@ object SlipOcr {
         0
     }
 
-    private fun toGray(argb: IntArray, channel: Channel): IntArray = IntArray(argb.size) {
+    internal fun toGray(argb: IntArray, channel: Channel): IntArray = IntArray(argb.size) {
         val p = argb[it]
         val r = (p shr 16) and 0xFF
         val g = (p shr 8) and 0xFF
@@ -165,7 +165,7 @@ object SlipOcr {
     }
 
     /** Clockwise rotation by [degrees] (90, 180 or 270). */
-    private fun rotate(src: IntArray, w: Int, h: Int, degrees: Int): IntArray {
+    internal fun rotate(src: IntArray, w: Int, h: Int, degrees: Int): IntArray {
         val out = IntArray(src.size)
         for (y in 0 until h) {
             for (x in 0 until w) {
@@ -185,7 +185,7 @@ object SlipOcr {
      * Android's own bitmap scaling is bilinear, which on real slips cost
      * Tesseract a date or two in twelve.
      */
-    private fun resize(src: IntArray, sw: Int, sh: Int, dw: Int, dh: Int): IntArray {
+    internal fun resize(src: IntArray, sw: Int, sh: Int, dw: Int, dh: Int): IntArray {
         if (sw == dw && sh == dh) return src
         val across = taps(sw, dw)
         val tmp = FloatArray(dw * sh)
@@ -243,7 +243,7 @@ object SlipOcr {
     }
 
     /** Spreads the grey levels over 0..255, ignoring the darkest and lightest 1%. */
-    private fun stretchContrast(plane: IntArray) {
+    internal fun stretchContrast(plane: IntArray) {
         val hist = IntArray(256)
         for (v in plane) hist[v]++
         var cut = plane.size / 100
