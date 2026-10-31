@@ -91,9 +91,16 @@ Infrastructure
 lib/
   app/
     app.dart
+    app_preferences.dart
+    app_state.dart   # in-memory app state models
+    app_store.dart   # in-memory app state holder
+    auth_redirect.dart
+    providers.dart
     router.dart
+    supabase_config.dart
+    shell/
     theme/
-    localization/
+  demo/              # demo config, scenario, seed and sample ledger only
   core/
     errors/
     logging/
