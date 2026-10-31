@@ -19,9 +19,9 @@ import '../features/transactions/application/transaction_providers.dart';
 import '../features/transactions/domain/transaction.dart';
 import '../features/transactions/domain/transaction_type.dart';
 import '../infrastructure/database/app_database.dart';
-import 'demo_config.dart';
-import 'demo_models.dart';
-import 'demo_seed.dart';
+import '../demo/demo_config.dart';
+import '../demo/demo_models.dart';
+import '../demo/demo_seed.dart';
 
 /// The app's UI store.
 ///
@@ -30,12 +30,12 @@ import 'demo_seed.dart';
 /// real one (`SlipImportPipeline`, OCR on the device) unless sample mode
 /// (`ML_SAMPLE_DATA`) is on, where it is SIMULATED in memory; see
 /// `demo_config.dart`.
-class AppStore extends Notifier<DemoState> {
+class AppStore extends Notifier<AppState> {
   final _timers = <Timer>[];
   var _idCounter = 0;
 
   @override
-  DemoState build() {
+  AppState build() {
     ref.onDispose(() {
       for (final t in _timers) {
         t.cancel();
@@ -64,7 +64,7 @@ class AppStore extends Notifier<DemoState> {
 
     final accounts = ref.read(activeAccountsProvider).value ?? const [];
     final categories = ref.read(activeCategoriesProvider).value ?? const [];
-    return DemoState(
+    return AppState(
       transactions: ref.read(allTransactionsProvider).value ?? const [],
       transactionImportSources: sample
           ? DemoSeed.transactionImportSources
@@ -601,4 +601,4 @@ final demoSeedProvider = Provider<DemoSeed>(
   (ref) => DemoSeed(ref.watch(clockProvider).nowUtc()),
 );
 
-final appStoreProvider = NotifierProvider<AppStore, DemoState>(AppStore.new);
+final appStoreProvider = NotifierProvider<AppStore, AppState>(AppStore.new);

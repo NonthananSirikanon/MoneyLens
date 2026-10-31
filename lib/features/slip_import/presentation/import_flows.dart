@@ -9,7 +9,7 @@ import '../../../app/router.dart';
 import '../../../core/errors/app_failure.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../demo/demo_config.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../../l10n/l10n.dart';
 import '../../transactions/application/entry_form.dart';
 import '../domain/scan_record.dart';

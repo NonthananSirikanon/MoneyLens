@@ -23,7 +23,7 @@ import 'package:moneylens/features/accounts/application/account_providers.dart';
 import 'package:moneylens/features/categories/application/category_providers.dart';
 import 'package:moneylens/features/transactions/application/transaction_providers.dart';
 import 'package:moneylens/demo/demo_models.dart';
-import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/app/app_store.dart';
 import 'package:moneylens/features/analytics/application/analytics_view_providers.dart';
 import 'package:moneylens/features/transactions/domain/transaction_type.dart';
 import 'package:moneylens/infrastructure/database/app_database.dart';

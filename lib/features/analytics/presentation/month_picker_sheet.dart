@@ -10,7 +10,7 @@ import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 
 /// Sheet for choosing what the analytics breakdown shows: a year row with
 /// arrows, an "all year" choice for that year, and a grid of its twelve

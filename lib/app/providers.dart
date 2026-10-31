@@ -7,7 +7,7 @@ import '../features/auth/application/session.dart';
 import 'app_preferences.dart';
 import '../core/logging/app_logger.dart';
 import '../demo/demo_config.dart';
-import '../demo/demo_store.dart';
+import 'app_store.dart';
 import '../demo/sample_ledger.dart';
 import '../features/accounts/application/account_providers.dart';
 import '../features/categories/application/category_providers.dart';

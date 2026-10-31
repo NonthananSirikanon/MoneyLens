@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
 import 'package:moneylens/demo/demo_models.dart';
-import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/app/app_store.dart';
 import 'package:moneylens/features/accounts/domain/account.dart';
 import 'package:moneylens/features/categories/domain/category.dart';
 import 'package:moneylens/features/dashboard/application/home_view_providers.dart';

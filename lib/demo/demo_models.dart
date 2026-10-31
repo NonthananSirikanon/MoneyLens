@@ -179,8 +179,8 @@ class TransactionInput {
 /// Everything the app store holds: ledger data mirrored from the Drift
 /// database, plus the in-memory (simulated) slip queue.
 @immutable
-class DemoState {
-  const DemoState({
+class AppState {
+  const AppState({
     required this.transactions,
     required this.transactionImportSources,
     required this.accounts,
@@ -209,7 +209,7 @@ class DemoState {
   /// Simulated OCR progress (0–100) for scans being read.
   final Map<String, double> ocrProgress;
 
-  DemoState copyWith({
+  AppState copyWith({
     List<MoneyTransaction>? transactions,
     Map<String, ImportSource>? transactionImportSources,
     List<Account>? accounts,
@@ -219,7 +219,7 @@ class DemoState {
     List<ScanRecord>? scans,
     Map<String, ScanDetails>? scanDetails,
     Map<String, double>? ocrProgress,
-  }) => DemoState(
+  }) => AppState(
     transactions: transactions ?? this.transactions,
     transactionImportSources:
         transactionImportSources ?? this.transactionImportSources,

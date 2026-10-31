@@ -12,7 +12,7 @@ import '../../../app/theme/tokens.dart';
 import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../../l10n/l10n.dart';
 import 'import_flows.dart';
 

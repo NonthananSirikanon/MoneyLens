@@ -6,7 +6,7 @@ import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/money/currency.dart';
 import '../../../core/money/money.dart';
 import '../../../demo/demo_models.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../categories/domain/category.dart';
 import '../domain/transaction_type.dart';
 
@@ -312,7 +312,7 @@ class EntryFormController extends Notifier<EntryDraft> {
     }
   }
 
-  static String? _defaultCategory(DemoState s, TransactionType type) {
+  static String? _defaultCategory(AppState s, TransactionType type) {
     if (type == TransactionType.transfer) return null;
     final preferred = type == TransactionType.income
         ? 'default-income-salary'

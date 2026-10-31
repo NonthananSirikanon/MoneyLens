@@ -11,7 +11,7 @@ import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../../l10n/l10n.dart';
 import '../../auth/application/session.dart';
 import '../../auth/presentation/account_screen.dart';

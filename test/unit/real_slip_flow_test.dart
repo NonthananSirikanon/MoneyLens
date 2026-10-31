@@ -8,7 +8,7 @@ import 'package:moneylens/core/errors/app_failure.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
 import 'package:moneylens/demo/demo_config.dart';
 import 'package:moneylens/demo/demo_models.dart';
-import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/app/app_store.dart';
 import 'package:moneylens/features/slip_import/application/slip_import_providers.dart';
 import 'package:moneylens/features/slip_import/domain/import_ports.dart';
 import 'package:moneylens/features/slip_import/domain/scan_record.dart';
@@ -54,7 +54,7 @@ void main() {
     store = container.read(appStoreProvider.notifier);
   });
 
-  DemoState st() => container.read(appStoreProvider);
+  AppState st() => container.read(appStoreProvider);
 
   /// Waits until the background read of [id] ends.
   Future<ScanRecord> settled(String id) async {

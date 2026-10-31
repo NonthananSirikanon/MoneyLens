@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../demo/demo_models.dart';
 import '../../../demo/demo_scenario.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../accounts/domain/account.dart';
 import '../../categories/domain/category.dart';
 import '../domain/transaction.dart';
@@ -46,7 +46,7 @@ class TransactionView {
 }
 
 /// Resolves [t] against [state].
-TransactionView transactionViewOf(DemoState state, MoneyTransaction t) =>
+TransactionView transactionViewOf(AppState state, MoneyTransaction t) =>
     TransactionView(
       transaction: t,
       category: state.category(t.categoryId),

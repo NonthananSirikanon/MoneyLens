@@ -11,7 +11,7 @@ import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../export/application/export_service.dart';
 import '../../export/application/transaction_csv.dart';
 import '../../export/domain/export_period.dart';

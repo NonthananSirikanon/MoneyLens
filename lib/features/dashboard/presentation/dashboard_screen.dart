@@ -19,7 +19,7 @@ import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_surfaces.dart';
 import '../../../demo/demo_scenario.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../analytics/application/analytics_view_providers.dart';

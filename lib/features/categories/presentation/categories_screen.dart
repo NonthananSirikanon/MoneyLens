@@ -14,7 +14,7 @@ import '../../../core/widgets/ml_fields.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
 import '../../../demo/demo_models.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../../../l10n/l10n.dart';
 import '../../dashboard/application/home_view_providers.dart';
 import '../../transactions/application/transaction_view_providers.dart';

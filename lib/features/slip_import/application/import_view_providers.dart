@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show immutable;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../demo/demo_models.dart';
-import '../../../demo/demo_store.dart';
+import '../../../app/app_store.dart';
 import '../domain/scan_record.dart';
 
 /// A queue entry: the scan lifecycle record plus its demo side data.

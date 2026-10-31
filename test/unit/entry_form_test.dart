@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
-import 'package:moneylens/demo/demo_store.dart';
+import 'package:moneylens/app/app_store.dart';
 import 'package:moneylens/features/slip_import/domain/scan_status.dart';
 import 'package:moneylens/features/transactions/application/entry_form.dart';
 import 'package:moneylens/features/transactions/domain/transaction_type.dart';
