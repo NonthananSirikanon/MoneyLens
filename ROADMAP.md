@@ -38,6 +38,7 @@ MoneyLens ขึ้นกับความสามารถเสี่ยง�
 
 **ทำแล้ว**
 - UI ทุกหน้าตามดีไซน์ (Forui) ต่อกับฐานข้อมูลจริง, CRUD ธุรกรรม/บัญชี/หมวดหมู่, ยอดคงเหลือ, รายงาน
+- **เลิกใช้ `AppStore`/`AppState`** (เฟส 2 ของแผน persistence): หน้าจอรายการเงินอ่านจาก stream provider ของ Drift ผ่าน `Ledger` (อ่านอย่างเดียว) เขียนผ่าน `TransactionActions`/`AccountActions`/`CategoryActions` ซึ่งโหลดใหม่ก่อนคืนค่า (เขียนแล้วเห็นทันที, อ่านเก่าไม่ทับอ่านใหม่) คิวสลิปอยู่ใน `SlipQueue` (`features/slip_import/application`) โหมดตัวอย่าง `ML_SAMPLE_DATA` แยกอยู่ใน `lib/demo` (`demoOverrides()`: คิวสลิป กล้อง/แกลเลอรีจำลอง และเส้นทาง `/camera`) ส่วนที่ยังเหลือในโค้ดจริงเพื่อรองรับโหมดตัวอย่างมีเพียงฟิลด์ `ScanDetails.retryReading`, `ScanTitleKind.discardedDuplicate` และ `fileName` ที่ใช้เฉพาะโหมดตัวอย่าง; สถานะพรีวิว `ML_SCENARIO` ผ่าน `scenarioOverrides()`
 - Supabase: schema + RLS + เทสต์ SQL 5 ชุด (6 migration ขึ้นโปรเจกต์จริงครบ)
 - เข้าสู่ระบบด้วย Google + วันเกิด, ข้อมูลในเครื่องแยกไฟล์ตามบัญชี
 - **ซิงก์เฟส 1** บัญชี หมวดหมู่ ธุรกรรม (offline-first, แก้ล่าสุดชนะ) ทดสอบข้ามเครื่องบน emulator จริงแล้ว

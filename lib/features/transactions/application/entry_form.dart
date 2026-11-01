@@ -5,10 +5,13 @@ import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/money/currency.dart';
 import '../../../core/money/money.dart';
-import '../../../app/app_state.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../../slip_import/application/scan_details.dart';
+import '../../slip_import/application/slip_queue.dart';
 import '../../categories/domain/category.dart';
 import '../domain/transaction_type.dart';
+import 'transaction_actions.dart';
+import 'transaction_input.dart';
 
 /// How the entry screen was opened.
 sealed class EntryArgs {
@@ -230,11 +233,11 @@ class EntryFormController extends Notifier<EntryDraft> {
 
   final EntryArgs args;
 
-  AppStore get _store => ref.read(appStoreProvider.notifier);
+  TransactionActions get _actions => ref.read(transactionActionsProvider);
 
   @override
   EntryDraft build() {
-    final s = ref.read(appStoreProvider);
+    final s = ref.read(ledgerProvider);
     final today = ReportingTimeZone.bangkok.wallClock(
       ref.read(clockProvider).nowUtc(),
     );
@@ -288,7 +291,7 @@ class EntryFormController extends Notifier<EntryDraft> {
           note: t.note ?? '',
         );
       case ScanEntryArgs(:final scanId):
-        final details = s.scanDetails[scanId];
+        final details = ref.read(slipQueueProvider).scanDetails[scanId];
         final r = details?.reading ?? details?.retryReading;
         final w = ReportingTimeZone.bangkok.wallClock(
           r?.occurredAt ?? ref.read(clockProvider).nowUtc(),
@@ -312,7 +315,7 @@ class EntryFormController extends Notifier<EntryDraft> {
     }
   }
 
-  static String? _defaultCategory(AppState s, TransactionType type) {
+  static String? _defaultCategory(Ledger s, TransactionType type) {
     if (type == TransactionType.transfer) return null;
     final preferred = type == TransactionType.income
         ? 'default-income-salary'
@@ -385,7 +388,7 @@ class EntryFormController extends Notifier<EntryDraft> {
   /// Switching type keeps a category of the matching kind, otherwise picks
   /// the prototype's default; a transfer never targets its own source.
   void setType(TransactionType type) {
-    final s = ref.read(appStoreProvider);
+    final s = ref.read(ledgerProvider);
     final current = s.category(state.categoryId);
     final keep =
         current != null &&
@@ -442,17 +445,17 @@ class EntryFormController extends Notifier<EntryDraft> {
       scanId: d.scanId,
     );
     if (d.mode == EntryMode.edit) {
-      await _store.updateTransaction(d.editId!, input);
+      await _actions.update(d.editId!, input);
       return EntrySaved(transactionId: d.editId!, mode: d.mode);
     }
-    final id = await _store.addTransaction(input);
+    final id = await _actions.add(input);
     return EntrySaved(transactionId: id, mode: d.mode);
   }
 
   /// "ทิ้ง" on a slip review.
   void discardScan() {
     final id = state.scanId;
-    if (id != null) _store.discardScan(id);
+    if (id != null) ref.read(slipQueueProvider.notifier).discard(id);
   }
 }
 

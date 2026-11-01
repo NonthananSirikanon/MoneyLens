@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/clock.dart';
+import '../../../core/utils/stream_provider_loading.dart';
 import '../../../core/utils/id_generator.dart';
 import '../../../infrastructure/database/app_database.dart';
 import '../../../core/money/money.dart';
@@ -38,3 +39,8 @@ final accountBalancesProvider = Provider<AsyncValue<Map<String, Money>>>((ref) {
   if (a == null || t == null) return const AsyncLoading();
   return AsyncData(const AccountBalanceCalculator().balances(a, t));
 });
+
+/// Re-reads the active accounts and returns once they are in
+/// [activeAccountsProvider]; see `reloadTransactions`.
+Future<void> reloadAccounts(Ref ref) =>
+    reloadStream(ref, activeAccountsProvider);

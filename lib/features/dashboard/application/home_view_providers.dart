@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
-import '../../../app/app_state.dart';
-import '../../../app/app_store.dart';
 import '../../analytics/application/report_calculator.dart';
 import '../../categories/domain/category.dart';
+import '../../categories/application/category_style.dart';
+import '../../ledger/application/ledger.dart';
+
+/// Whether Home shows the offline banner. Always false in a normal run; the
+/// `ML_SCENARIO=offline` preview sets it (see `scenarioOverrides`).
+final offlineBannerProvider = Provider<bool>((ref) => false);
 
 /// Income, expense and transfer totals for the current month, in minor
 /// units. Transfers are reported separately and never counted as income or
@@ -30,7 +34,7 @@ class MonthTotals {
 
 /// Totals for the Bangkok month containing [nowUtc], from confirmed
 /// transactions only (transfers are reported separately).
-MonthTotals currentMonthTotals(AppState s, DateTime nowUtc) {
+MonthTotals currentMonthTotals(Ledger s, DateTime nowUtc) {
   final month = ReportingTimeZone.bangkok.monthContaining(nowUtc);
   final t = const ReportCalculator().totals(s.transactions, month);
   return MonthTotals(
@@ -44,14 +48,14 @@ MonthTotals currentMonthTotals(AppState s, DateTime nowUtc) {
 
 final monthTotalsProvider = Provider<MonthTotals>(
   (ref) => currentMonthTotals(
-    ref.watch(appStoreProvider),
+    ref.watch(ledgerProvider),
     ref.watch(clockProvider).nowUtc(),
   ),
 );
 
 /// Number of transactions per category.
 final categoryCountsProvider = Provider<Map<String, int>>((ref) {
-  final s = ref.watch(appStoreProvider);
+  final s = ref.watch(ledgerProvider);
   final counts = <String, int>{};
   for (final t in s.transactions) {
     final id = t.categoryId;
@@ -85,7 +89,7 @@ class TopCategory {
 }
 
 final topCategoriesProvider = Provider<List<TopCategory>>((ref) {
-  final s = ref.watch(appStoreProvider);
+  final s = ref.watch(ledgerProvider);
   final totals = ref.watch(monthTotalsProvider);
   final counts = ref.watch(categoryCountsProvider);
   final entries =
@@ -111,7 +115,7 @@ final topCategoriesProvider = Provider<List<TopCategory>>((ref) {
 
 /// Spend per day of the current month up to today (index 0 = the 1st).
 final dailySpendProvider = Provider<List<int>>((ref) {
-  final s = ref.watch(appStoreProvider);
+  final s = ref.watch(ledgerProvider);
   final now = ref.watch(clockProvider).nowUtc();
   final tz = ReportingTimeZone.bangkok;
   return const ReportCalculator().dailyExpense(

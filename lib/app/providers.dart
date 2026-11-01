@@ -3,17 +3,22 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/errors/app_failure.dart';
+import '../core/utils/stream_provider_loading.dart';
 import '../features/auth/application/session.dart';
 import 'app_preferences.dart';
 import '../core/logging/app_logger.dart';
-import '../demo/demo_config.dart';
-import 'app_store.dart';
-import '../demo/sample_ledger.dart';
 import '../features/accounts/application/account_providers.dart';
 import '../features/categories/application/category_providers.dart';
 import '../features/slip_import/application/slip_import_providers.dart';
 import '../features/transactions/application/transaction_providers.dart';
-import '../infrastructure/database/app_database.dart';
+import '../features/slip_import/application/slip_queue.dart';
+
+/// Fills the database with sample data before the ledger loads. Does nothing
+/// in a normal run; sample mode (`ML_SAMPLE_DATA`) overrides it from
+/// `lib/demo`.
+final sampleLedgerSeederProvider = Provider<Future<void> Function()>(
+  (ref) => () async {},
+);
 
 /// One-time startup work that must finish before the UI shows data:
 /// recover interrupted scans, load the ledger from the database (so the UI
@@ -35,21 +40,15 @@ final appStartupProvider = FutureProvider<void>((ref) async {
         .finishOnboarding(permissionsGranted: prefs.permissionsGranted);
   }
 
-  if (ref.read(sampleDataEnabledProvider)) {
-    await insertSampleLedger(
-      ref.read(appDatabaseProvider),
-      ref.read(demoSeedProvider),
-    );
-  }
+  await ref.read(sampleLedgerSeederProvider)();
   await Future.wait([
-    ref.watch(activeAccountsProvider.future),
-    ref.watch(activeCategoriesProvider.future),
-    ref.watch(allTransactionsProvider.future),
+    firstValueOf(ref, activeAccountsProvider),
+    firstValueOf(ref, activeCategoriesProvider),
+    firstValueOf(ref, allTransactionsProvider),
   ]);
-  // Build the store now that its sources have data, and load the slip queue
-  // (resuming any slip the app was closed in the middle of reading).
-  ref.read(appStoreProvider);
-  await ref.read(appStoreProvider.notifier).loadScans();
+  // Load the slip queue (resuming any slip the app was closed in the middle
+  // of reading).
+  await ref.read(slipQueueProvider.notifier).load();
 
   // Shared images take the same pipeline as camera and gallery imports.
   final subscription = ref.watch(shareSheetSourceProvider).incoming.listen((
@@ -59,7 +58,7 @@ final appStartupProvider = FutureProvider<void>((ref) async {
       pipeline
           .ingest(request)
           .then<void>(
-            (_) => ref.read(appStoreProvider.notifier).loadScans(),
+            (_) => ref.read(slipQueueProvider.notifier).load(),
             onError: (Object e) {
               logger.event('share_import_rejected', {
                 'code': e is AppFailure ? e.code : FailureCode.unexpected,

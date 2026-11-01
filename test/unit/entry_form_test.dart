@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
-import 'package:moneylens/app/app_store.dart';
+import 'package:moneylens/features/ledger/application/ledger.dart';
+import 'package:moneylens/features/slip_import/application/slip_queue.dart';
 import 'package:moneylens/features/slip_import/domain/scan_status.dart';
 import 'package:moneylens/features/transactions/application/entry_form.dart';
 import 'package:moneylens/features/transactions/domain/transaction_type.dart';
@@ -81,7 +82,7 @@ void main() {
     test('a manual expense saves and lowers the account balance', () async {
       final c = await container();
       const args = ManualEntryArgs();
-      final before = c.read(appStoreProvider).balanceOf('kbank');
+      final before = c.read(ledgerProvider).balanceOf('kbank');
       final form = c.read(entryFormProvider(args).notifier);
       form
         ..setAmount('150')
@@ -89,7 +90,7 @@ void main() {
       final saved = await form.save();
 
       expect(saved, isNotNull);
-      final state = c.read(appStoreProvider);
+      final state = c.read(ledgerProvider);
       expect(state.balanceOf('kbank'), before - 15000);
       expect(
         state.transaction(saved!.transactionId)!.categoryId,
@@ -115,7 +116,7 @@ void main() {
       () async {
         final c = await container();
         const args = ManualEntryArgs(TransactionType.transfer);
-        final store = c.read(appStoreProvider);
+        final store = c.read(ledgerProvider);
         final total = store.totalBalance;
         final from = store.balanceOf('kbank');
         final to = store.balanceOf('truemoney');
@@ -125,7 +126,7 @@ void main() {
           ..setMerchant('Top up');
         expect(await form.save(), isNotNull);
 
-        final after = c.read(appStoreProvider);
+        final after = c.read(ledgerProvider);
         expect(after.balanceOf('kbank'), from - 50000);
         expect(after.balanceOf('truemoney'), to + 50000);
         expect(after.totalBalance, total);
@@ -151,12 +152,10 @@ void main() {
       final saved = await form.save();
 
       expect(saved, isNotNull);
-      final state = c.read(appStoreProvider);
-      expect(state.scan('s1')!.status, ScanStatus.confirmed);
-      expect(state.scan('s1')!.transactionId, saved!.transactionId);
-      expect(c.read(appStoreProvider.notifier).pending.map((s) => s.id), [
-        's2',
-      ]);
+      final queue = c.read(slipQueueProvider);
+      expect(queue.scan('s1')!.status, ScanStatus.confirmed);
+      expect(queue.scan('s1')!.transactionId, saved!.transactionId);
+      expect(queue.pending.map((s) => s.id), ['s2']);
     });
 
     test('editing keeps the transaction id and its slip', () async {
@@ -168,7 +167,7 @@ void main() {
       final saved = await form.save();
 
       expect(saved!.transactionId, 'tx-2');
-      final t = c.read(appStoreProvider).transaction('tx-2')!;
+      final t = c.read(ledgerProvider).transaction('tx-2')!;
       expect(t.amount.minor, 13000);
       expect(t.attachmentPath, isNotNull);
     });

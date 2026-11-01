@@ -4,6 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/app.dart';
 import 'app/supabase_config.dart';
+import 'demo/demo_config.dart';
+import 'demo/demo_harness.dart';
+import 'demo/demo_scenario.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,5 +18,13 @@ Future<void> main() async {
       publishableKey: SupabaseConfig.publishableKey,
     );
   }
-  runApp(const ProviderScope(child: MoneyLensApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        ...scenarioOverrides(),
+        if (sampleDataEnabled) ...demoOverrides(),
+      ],
+      child: const MoneyLensApp(),
+    ),
+  );
 }

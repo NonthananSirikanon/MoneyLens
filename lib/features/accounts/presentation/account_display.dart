@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../app/theme/icons.dart';
-import '../../../app/app_state.dart';
 import '../../../l10n/l10n.dart';
 import '../domain/account.dart';
+import '../application/account_details.dart';
 
 IconData accountIcon(AccountKind kind) => switch (kind) {
   AccountKind.bank => MlIcons.landmark,

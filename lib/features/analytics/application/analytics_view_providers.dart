@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/dates/clock.dart';
 import '../../../core/dates/date_range.dart';
 import '../../../core/dates/reporting_time_zone.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
 import 'report_calculator.dart';
 
 enum AnalyticsTab { breakdown, trend }
@@ -146,7 +146,7 @@ DateTime _monthsAgo(DateTime nowUtc, int monthsAgo) {
 }
 
 final breakdownProvider = Provider<Breakdown>((ref) {
-  final s = ref.watch(appStoreProvider);
+  final s = ref.watch(ledgerProvider);
   final ui = ref.watch(analyticsProvider);
   final now = ref.watch(clockProvider).nowUtc();
   final tz = ReportingTimeZone.bangkok;
@@ -203,7 +203,7 @@ class TrendPoint {
 
 /// Six months of income vs expense, oldest first.
 final trendProvider = Provider<List<TrendPoint>>((ref) {
-  final s = ref.watch(appStoreProvider);
+  final s = ref.watch(ledgerProvider);
   final now = ref.watch(clockProvider).nowUtc();
   final tz = ReportingTimeZone.bangkok;
   final months = [

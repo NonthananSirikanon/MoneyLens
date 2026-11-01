@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/app_preferences.dart';
-import '../../../app/router.dart';
 import '../../../app/theme/icons.dart';
 import '../../../app/theme/text_styles.dart';
 import '../../../app/theme/tokens.dart';
@@ -107,7 +106,11 @@ class DeniedScreen extends ConsumerWidget {
                               ref,
                               replace: true,
                             )
-                          : context.pushReplacement(AppRoutes.camera),
+                          : ImportFlows.startCamera(
+                              context,
+                              ref,
+                              replace: true,
+                            ),
                     ),
                     const SizedBox(height: MlSpace.xs),
                     MlButton(

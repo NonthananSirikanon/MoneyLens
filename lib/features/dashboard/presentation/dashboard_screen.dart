@@ -18,8 +18,7 @@ import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../demo/demo_scenario.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../analytics/application/analytics_view_providers.dart';
@@ -54,7 +53,7 @@ class DashboardScreen extends ConsumerWidget {
     final now = ReportingTimeZone.bangkok.wallClock(
       ref.watch(clockProvider).nowUtc(),
     );
-    final offline = ref.watch(demoScenarioProvider) == DemoScenario.offline;
+    final offline = ref.watch(offlineBannerProvider);
     final pending = ref.watch(pendingScansProvider).length;
     final recent = ref.watch(recentTransactionViewsProvider);
 
@@ -222,7 +221,7 @@ class _BalanceCard extends ConsumerWidget {
     final hide = ref.watch(
       appPreferencesProvider.select((p) => p.hideBalances),
     );
-    final balance = ref.watch(appStoreProvider.select((s) => s.totalBalance));
+    final balance = ref.watch(ledgerProvider.select((s) => s.totalBalance));
     final totals = ref.watch(monthTotalsProvider);
     final muted = MlText.caption.copyWith(color: MlColors.balanceMuted);
 

@@ -1,4 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
+
+import '../features/dashboard/application/home_view_providers.dart';
+import '../features/transactions/application/transaction_view_providers.dart';
 
 /// Demo states that the prototype exposes as preview props rather than
 /// through visible UI. Choose one at launch with
@@ -21,6 +24,22 @@ enum DemoScenario {
   );
 }
 
-final demoScenarioProvider = Provider<DemoScenario>(
-  (ref) => DemoScenario.fromName(const String.fromEnvironment('ML_SCENARIO')),
-);
+/// Applies the `ML_SCENARIO` preview state to the screens that can show it.
+/// With no scenario this changes nothing.
+List<Override> scenarioOverrides() {
+  final scenario = DemoScenario.fromName(
+    const String.fromEnvironment('ML_SCENARIO'),
+  );
+  return [
+    if (scenario == DemoScenario.offline)
+      offlineBannerProvider.overrideWithValue(true),
+    if (scenario == DemoScenario.loading)
+      transactionLoadFaultProvider.overrideWithValue(
+        TransactionLoadFault.staysLoading,
+      ),
+    if (scenario == DemoScenario.dbError)
+      transactionLoadFaultProvider.overrideWithValue(
+        TransactionLoadFault.failsFirstLoad,
+      ),
+  ];
+}

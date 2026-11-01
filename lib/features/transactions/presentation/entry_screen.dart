@@ -16,8 +16,9 @@ import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_fields.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_state.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../../slip_import/application/scan_details.dart';
+import '../../slip_import/application/slip_queue.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../accounts/presentation/account_display.dart';
@@ -74,7 +75,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
 
   Future<void> _pickCategory(EntryDraft d) {
     final l10n = context.l10n;
-    final s = ref.read(appStoreProvider);
+    final s = ref.read(ledgerProvider);
     final counts = ref.read(categoryCountsProvider);
     final kind = d.type == TransactionType.income
         ? CategoryKind.income
@@ -101,7 +102,7 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
     String selected,
     ValueChanged<String> onPick,
   ) {
-    final s = ref.read(appStoreProvider);
+    final s = ref.read(ledgerProvider);
     final hide = ref.read(appPreferencesProvider).hideBalances;
     return showMlPickSheet(
       context,
@@ -186,14 +187,14 @@ class _EntryScreenState extends ConsumerState<EntryScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final d = ref.watch(entryFormProvider(widget.args));
-    final store = ref.watch(appStoreProvider);
+    final store = ref.watch(ledgerProvider);
     final hide = ref.watch(
       appPreferencesProvider.select((p) => p.hideBalances),
     );
     final fromSlip = d.mode == EntryMode.scan;
     final slipPath = d.scanId == null
         ? null
-        : store.scan(d.scanId!)?.attachmentPath;
+        : ref.watch(slipQueueProvider).scan(d.scanId!)?.attachmentPath;
 
     final title = switch (d.mode) {
       EntryMode.scan => l10n.entryTitleReview,
@@ -741,7 +742,7 @@ class _AccountBox extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(appStoreProvider);
+    final s = ref.watch(ledgerProvider);
     final account = s.account(accountId);
     final details = s.accountDetails[accountId];
     final name = details?.shortName ?? account?.name ?? '';

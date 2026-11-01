@@ -11,7 +11,8 @@ import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../application/slip_queue.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../transactions/application/entry_form.dart';
@@ -30,7 +31,7 @@ class DuplicateScreen extends ConsumerWidget {
     final view = ref.watch(scanViewProvider(scanId));
     final reading = view?.details?.reading;
     final original = ref.watch(
-      appStoreProvider.select(
+      ledgerProvider.select(
         (s) => s.transaction(view?.details?.duplicateOfTransactionId),
       ),
     );
@@ -174,7 +175,7 @@ class DuplicateScreen extends ConsumerWidget {
             MlButton(
               label: l10n.duplicateDiscard,
               onPressed: () {
-                ref.read(appStoreProvider.notifier).discardScan(scanId);
+                ref.read(slipQueueProvider.notifier).discard(scanId);
                 context.pop();
                 showMlToast(l10n.toastDuplicateDiscarded);
               },
@@ -188,7 +189,7 @@ class DuplicateScreen extends ConsumerWidget {
                 try {
                   // Real slips are read after all and sent to review.
                   await ref
-                      .read(appStoreProvider.notifier)
+                      .read(slipQueueProvider.notifier)
                       .keepDuplicate(scanId);
                 } on Object {
                   if (context.mounted) showMlToast(l10n.failureGeneric);

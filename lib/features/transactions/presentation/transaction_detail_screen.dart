@@ -11,7 +11,8 @@ import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../../slip_import/application/import_view_providers.dart';
+import '../application/transaction_actions.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../slip_import/domain/scan_status.dart';
@@ -48,7 +49,7 @@ class TransactionDetailScreen extends ConsumerWidget {
       ),
     );
     if (!confirmed || !context.mounted) return;
-    await ref.read(appStoreProvider.notifier).deleteTransaction(v.id);
+    await ref.read(transactionActionsProvider).delete(v.id);
     if (!context.mounted) return;
     context.pop();
     showMlToast(l10n.toastDeleted);
@@ -75,9 +76,7 @@ class TransactionDetailScreen extends ConsumerWidget {
       v.accountDetails?.shortName ?? v.account?.name,
       v.accountDetails?.mask,
     );
-    final importSource = ref.watch(
-      appStoreProvider.select((s) => s.transactionImportSources[v.id]),
-    );
+    final importSource = ref.watch(transactionImportSourceProvider(v.id));
     final source = v.transaction.scanRecordId == null && importSource == null
         ? l10n.sourceManual
         : l10n.sourceSlip(_sourceLabel(context, importSource));

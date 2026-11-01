@@ -5,7 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/app/providers.dart';
-import 'package:moneylens/demo/demo_config.dart';
+import 'package:moneylens/demo/demo_harness.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/dates/date_range.dart';
 import 'package:moneylens/core/errors/app_failure.dart';
@@ -193,7 +193,7 @@ Future<ProviderContainer> sampleContainer(DateTime now) async {
     overrides: [
       appDatabaseProvider.overrideWithValue(db),
       clockProvider.overrideWithValue(FixedClock(now)),
-      sampleDataEnabledProvider.overrideWithValue(true),
+      ...demoOverrides(),
     ],
   );
   addTearDown(() async {

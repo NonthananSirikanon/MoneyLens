@@ -6,13 +6,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/errors/app_failure.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
-import 'package:moneylens/demo/demo_config.dart';
-import 'package:moneylens/app/app_state.dart';
-import 'package:moneylens/app/app_store.dart';
+import 'package:moneylens/features/ledger/application/ledger.dart';
+import 'package:moneylens/features/slip_import/application/scan_details.dart';
+import 'package:moneylens/features/slip_import/application/slip_queue.dart';
+import 'package:moneylens/features/transactions/application/transaction_actions.dart';
+import 'package:moneylens/features/transactions/application/transaction_input.dart';
 import 'package:moneylens/features/slip_import/application/slip_import_providers.dart';
 import 'package:moneylens/features/slip_import/domain/import_ports.dart';
 import 'package:moneylens/features/slip_import/domain/scan_record.dart';
 import 'package:moneylens/features/slip_import/domain/scan_status.dart';
+import 'package:moneylens/features/transactions/domain/transaction.dart';
 import 'package:moneylens/features/transactions/domain/transaction_type.dart';
 import 'package:moneylens/infrastructure/database/app_database.dart';
 
@@ -29,7 +32,7 @@ void main() {
   late ProviderContainer container;
   late StubOcrService ocr;
   late FakeImageSource gallery;
-  late AppStore store;
+  late SlipQueue store;
 
   setUp(() async {
     db = openTestDatabase();
@@ -38,7 +41,6 @@ void main() {
     container = ProviderContainer(
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
-        sampleDataEnabledProvider.overrideWithValue(false),
         clockProvider.overrideWithValue(FixedClock(now)),
         slipImageStoreProvider.overrideWithValue(MemorySlipImageStore()),
         ocrServiceProvider.overrideWithValue(ocr),
@@ -50,11 +52,11 @@ void main() {
       await db.close();
     });
     // Let the ledger load, as app startup does.
-    await container.read(appStoreProvider.notifier).loadScans();
-    store = container.read(appStoreProvider.notifier);
+    store = container.read(slipQueueProvider.notifier);
+    await store.load();
   });
 
-  AppState st() => container.read(appStoreProvider);
+  SlipQueueState st() => container.read(slipQueueProvider);
 
   /// Waits until the background read of [id] ends.
   Future<ScanRecord> settled(String id) async {
@@ -81,7 +83,7 @@ void main() {
     () async {
       final scan = await importSlip();
       expect(scan.status, ScanStatus.needsReview);
-      expect(store.pending.map((e) => e.id), [scan.id]);
+      expect(st().pending.map((e) => e.id), [scan.id]);
 
       final r = st().scanDetails[scan.id]!.reading!;
       expect(r.amountText, '1250.50');
@@ -100,42 +102,49 @@ void main() {
     () async {
       final scan = await importSlip();
       final r = st().scanDetails[scan.id]!.reading!;
-      final id = await store.addTransaction(
-        TransactionInput(
-          type: TransactionType.expense,
-          amount: thb(125050),
-          accountId: 'default-cash',
-          categoryId: 'default-expense-food',
-          merchant: r.merchant,
-          occurredAt: r.occurredAt,
-          scanId: scan.id,
-        ),
-      );
+      final id = await container
+          .read(transactionActionsProvider)
+          .add(
+            TransactionInput(
+              type: TransactionType.expense,
+              amount: thb(125050),
+              accountId: 'default-cash',
+              categoryId: 'default-expense-food',
+              merchant: r.merchant,
+              occurredAt: r.occurredAt,
+              scanId: scan.id,
+            ),
+          );
 
-      final tx = st().transaction(id)!;
+      final tx = container.read(ledgerProvider).transaction(id)!;
       expect(tx.amount, thb(125050));
       expect(tx.scanRecordId, scan.id);
       expect(tx.attachmentPath, scan.attachmentPath);
       expect(st().scan(scan.id)!.status, ScanStatus.confirmed);
       expect(st().scan(scan.id)!.transactionId, id);
-      expect(store.pending, isEmpty);
+      expect(st().pending, isEmpty);
       expect(st().transactionImportSources[id], ImportSource.gallery);
 
       // Saving the same slip again does not add a second transaction.
-      final again = await store.addTransaction(
-        TransactionInput(
-          type: TransactionType.expense,
-          amount: thb(125050),
-          accountId: 'default-cash',
-          categoryId: 'default-expense-food',
-          merchant: r.merchant,
-          occurredAt: r.occurredAt,
-          scanId: scan.id,
-        ),
-      );
+      final again = await container
+          .read(transactionActionsProvider)
+          .add(
+            TransactionInput(
+              type: TransactionType.expense,
+              amount: thb(125050),
+              accountId: 'default-cash',
+              categoryId: 'default-expense-food',
+              merchant: r.merchant,
+              occurredAt: r.occurredAt,
+              scanId: scan.id,
+            ),
+          );
       expect(again, id);
       expect(
-        st().transactions.where((t) => t.scanRecordId == scan.id),
+        container
+            .read(ledgerProvider)
+            .transactions
+            .where((t) => t.scanRecordId == scan.id),
         hasLength(1),
       );
     },
@@ -145,17 +154,19 @@ void main() {
     'the same picture twice is a duplicate that points at the first',
     () async {
       final first = await importSlip();
-      final saved = await store.addTransaction(
-        TransactionInput(
-          type: TransactionType.expense,
-          amount: thb(125050),
-          accountId: 'default-cash',
-          categoryId: 'default-expense-food',
-          merchant: 'x',
-          occurredAt: now,
-          scanId: first.id,
-        ),
-      );
+      final saved = await container
+          .read(transactionActionsProvider)
+          .add(
+            TransactionInput(
+              type: TransactionType.expense,
+              amount: thb(125050),
+              accountId: 'default-cash',
+              categoryId: 'default-expense-food',
+              merchant: 'x',
+              occurredAt: now,
+              scanId: first.id,
+            ),
+          );
 
       final second = await importSlip();
       expect(second.status, ScanStatus.duplicate);
@@ -163,7 +174,7 @@ void main() {
       expect(d.duplicateOfTransactionId, saved);
       // It shows what the first one read.
       expect(d.reading?.amountText, '1250.50');
-      expect(store.pending.map((e) => e.id), contains(second.id));
+      expect(st().pending.map((e) => e.id), contains(second.id));
 
       // "Not a duplicate": it is read after all and goes to review.
       await store.keepDuplicate(second.id);
@@ -175,7 +186,7 @@ void main() {
   test('discarding a duplicate takes it out of the queue', () async {
     await importSlip();
     final dup = await importSlip();
-    store.discardScan(dup.id);
+    store.discard(dup.id);
     await pumpEventQueue();
     expect(st().scans.map((e) => e.id), isNot(contains(dup.id)));
   });
@@ -185,10 +196,10 @@ void main() {
     final failed = await importSlip();
     expect(failed.status, ScanStatus.failed);
     expect(failed.failureCode, FailureCode.unreadableImage);
-    expect(store.pending, isEmpty);
+    expect(st().pending, isEmpty);
 
     ocr.failWith = null;
-    store.retryFailed(failed.id);
+    store.retry(failed.id);
     final again = await settled(failed.id);
     expect(again.status, ScanStatus.needsReview);
     expect(st().scanDetails[failed.id]!.reading!.amountText, '1250.50');
@@ -250,8 +261,30 @@ void main() {
     );
     expect(queued.status, ScanStatus.queued);
 
-    await store.loadScans();
+    await store.load();
     final scan = await settled('left-over');
     expect(scan.status, ScanStatus.needsReview);
   });
+
+  test(
+    'the saved transaction is in the ledger when saveReviewed returns',
+    () async {
+      final scan = await importSlip();
+      final r = st().scanDetails[scan.id]!.reading!;
+      final id = await store.saveReviewed(
+        scan,
+        TransactionDraft(
+          type: TransactionType.expense,
+          amount: thb(125050),
+          accountId: 'default-cash',
+          categoryId: 'default-expense-food',
+          merchant: r.merchant,
+          occurredAt: r.occurredAt,
+          source: TransactionSource.ocr,
+        ),
+      );
+      expect(container.read(ledgerProvider).transaction(id), isNotNull);
+      expect(st().scan(scan.id)!.status, ScanStatus.confirmed);
+    },
+  );
 }

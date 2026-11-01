@@ -6,10 +6,10 @@ import '../../../app/theme/tokens.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_button.dart';
-import '../../../app/app_state.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../application/import_view_providers.dart';
+import '../application/scan_details.dart';
 import '../domain/scan_status.dart';
 import 'scan_photo.dart';
 

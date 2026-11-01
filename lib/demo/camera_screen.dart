@@ -5,16 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/router.dart';
-import '../../../app/theme/icons.dart';
-import '../../../app/theme/text_styles.dart';
-import '../../../app/theme/tokens.dart';
-import '../../../core/widgets/ml_badges.dart';
-import '../../../core/widgets/ml_button.dart';
-import '../../../core/widgets/ml_controls.dart';
-import '../../../app/app_store.dart';
-import '../../../l10n/l10n.dart';
-import 'import_flows.dart';
+import '../app/router.dart';
+import '../app/theme/icons.dart';
+import '../app/theme/text_styles.dart';
+import '../app/theme/tokens.dart';
+import '../core/widgets/ml_badges.dart';
+import '../core/widgets/ml_button.dart';
+import '../core/widgets/ml_controls.dart';
+import '../features/slip_import/application/slip_queue.dart';
+import '../features/slip_import/domain/scan_status.dart';
+import '../features/slip_import/presentation/import_flows.dart';
+import '../l10n/l10n.dart';
 
 /// Dark scaffold shared by the camera and preview screens.
 class _DarkScreen extends StatelessWidget {
@@ -315,11 +316,12 @@ class CameraPreviewScreen extends ConsumerWidget {
                     variant: MlButtonVariant.light,
                     fontWeight: FontWeight.w700,
                     horizontalPadding: MlSpace.sm,
-                    onPressed: () {
-                      final id = ref
-                          .read(appStoreProvider.notifier)
-                          .captureFromCamera();
-                      context.pushReplacement(AppRoutes.processing(id));
+                    onPressed: () async {
+                      final scan = await ref
+                          .read(slipQueueProvider.notifier)
+                          .importFrom(ImportSource.camera);
+                      if (scan == null || !context.mounted) return;
+                      context.pushReplacement(AppRoutes.processing(scan.id));
                     },
                   ),
                 ),

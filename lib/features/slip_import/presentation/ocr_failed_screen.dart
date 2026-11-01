@@ -10,7 +10,7 @@ import '../../../core/widgets/ml_button.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../application/slip_queue.dart';
 import '../../../l10n/l10n.dart';
 import 'import_flows.dart';
 import 'scan_photo.dart';
@@ -26,7 +26,7 @@ class OcrFailedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final store = ref.read(appStoreProvider.notifier);
+    final store = ref.read(slipQueueProvider.notifier);
     final scan = ref.watch(scanViewProvider(scanId))?.scan;
     final tips = [
       (MlIcons.sun, MlColors.warning, l10n.ocrTipLight),
@@ -126,7 +126,7 @@ class OcrFailedScreen extends ConsumerWidget {
                       label: l10n.ocrRetry,
                       icon: MlIcons.refreshCw,
                       onPressed: () {
-                        store.retryFailed(scanId);
+                        store.retry(scanId);
                         context.pushReplacement(AppRoutes.processing(scanId));
                       },
                     ),
@@ -136,7 +136,7 @@ class OcrFailedScreen extends ConsumerWidget {
                       variant: MlButtonVariant.outline,
                       height: 52,
                       onPressed: () {
-                        store.discardScan(scanId);
+                        store.discard(scanId);
                         ImportFlows.startManual(context, replace: true);
                       },
                     ),
@@ -147,7 +147,7 @@ class OcrFailedScreen extends ConsumerWidget {
                       height: 44,
                       fontWeight: FontWeight.w600,
                       onPressed: () {
-                        store.removeScan(scanId);
+                        store.remove(scanId);
                         context.pop();
                         showMlToast(l10n.toastSlipDeleted);
                       },

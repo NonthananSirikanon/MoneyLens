@@ -4,11 +4,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/reporting_time_zone.dart';
-import '../../../app/app_state.dart';
-import '../../../demo/demo_scenario.dart';
-import '../../../app/app_store.dart';
 import '../../accounts/domain/account.dart';
+import '../../accounts/application/account_details.dart';
 import '../../categories/domain/category.dart';
+import '../../ledger/application/ledger.dart';
 import '../domain/transaction.dart';
 import '../domain/transaction_type.dart';
 
@@ -46,7 +45,7 @@ class TransactionView {
 }
 
 /// Resolves [t] against [state].
-TransactionView transactionViewOf(AppState state, MoneyTransaction t) =>
+TransactionView transactionViewOf(Ledger state, MoneyTransaction t) =>
     TransactionView(
       transaction: t,
       category: state.category(t.categoryId),
@@ -135,6 +134,14 @@ final transactionFilterProvider =
 
 enum TransactionLoadStatus { loading, ready, error }
 
+/// A fault to inject into the simulated first load. A normal run has none;
+/// the `ML_SCENARIO` preview states set one (see `scenarioOverrides`).
+enum TransactionLoadFault { none, staysLoading, failsFirstLoad }
+
+final transactionLoadFaultProvider = Provider<TransactionLoadFault>(
+  (ref) => TransactionLoadFault.none,
+);
+
 /// Simulated first load of the transaction list (700ms skeleton), and the
 /// DB_READ_FAILED error when the `dbError` demo scenario is active.
 class TransactionLoadController extends Notifier<TransactionLoadStatus> {
@@ -157,11 +164,11 @@ class TransactionLoadController extends Notifier<TransactionLoadStatus> {
   }
 
   void _schedule() {
-    final scenario = ref.read(demoScenarioProvider);
-    if (scenario == DemoScenario.loading) return;
+    final fault = ref.read(transactionLoadFaultProvider);
+    if (fault == TransactionLoadFault.staysLoading) return;
     _timer?.cancel();
     _timer = Timer(loadDelay, () {
-      state = scenario == DemoScenario.dbError && !_retried
+      state = fault == TransactionLoadFault.failsFirstLoad && !_retried
           ? TransactionLoadStatus.error
           : TransactionLoadStatus.ready;
     });
@@ -175,7 +182,7 @@ final transactionLoadProvider =
 
 /// The filtered list, grouped by day.
 final transactionGroupsProvider = Provider<List<TransactionDayGroup>>((ref) {
-  final state = ref.watch(appStoreProvider);
+  final state = ref.watch(ledgerProvider);
   final filter = ref.watch(transactionFilterProvider);
   final q = filter.query.trim().toLowerCase();
 
@@ -214,14 +221,14 @@ final transactionViewProvider = Provider.family<TransactionView?, String>((
   ref,
   id,
 ) {
-  final state = ref.watch(appStoreProvider);
+  final state = ref.watch(ledgerProvider);
   final t = state.transaction(id);
   return t == null ? null : transactionViewOf(state, t);
 });
 
 /// The four most recent transactions for Home.
 final recentTransactionViewsProvider = Provider<List<TransactionView>>((ref) {
-  final state = ref.watch(appStoreProvider);
+  final state = ref.watch(ledgerProvider);
   return [
     for (final t in state.transactions.take(4)) transactionViewOf(state, t),
   ];
@@ -230,5 +237,5 @@ final recentTransactionViewsProvider = Provider<List<TransactionView>>((ref) {
 /// Whether any transaction exists at all (distinguishes "empty" from "no
 /// matches").
 final hasTransactionsProvider = Provider<bool>(
-  (ref) => ref.watch(appStoreProvider).transactions.isNotEmpty,
+  (ref) => ref.watch(ledgerProvider).transactions.isNotEmpty,
 );

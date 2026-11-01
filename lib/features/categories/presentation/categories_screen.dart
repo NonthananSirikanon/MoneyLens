@@ -13,8 +13,9 @@ import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_fields.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_state.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../application/category_actions.dart';
+import '../application/category_style.dart';
 import '../../../l10n/l10n.dart';
 import '../../dashboard/application/home_view_providers.dart';
 import '../../transactions/application/transaction_view_providers.dart';
@@ -51,7 +52,7 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final kind = ref.watch(_categoryTabProvider);
-    final store = ref.watch(appStoreProvider);
+    final store = ref.watch(ledgerProvider);
     final counts = ref.watch(categoryCountsProvider);
     final categories = store.categories.where((c) => c.kind == kind).toList();
     return ColoredBox(
@@ -173,8 +174,8 @@ class _AddCategorySheetState extends ConsumerState<_AddCategorySheet> {
     final name = _name.text.trim();
     if (name.isEmpty) return;
     await ref
-        .read(appStoreProvider.notifier)
-        .addCategory(
+        .read(categoryActionsProvider)
+        .add(
           name: name,
           kind: _kind,
           iconKey: MlIconKeys.newCategoryChoices[_icon],

@@ -11,7 +11,6 @@ import '../features/onboarding/presentation/permissions_screen.dart';
 import '../features/settings/presentation/data_settings_screen.dart';
 import '../features/settings/presentation/security_settings_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
-import '../features/slip_import/presentation/camera_screen.dart';
 import '../features/slip_import/presentation/denied_screen.dart';
 import '../features/slip_import/presentation/duplicate_screen.dart';
 import '../features/slip_import/presentation/import_screen.dart';
@@ -60,6 +59,10 @@ abstract final class AppRoutes {
 }
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+/// Extra top-level routes. A normal run has none; sample mode adds the
+/// simulated camera screens (see `demoOverrides`).
+final extraRoutesProvider = Provider<List<RouteBase>>((ref) => const []);
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run the onboarding redirect whenever preferences change.
@@ -114,8 +117,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/tx/:id',
         (s) => TransactionDetailScreen(id: s.pathParameters['id']!),
       ),
-      page(AppRoutes.camera, (_) => const CameraScreen()),
-      page(AppRoutes.cameraPreview, (_) => const CameraPreviewScreen()),
       page(
         '/processing/:scanId',
         (s) => ProcessingScreen(scanId: s.pathParameters['scanId']!),
@@ -148,6 +149,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       page(AppRoutes.account, (_) => const AccountScreen()),
       page(AppRoutes.dataSettings, (_) => const DataSettingsScreen()),
       page(AppRoutes.securitySettings, (_) => const SecuritySettingsScreen()),
+      ...ref.watch(extraRoutesProvider),
     ],
   );
   ref.onDispose(router.dispose);

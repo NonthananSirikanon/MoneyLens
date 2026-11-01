@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/clock.dart';
+import '../../../core/utils/stream_provider_loading.dart';
 import '../../../core/utils/id_generator.dart';
 import '../../../infrastructure/database/app_database.dart';
 import '../data/drift_category_repository.dart';
@@ -18,3 +19,8 @@ final categoryRepositoryProvider = Provider<CategoryRepository>(
 final activeCategoriesProvider = StreamProvider<List<Category>>(
   (ref) => ref.watch(categoryRepositoryProvider).watchActive(),
 );
+
+/// Re-reads the active categories and returns once they are in
+/// [activeCategoriesProvider]; see `reloadTransactions`.
+Future<void> reloadCategories(Ref ref) =>
+    reloadStream(ref, activeCategoriesProvider);

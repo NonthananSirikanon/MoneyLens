@@ -16,7 +16,7 @@ import '../../../core/widgets/ml_fields.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_state_views.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../../categories/domain/category.dart';
@@ -46,7 +46,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   Future<void> _openCategoryFilter() {
     final l10n = context.l10n;
-    final state = ref.read(appStoreProvider);
+    final state = ref.read(ledgerProvider);
     final filter = ref.read(transactionFilterProvider);
     final controller = ref.read(transactionFilterProvider.notifier);
     return showMlPickSheet(
@@ -85,7 +85,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final groups = ref.watch(transactionGroupsProvider);
     final hasAny = ref.watch(hasTransactionsProvider);
     final category = ref.watch(
-      appStoreProvider.select((s) => s.category(filter.categoryId)),
+      ledgerProvider.select((s) => s.category(filter.categoryId)),
     );
 
     // Keep the field in sync when the filter is changed elsewhere

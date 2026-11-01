@@ -10,7 +10,7 @@ import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
 
 /// Sheet for choosing what the analytics breakdown shows: a year row with
 /// arrows, an "all year" choice for that year, and a grid of its twelve
@@ -28,7 +28,7 @@ Future<void> showMonthPickerSheet(
     ref.read(clockProvider).nowUtc(),
   );
   // The same list the breakdown is computed from.
-  final transactions = ref.read(appStoreProvider).transactions;
+  final transactions = ref.read(ledgerProvider).transactions;
   var minYear = now.year;
   for (final t in transactions) {
     final year = ReportingTimeZone.bangkok.wallClock(t.occurredAt).year;

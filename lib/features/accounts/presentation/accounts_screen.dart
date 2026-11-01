@@ -16,7 +16,8 @@ import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_fields.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../application/account_actions.dart';
 import '../../../l10n/formatting.dart';
 import '../../../l10n/l10n.dart';
 import '../domain/account.dart';
@@ -29,7 +30,7 @@ class AccountsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final s = ref.watch(appStoreProvider);
+    final s = ref.watch(ledgerProvider);
     final hide = ref.watch(
       appPreferencesProvider.select((p) => p.hideBalances),
     );
@@ -192,8 +193,8 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
     if (name.isEmpty) return;
     final opening = Money.tryParse(_balance.text, Currency.thb)?.minor ?? 0;
     await ref
-        .read(appStoreProvider.notifier)
-        .addAccount(
+        .read(accountActionsProvider)
+        .add(
           name: name,
           kind: _kind,
           // Only a complete set of four digits is kept.

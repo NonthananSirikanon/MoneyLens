@@ -11,7 +11,8 @@ import 'package:moneylens/app/theme/icons.dart';
 import 'package:moneylens/core/dates/clock.dart';
 import 'package:moneylens/core/errors/app_failure.dart';
 import 'package:moneylens/core/dates/reporting_time_zone.dart';
-import 'package:moneylens/demo/demo_config.dart';
+import 'package:moneylens/demo/camera_screen.dart';
+import 'package:moneylens/demo/demo_harness.dart';
 import 'package:moneylens/features/auth/application/local_data_eraser.dart';
 import 'package:moneylens/features/slip_import/application/slip_import_providers.dart';
 import 'package:moneylens/features/slip_import/domain/scan_status.dart';
@@ -22,8 +23,10 @@ import 'package:moneylens/features/auth/domain/auth_models.dart';
 import 'package:moneylens/features/accounts/application/account_providers.dart';
 import 'package:moneylens/features/categories/application/category_providers.dart';
 import 'package:moneylens/features/transactions/application/transaction_providers.dart';
-import 'package:moneylens/app/app_state.dart';
-import 'package:moneylens/app/app_store.dart';
+import 'package:moneylens/features/ledger/application/ledger.dart';
+import 'package:moneylens/features/slip_import/application/slip_queue.dart';
+import 'package:moneylens/features/transactions/application/transaction_actions.dart';
+import 'package:moneylens/features/transactions/application/transaction_input.dart';
 import 'package:moneylens/features/analytics/application/analytics_view_providers.dart';
 import 'package:moneylens/features/transactions/domain/transaction_type.dart';
 import 'package:moneylens/infrastructure/database/app_database.dart';
@@ -79,7 +82,7 @@ void main() {
       retry: (_, _) => null,
       overrides: [
         appDatabaseProvider.overrideWithValue(db),
-        sampleDataEnabledProvider.overrideWithValue(sample),
+        if (sample) ...demoOverrides(),
         authRepositoryProvider.overrideWithValue(authRepo),
         localDataEraserProvider.overrideWithValue(eraser ?? RecordingEraser()),
         fileSharerProvider.overrideWithValue(sharer ?? RecordingSharer()),
@@ -220,7 +223,7 @@ void main() {
     expect(container.read(sessionProvider).status, SessionStatus.signedOut);
     expect(find.text('Continue with Google'), findsOneWidget);
     // The data on the device is still there.
-    expect(container.read(appStoreProvider).transactions, isNotEmpty);
+    expect(container.read(ledgerProvider).transactions, isNotEmpty);
     await drain(tester);
   });
 
@@ -335,7 +338,7 @@ void main() {
 
   testWidgets('manual entry validates, then saves', (tester) async {
     final container = await pumpApp(tester);
-    final before = container.read(appStoreProvider).balanceOf('kbank');
+    final before = container.read(ledgerProvider).balanceOf('kbank');
 
     await tapOn(tester, find.text('Add manually').first);
     await settle(tester);
@@ -356,10 +359,7 @@ void main() {
     await settle(tester);
 
     expect(find.text('Saved'), findsOneWidget);
-    expect(
-      container.read(appStoreProvider).balanceOf('kbank'),
-      before - 15000,
-    );
+    expect(container.read(ledgerProvider).balanceOf('kbank'), before - 15000);
   });
 
   testWidgets('queue review of the misread slip, then next pending', (
@@ -449,7 +449,7 @@ void main() {
     await tapOn(tester, find.text('Delete permanently'));
     await settle(tester);
 
-    expect(container.read(appStoreProvider).transaction('tx-1'), isNull);
+    expect(container.read(ledgerProvider).transaction('tx-1'), isNull);
     expect(find.text('Transaction deleted'), findsOneWidget);
     await drain(tester);
   });
@@ -510,8 +510,8 @@ void main() {
     final container = await pumpApp(tester);
     // An expense in Dec 2025 makes 2025 available.
     await container
-        .read(appStoreProvider.notifier)
-        .addTransaction(
+        .read(transactionActionsProvider)
+        .add(
           TransactionInput(
             type: TransactionType.expense,
             amount: thb(55500),
@@ -589,7 +589,7 @@ void main() {
     expect(find.text('1234'), findsOneWidget); // digits only, max 4
     await tapOn(tester, find.text('Save account'));
     await settle(tester);
-    expect(container.read(appStoreProvider).accounts.length, 5);
+    expect(container.read(ledgerProvider).accounts.length, 5);
     await drain(tester);
   });
 
@@ -599,13 +599,13 @@ void main() {
     final container = await pumpApp(tester, sample: false);
     expect(find.text('Total balance'), findsOneWidget);
     expect(find.textContaining('slips waiting'), findsNothing);
-    expect(container.read(appStoreProvider).transactions, isEmpty);
-    expect(container.read(appStoreProvider).scans, isEmpty);
+    expect(container.read(ledgerProvider).transactions, isEmpty);
+    expect(container.read(slipQueueProvider).scans, isEmpty);
 
     // Scanning opens the system camera; cancelling it leaves everything as is.
     await tapOn(tester, find.text('Scan slip'));
     await settle(tester);
-    expect(container.read(appStoreProvider).scans, isEmpty);
+    expect(container.read(slipQueueProvider).scans, isEmpty);
     expect(find.text('Total balance'), findsOneWidget);
 
     await tapOn(tester, find.text('Add manually').first);
@@ -616,7 +616,7 @@ void main() {
     await settle(tester);
 
     expect(find.text('Saved'), findsOneWidget);
-    final s = container.read(appStoreProvider);
+    final s = container.read(ledgerProvider);
     expect(s.transactions.single.accountId, 'default-cash');
     expect(s.balanceOf('default-cash'), -15000);
   });
@@ -645,14 +645,14 @@ void main() {
         .toList();
     expect(filled, containsAll(['1250.50', 'นาย สมชาย ทดสอบ']));
     expect(
-      container.read(appStoreProvider).scans.single.status,
+      container.read(slipQueueProvider).scans.single.status,
       ScanStatus.needsReview,
     );
 
     // The category is the user's to pick; saving without it is refused.
     await tapOn(tester, find.text('Confirm and save'));
     await settle(tester);
-    expect(container.read(appStoreProvider).transactions, isEmpty);
+    expect(container.read(ledgerProvider).transactions, isEmpty);
     await tapOn(tester, find.text('Choose a category'));
     await settle(tester);
     await tapOn(tester, find.text('อาหารและเครื่องดื่ม'));
@@ -661,10 +661,11 @@ void main() {
     await settle(tester);
 
     expect(find.text('Saved'), findsOneWidget);
-    final s = container.read(appStoreProvider);
+    final s = container.read(ledgerProvider);
+    final scans = container.read(slipQueueProvider).scans;
     expect(s.transactions.single.amount, thb(125050));
-    expect(s.transactions.single.scanRecordId, s.scans.single.id);
-    expect(s.scans.single.status, ScanStatus.confirmed);
+    expect(s.transactions.single.scanRecordId, scans.single.id);
+    expect(scans.single.status, ScanStatus.confirmed);
     expect(s.balanceOf('default-cash'), -125050);
     await drain(tester);
   });
@@ -688,6 +689,28 @@ void main() {
     expect(find.text('The image could not be read.'), findsOneWidget);
     await drain(tester);
   });
+
+  testWidgets(
+    'in a normal run "use the camera" on the no-access screen opens the system camera',
+    (tester) async {
+      final camera = FakeImageSource(ImportSource.camera, bytes: fakeJpeg(5));
+      final gallery = FakeImageSource(ImportSource.gallery)
+        ..failWith = FailureCode.permissionDenied;
+      await pumpApp(tester, sample: false, camera: camera, gallery: gallery);
+
+      await tapOn(tester, find.byIcon(MlIcons.plus));
+      await settle(tester);
+      await tapOn(tester, find.text('Choose from Photos'));
+      await settle(tester);
+      expect(find.text('Scan with the camera'), findsOneWidget);
+
+      await tapOn(tester, find.text('Scan with the camera'));
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+      expect(camera.calls, 1);
+      expect(find.byType(CameraScreen), findsNothing);
+      await drain(tester);
+    },
+  );
 
   testWidgets('startup failure shows a retryable error', (tester) async {
     await pumpApp(tester, startup: () async => throw StateError('db'));

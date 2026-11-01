@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/dates/clock.dart';
+import '../../../core/utils/stream_provider_loading.dart';
 import '../../../core/utils/id_generator.dart';
 import '../../../infrastructure/database/app_database.dart';
 import '../../accounts/application/account_providers.dart';
@@ -50,3 +51,13 @@ final allTransactionsProvider = StreamProvider<List<MoneyTransaction>>(
 final transactionHistoryProvider = StreamProvider<List<MoneyTransaction>>(
   (ref) => ref.watch(transactionRepositoryProvider).watchRecent(limit: 200),
 );
+
+/// Re-reads every transaction and returns once the new list is in
+/// [allTransactionsProvider].
+///
+/// The stream also updates by itself, but a write must be visible to its
+/// caller as soon as it returns (e.g. before navigating to the new
+/// transaction). Reloading replaces the provider's subscription, so a slower,
+/// older read can never overwrite newer data.
+Future<void> reloadTransactions(Ref ref) =>
+    reloadStream(ref, allTransactionsProvider);

@@ -11,7 +11,8 @@ import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../application/wipe_all_data.dart';
 import '../../export/application/export_service.dart';
 import '../../export/application/transaction_csv.dart';
 import '../../export/domain/export_period.dart';
@@ -125,7 +126,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
       confirmLabel: l10n.wipeConfirm,
     );
     if (!confirmed) return;
-    await ref.read(appStoreProvider.notifier).wipeAll();
+    await ref.read(wipeAllDataProvider)();
     if (!context.mounted) return;
     showMlToast(l10n.toastWiped);
   }
@@ -144,7 +145,7 @@ class _DataSettingsScreenState extends ConsumerState<DataSettingsScreen> {
             .length ??
         0;
     final slipImages = ref.watch(
-      appStoreProvider.select(
+      ledgerProvider.select(
         (s) => s.transactions.where((t) => t.attachmentPath != null).length,
       ),
     );

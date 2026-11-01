@@ -11,7 +11,8 @@ import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_overlays.dart';
 import '../../../core/widgets/ml_surfaces.dart';
-import '../../../app/app_store.dart';
+import '../../ledger/application/ledger.dart';
+import '../../slip_import/application/slip_queue.dart';
 import '../../../l10n/l10n.dart';
 import '../../auth/application/session.dart';
 import '../../auth/presentation/account_screen.dart';
@@ -29,10 +30,8 @@ class SettingsScreen extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
     final prefs = ref.watch(appPreferencesProvider);
     final prefsController = ref.read(appPreferencesProvider.notifier);
-    final accounts = ref.watch(
-      appStoreProvider.select((s) => s.accounts.length),
-    );
-    final scans = ref.watch(appStoreProvider.select((s) => s.scans.length));
+    final accounts = ref.watch(ledgerProvider.select((s) => s.accounts.length));
+    final scans = ref.watch(slipQueueProvider.select((s) => s.scans.length));
     final theme = switch (prefs.theme) {
       ThemePreference.light => l10n.themeLight,
       ThemePreference.dark => l10n.themeDark,

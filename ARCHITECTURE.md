@@ -92,15 +92,14 @@ lib/
   app/
     app.dart
     app_preferences.dart
-    app_state.dart   # in-memory app state models
-    app_store.dart   # in-memory app state holder
     auth_redirect.dart
     providers.dart
     router.dart
     supabase_config.dart
     shell/
     theme/
-  demo/              # demo config, scenario, seed and sample ledger only
+  demo/              # sample mode (ML_SAMPLE_DATA) only: seed, sample ledger,
+                     # simulated slip queue/camera/gallery; wired by demoOverrides()
   core/
     errors/
     logging/
@@ -124,7 +123,12 @@ lib/
       domain/
       data/
       presentation/
-    slip_import/
+    ledger/          # read-only Ledger view built from the Drift stream providers
+      application/
+    settings/
+      application/   # wipe all data
+      presentation/
+    slip_import/     # application/ also holds SlipQueue (the slip queue state)
       domain/
       data/
       application/
