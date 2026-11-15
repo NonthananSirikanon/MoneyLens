@@ -324,6 +324,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get greetingEvening => 'Good evening';
 
   @override
+  String get greetingNight => 'Good night';
+
+  @override
+  String get chooseMonth => 'Choose month';
+
+  @override
   String get offlineTitle => 'You\'re offline — everything still works';
 
   @override
@@ -375,6 +381,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
 
   @override
   String get topCategoriesTitle => 'Top spending categories';
@@ -1198,7 +1207,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authPickMonth => 'Choose month';
 
   @override
-  String get authPickMonthTitle => 'Birth month';
+  String get authPickBirthTitle => 'Choose date of birth';
 
   @override
   String authAge(int years) {

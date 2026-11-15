@@ -206,7 +206,7 @@ final _amountPattern = RegExp(r'^(\d{1,3}(,\d{3})+|\d+)(\.\d{1,2})?$');
 /// Validation shared by manual entry, edits and slip review.
 Map<EntryField, EntryError> validateEntry(EntryDraft d) {
   final errors = <EntryField, EntryError>{};
-  final text = d.amountText.trim();
+  final text = withoutTrailingPoint(d.amountText.trim());
   final money = _amountPattern.hasMatch(text)
       ? Money.tryParse(text, Currency.thb)
       : null;
@@ -429,7 +429,10 @@ class EntryFormController extends Notifier<EntryDraft> {
     }
     final input = TransactionInput(
       type: d.type,
-      amount: Money.tryParse(d.amountText.trim(), Currency.thb)!,
+      amount: Money.tryParse(
+        withoutTrailingPoint(d.amountText.trim()),
+        Currency.thb,
+      )!,
       accountId: d.accountId,
       destinationAccountId: d.isTransfer ? d.destinationAccountId : null,
       categoryId: d.isTransfer ? null : d.categoryId,

@@ -160,23 +160,30 @@ void main() {
 
     // Signed in but no birth date yet: the app cannot be entered.
     expect(find.text('Your date of birth'), findsOneWidget);
-    await tester.enterText(input('Day'), '31');
+    // One wheel sheet, no keyboard. It opens at 1 January 2544 (25 years
+    // back); scroll to 14 March 2540. Years are listed newest first.
+    expect(find.text('Age 29'), findsNothing);
     await tapOn(tester, find.text('Choose month'));
     await settle(tester);
-    await tapOn(tester, find.text('Feb'));
-    await settle(tester);
-    await tester.enterText(input('Year (B.E.)'), '2540');
-    await settle(tester);
-    await tapOn(tester, find.text('Continue'));
-    await settle(tester);
-    expect(find.text('There is no 31 Feb in 2540'), findsOneWidget);
+    Future<void> spin(String label, int rows) async {
+      await tester.drag(
+        find
+            .descendant(
+              of: find.byWidgetPredicate(
+                (w) => w is Semantics && w.properties.label == label,
+              ),
+              matching: find.byType(ListWheelScrollView),
+            )
+            .first,
+        Offset(0, -46.0 * rows),
+      );
+      await settle(tester);
+    }
 
-    await tester.enterText(input('Day'), '14');
-    await settle(tester);
-    expect(find.text('Age 28'), findsNothing);
-    await tapOn(tester, find.text('February'));
-    await settle(tester);
-    await tapOn(tester, find.text('Mar'));
+    await spin('Day', 13); // 1 -> 14
+    await spin('Month', 2); // January -> March
+    await spin('Year (B.E.)', 4); // 2544 -> 2540
+    await tapOn(tester, find.text('Done'));
     await settle(tester);
     expect(find.text('Age 29'), findsOneWidget);
     await tapOn(tester, find.text('Continue'));
@@ -348,10 +355,14 @@ void main() {
     await settle(tester);
     expect(find.text('Enter an amount greater than 0'), findsWidgets);
 
+    // The field regroups what is typed, so a mis-grouped "1,20.00" can no
+    // longer be entered by hand; it becomes 120.00 (the OCR-misread case is
+    // covered by the slip review test and the validateEntry unit tests).
     await tester.enterText(input('Amount'), '1,20.00');
-    await tapOn(tester, find.text('Save transaction'));
-    await settle(tester);
-    expect(find.text('Invalid amount format, e.g. 120.00'), findsWidgets);
+    expect(
+      tester.widget<EditableText>(input('Amount')).controller.text,
+      '120.00',
+    );
 
     await tester.enterText(input('Amount'), '150');
     await tester.enterText(input('Merchant / payee'), 'Noodle shop');

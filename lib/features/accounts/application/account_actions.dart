@@ -5,7 +5,7 @@ import '../domain/account.dart';
 import 'account_providers.dart';
 
 /// Creates accounts. The new account is visible in [activeAccountsProvider]
-/// when the call returns.
+/// when the call returns. A cash account never stores last-four digits.
 class AccountActions {
   const AccountActions(this._ref);
 
@@ -24,7 +24,8 @@ class AccountActions {
           kind: kind,
           currency: Currency.thb,
           openingBalanceMinor: openingBalanceMinor,
-          lastFour: last4,
+          // Cash has no account number to match slips against.
+          lastFour: kind == AccountKind.cash ? null : last4,
         );
     await reloadAccounts(_ref);
   }

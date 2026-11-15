@@ -686,6 +686,18 @@ abstract class AppLocalizations {
   /// **'Good evening'**
   String get greetingEvening;
 
+  /// No description provided for @greetingNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Good night'**
+  String get greetingNight;
+
+  /// No description provided for @chooseMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose month'**
+  String get chooseMonth;
+
   /// No description provided for @offlineTitle.
   ///
   /// In en, this message translates to:
@@ -781,6 +793,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Today'**
   String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
 
   /// No description provided for @topCategoriesTitle.
   ///
@@ -2282,11 +2300,11 @@ abstract class AppLocalizations {
   /// **'Choose month'**
   String get authPickMonth;
 
-  /// No description provided for @authPickMonthTitle.
+  /// No description provided for @authPickBirthTitle.
   ///
   /// In en, this message translates to:
-  /// **'Birth month'**
-  String get authPickMonthTitle;
+  /// **'Choose date of birth'**
+  String get authPickBirthTitle;
 
   /// No description provided for @authAge.
   ///

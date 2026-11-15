@@ -321,6 +321,12 @@ class AppLocalizationsTh extends AppLocalizations {
   String get greetingEvening => 'สวัสดีตอนเย็น';
 
   @override
+  String get greetingNight => 'สวัสดีตอนค่ำ';
+
+  @override
+  String get chooseMonth => 'เลือกเดือน';
+
+  @override
   String get offlineTitle => 'ออฟไลน์อยู่ — ใช้งานได้ตามปกติ';
 
   @override
@@ -371,6 +377,9 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get today => 'วันนี้';
+
+  @override
+  String get yesterday => 'เมื่อวาน';
 
   @override
   String get topCategoriesTitle => 'หมวดใช้จ่ายสูงสุด';
@@ -1183,7 +1192,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get authPickMonth => 'เลือกเดือน';
 
   @override
-  String get authPickMonthTitle => 'เลือกเดือนเกิด';
+  String get authPickBirthTitle => 'เลือกวันเกิด';
 
   @override
   String authAge(int years) {

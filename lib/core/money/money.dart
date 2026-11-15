@@ -24,6 +24,9 @@ class Money implements Comparable<Money> {
     return Money(minor - other.minor, currency);
   }
 
+  /// The most digits [tryParse] accepts in the whole part.
+  static const maxMajorDigits = 15;
+
   /// Parses a decimal string such as `1,234.50` or `฿99` without going
   /// through `double`.
   ///
@@ -35,7 +38,8 @@ class Money implements Comparable<Money> {
         .replaceAll(currency.code, '')
         .replaceAll(',', '')
         .replaceAll(RegExp(r'\s'), '');
-    final match = RegExp(r'^(-?)(\d{1,15})(?:\.(\d+))?$').firstMatch(cleaned);
+    final match = RegExp('^(-?)(\\d{1,$maxMajorDigits})(?:\\.(\\d+))?\$')
+        .firstMatch(cleaned);
     if (match == null) return null;
 
     final fraction = match.group(3) ?? '';
@@ -85,3 +89,8 @@ class Money implements Comparable<Money> {
   @override
   String toString() => '${toDecimalString()} ${currency.code}';
 }
+
+/// Drops one trailing `.` left in a field while the user was still typing
+/// (`5,000.` becomes `5,000`), so the text can be validated and parsed.
+String withoutTrailingPoint(String text) =>
+    text.endsWith('.') ? text.substring(0, text.length - 1) : text;

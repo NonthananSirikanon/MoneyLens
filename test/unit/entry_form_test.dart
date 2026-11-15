@@ -35,9 +35,29 @@ void main() {
     );
 
     test('accepts grouped and plain amounts', () async {
-      for (final amount in ['120', '120.5', '1,234.50', '25000']) {
+      for (final amount in [
+        '120',
+        '120.5',
+        '1,234.50',
+        '25000',
+        '10,000',
+        '1,234,567.8',
+      ]) {
         expect(validateEntry(draft(amount: amount)), isEmpty, reason: amount);
       }
+    });
+
+    test('accepts a trailing point left from typing (5,000.)', () async {
+      for (final amount in ['5,000.', '5000.', '120.']) {
+        expect(validateEntry(draft(amount: amount)), isEmpty, reason: amount);
+      }
+      // A lone point is still "no amount", and two points are malformed.
+      expect(validateEntry(draft(amount: '.')), {
+        EntryField.amount: EntryError.amountRequired,
+      });
+      expect(validateEntry(draft(amount: '5..')), {
+        EntryField.amount: EntryError.amountFormat,
+      });
     });
 
     test('rejects the OCR misread 1,20.00 as a format error', () async {
@@ -97,6 +117,30 @@ void main() {
         'default-expense-food',
       );
     });
+
+    test(
+      'an amount as the field shows it, with commas, saves exactly',
+      () async {
+        final c = await container();
+        final form = c.read(
+          entryFormProvider(const ManualEntryArgs()).notifier,
+        );
+        form
+          ..setAmount('1,234.50')
+          ..setMerchant('Test shop');
+        final saved = await form.save();
+
+        expect(saved, isNotNull);
+        expect(
+          c
+              .read(ledgerProvider)
+              .transaction(saved!.transactionId)!
+              .amount
+              .minor,
+          123450,
+        );
+      },
+    );
 
     test('a transfer to the same account cannot be saved', () async {
       final c = await container();

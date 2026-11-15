@@ -188,17 +188,27 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
     super.dispose();
   }
 
+  bool get _hasAccountNumber => _kind != AccountKind.cash;
+
   Future<void> _save() async {
     final name = _name.text.trim();
     if (name.isEmpty) return;
-    final opening = Money.tryParse(_balance.text, Currency.thb)?.minor ?? 0;
+    final opening =
+        Money.tryParse(
+          withoutTrailingPoint(_balance.text.trim()),
+          Currency.thb,
+        )?.minor ??
+        0;
     await ref
         .read(accountActionsProvider)
         .add(
           name: name,
           kind: _kind,
-          // Only a complete set of four digits is kept.
-          last4: _last4.text.length == 4 ? _last4.text : null,
+          // Only a complete set of four digits is kept, and only for kinds
+          // that have an account number.
+          last4: _hasAccountNumber && _last4.text.length == 4
+              ? _last4.text
+              : null,
           openingBalanceMinor: opening,
         );
     if (!mounted) return;
@@ -211,6 +221,8 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
     final l10n = context.l10n;
     return MlSheet(
       gap: 14,
+      // Scrolls when the keyboard leaves less room than the form needs.
+      scrollable: true,
       children: [
         MlSheetHeader(title: l10n.newAccountTitle),
         MlSegmented<AccountKind>(
@@ -235,37 +247,41 @@ class _AddAccountSheetState extends ConsumerState<_AddAccountSheet> {
             ),
           ),
         ),
-        MlField(
-          label: l10n.accountLast4Label,
-          help: l10n.accountLast4Hint,
-          child: MlFieldBox(
-            height: 52,
-            child: Row(
-              children: [
-                Text(
-                  '••••',
-                  style: MlText.title.copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: MlColors.textSecondary,
+        // Cash has no account number. The field is dropped from `children`,
+        // not hidden, so MlSheet adds no gap for it; the controller keeps
+        // its text, which returns if the user switches back.
+        if (_hasAccountNumber)
+          MlField(
+            label: l10n.accountLast4Label,
+            help: l10n.accountLast4Hint,
+            child: MlFieldBox(
+              height: 52,
+              child: Row(
+                children: [
+                  Text(
+                    '••••',
+                    style: MlText.title.copyWith(
+                      fontWeight: FontWeight.w400,
+                      color: MlColors.textSecondary,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: MlInput(
-                    controller: _last4,
-                    placeholder: '3456',
-                    semanticLabel: l10n.accountLast4Label,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(4),
-                    ],
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: MlInput(
+                      controller: _last4,
+                      placeholder: '3456',
+                      semanticLabel: l10n.accountLast4Label,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(4),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
         MlField(
           label: l10n.accountOpeningLabel,
           child: MlFieldBox(

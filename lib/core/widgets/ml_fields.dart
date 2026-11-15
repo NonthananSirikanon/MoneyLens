@@ -7,6 +7,7 @@ import 'package:forui/forui.dart';
 import '../../app/theme/icons.dart';
 import '../../app/theme/text_styles.dart';
 import '../../app/theme/tokens.dart';
+import '../money/amount_input_formatter.dart';
 
 /// `.field--*` states from index.html. The review screen picks one from the
 /// OCR confidence and the validation result.
@@ -300,7 +301,5 @@ class MlSearchField extends StatelessWidget {
   );
 }
 
-/// Restricts input to digits, commas and one decimal point.
-final amountInputFormatters = <TextInputFormatter>[
-  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-];
+/// Digits and one decimal point, grouped in thousands as the user types.
+final amountInputFormatters = <TextInputFormatter>[AmountInputFormatter()];

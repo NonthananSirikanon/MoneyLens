@@ -112,6 +112,8 @@
   "greetingMorning": "Good morning",
   "greetingAfternoon": "Good afternoon",
   "greetingEvening": "Good evening",
+  "greetingNight": "Good night",
+  "chooseMonth": "Choose month",
   "offlineTitle": "You're offline — everything still works",
   "offlineBody": "Add, edit and browse as usual. Your data is on this device.",
   "pendingSlipsTitle": "{count} slips waiting for review",
@@ -142,6 +144,7 @@
     }
   },
   "today": "Today",
+  "yesterday": "Yesterday",
   "topCategoriesTitle": "Top spending categories",
   "topCategoryMeta": "{percent}% · {count} transactions",
   "@topCategoryMeta": {
@@ -568,7 +571,7 @@
   "authDayHint": "DD",
   "authYearHint": "2540",
   "authPickMonth": "Choose month",
-  "authPickMonthTitle": "Birth month",
+  "authPickBirthTitle": "Choose date of birth",
   "authAge": "Age {years}",
   "@authAge": {
     "placeholders": {

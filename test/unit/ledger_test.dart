@@ -127,6 +127,27 @@ void main() {
     expect(s.accountDetails[account.id]!.mask, '•••• 4321');
   });
 
+  test('a cash account never stores last-four digits', () async {
+    final c = await container();
+    await c
+        .read(accountActionsProvider)
+        .add(
+          name: 'Jar',
+          kind: AccountKind.cash,
+          last4: '9999',
+          openingBalanceMinor: 1000,
+        );
+    final account = c
+        .read(ledgerProvider)
+        .accounts
+        .firstWhere((a) => a.name == 'Jar');
+    expect(account.lastFour, isNull);
+    expect(
+      c.read(ledgerProvider).accountDetails[account.id]!.mask,
+      isNot(contains('9999')),
+    );
+  });
+
   test('wiping removes user data and restores the defaults', () async {
     final c = await container();
     await c

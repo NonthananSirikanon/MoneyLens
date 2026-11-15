@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,9 +18,11 @@ import '../application/birth_date.dart';
 import '../application/session.dart';
 import '../domain/auth_models.dart';
 import 'auth_widgets.dart';
+import 'birth_picker_sheet.dart';
 
-/// "วันเกิดของคุณ": day, month (picker) and Buddhist-era year. With
-/// [edit] it changes the saved date instead of finishing sign-up.
+/// "วันเกิดของคุณ": day, month and Buddhist-era year, all chosen from one
+/// wheel sheet (no keyboard). With [edit] it changes the saved date instead
+/// of finishing sign-up.
 class BirthScreen extends ConsumerStatefulWidget {
   const BirthScreen({super.key, this.edit = false});
 
@@ -32,9 +33,9 @@ class BirthScreen extends ConsumerStatefulWidget {
 }
 
 class _BirthScreenState extends ConsumerState<BirthScreen> {
-  final _day = TextEditingController();
-  final _year = TextEditingController();
+  int? _day;
   int? _month; // 1-12
+  int? _year; // Buddhist era
   var _showError = false;
   var _saving = false;
   AuthFailureKind? _saveFailure;
@@ -44,26 +45,19 @@ class _BirthScreenState extends ConsumerState<BirthScreen> {
     super.initState();
     final saved = widget.edit ? ref.read(sessionProvider).birthDate : null;
     if (saved != null) {
-      _day.text = '${saved.day}';
+      _day = saved.day;
       _month = saved.month;
-      _year.text = '${saved.year + 543}';
+      _year = saved.year + 543;
     }
-  }
-
-  @override
-  void dispose() {
-    _day.dispose();
-    _year.dispose();
-    super.dispose();
   }
 
   DateTime get _today =>
       ReportingTimeZone.bangkok.wallClock(ref.read(clockProvider).nowUtc());
 
   BirthDateResult get _result => BirthDateValidator.validate(
-    day: _day.text,
+    day: _day?.toString() ?? '',
     month: _month,
-    yearBuddhist: _year.text,
+    yearBuddhist: _year?.toString() ?? '',
     today: _today,
   );
 
@@ -77,46 +71,67 @@ class _BirthScreenState extends ConsumerState<BirthScreen> {
       BirthDateError.yearFormat => l10n.authBirthYearFormat,
       BirthDateError.future => l10n.authBirthFuture,
       BirthDateError.noSuchDate => l10n.authBirthNoSuch(
-        int.tryParse(_day.text) ?? 0,
+        _day ?? 0,
         _monthName(context, _month ?? 1),
-        _year.text,
+        '${_year ?? ''}',
       ),
     };
   }
 
-  Future<void> _pickMonth() {
-    final l10n = context.l10n;
-    return showMlSheet<void>(
+  Future<void> _pickDate() async {
+    final picked = await showBirthPickerSheet(
       context,
-      builder: (sheetContext) => MlSheet(
+      currentYearBuddhist: _today.year + 543,
+      initial: _day != null && _month != null && _year != null
+          ? (day: _day!, month: _month!, year: _year!)
+          : null,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _day = picked.day;
+      _month = picked.month;
+      _year = picked.year;
+      _showError = false;
+    });
+  }
+
+  /// One of the three tappable boxes; each opens the same wheel sheet.
+  Widget _pickerBox({
+    required String label,
+    required String? value,
+    required String placeholder,
+    required bool bad,
+  }) => MlField(
+    label: label,
+    child: MlFieldBox(
+      height: 52,
+      state: bad ? MlFieldState.error : MlFieldState.normal,
+      padding: const EdgeInsets.only(left: 14, right: 10),
+      onPressed: _pickDate,
+      semanticLabel: '$label ${value ?? placeholder}',
+      child: Row(
         children: [
-          MlSheetHeader(title: l10n.authPickMonthTitle, closable: true),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 3.2,
-            children: [
-              for (var m = 1; m <= 12; m++)
-                MlChip(
-                  label: _monthName(context, m),
-                  selected: m == _month,
-                  onPressed: () {
-                    setState(() {
-                      _month = m;
-                      _showError = false;
-                    });
-                    Navigator.of(sheetContext).pop();
-                  },
-                ),
-            ],
+          Expanded(
+            child: Text(
+              value ?? placeholder,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: MlText.body.copyWith(
+                color: value == null
+                    ? MlColors.textTertiary
+                    : MlColors.textPrimary,
+              ),
+            ),
+          ),
+          const Icon(
+            MlIcons.chevronDown,
+            size: 18,
+            color: MlColors.textTertiary,
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
 
   Future<void> _save() async {
     final r = _result;
@@ -148,8 +163,6 @@ class _BirthScreenState extends ConsumerState<BirthScreen> {
     final l10n = context.l10n;
     final r = _result;
     final bad = _showError && !r.isValid ? r : null;
-    MlFieldState state(bool flag) =>
-        flag ? MlFieldState.error : MlFieldState.normal;
 
     return AuthPage(
       child: Column(
@@ -180,85 +193,34 @@ class _BirthScreenState extends ConsumerState<BirthScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 88,
-                child: MlField(
+                width: 92,
+                child: _pickerBox(
                   label: l10n.authDay,
-                  child: MlFieldBox(
-                    height: 52,
-                    state: state(bad?.badDay ?? false),
-                    child: MlInput(
-                      controller: _day,
-                      placeholder: l10n.authDayHint,
-                      semanticLabel: l10n.authDay,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(2),
-                      ],
-                      onChanged: (_) => setState(() => _showError = false),
-                      style: MlText.body,
-                    ),
-                  ),
+                  value: _day?.toString(),
+                  placeholder: l10n.authDayHint,
+                  bad: bad?.badDay ?? false,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: MlField(
+                child: _pickerBox(
                   label: l10n.authMonth,
-                  child: MlFieldBox(
-                    height: 52,
-                    state: state(bad?.badMonth ?? false),
-                    padding: const EdgeInsets.only(left: 14, right: 12),
-                    onPressed: _pickMonth,
-                    semanticLabel: l10n.authPickMonth,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _month == null
-                                ? l10n.authPickMonth
-                                : DateFormat.MMMM(context.localeTag)
-                                      .format(DateTime(2000, _month!)),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: MlText.body.copyWith(
-                              color: _month == null
-                                  ? MlColors.textTertiary
-                                  : MlColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        const Icon(
-                          MlIcons.chevronDown,
-                          size: 18,
-                          color: MlColors.textTertiary,
-                        ),
-                      ],
-                    ),
-                  ),
+                  value: _month == null
+                      ? null
+                      : DateFormat.MMMM(context.localeTag)
+                            .format(DateTime(2000, _month!)),
+                  placeholder: l10n.authPickMonth,
+                  bad: bad?.badMonth ?? false,
                 ),
               ),
               const SizedBox(width: 10),
               SizedBox(
-                width: 112,
-                child: MlField(
+                width: 116,
+                child: _pickerBox(
                   label: l10n.authYear,
-                  child: MlFieldBox(
-                    height: 52,
-                    state: state(bad?.badYear ?? false),
-                    child: MlInput(
-                      controller: _year,
-                      placeholder: l10n.authYearHint,
-                      semanticLabel: l10n.authYear,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(4),
-                      ],
-                      onChanged: (_) => setState(() => _showError = false),
-                      style: MlText.body,
-                    ),
-                  ),
+                  value: _year?.toString(),
+                  placeholder: l10n.authYearHint,
+                  bad: bad?.badYear ?? false,
                 ),
               ),
             ],

@@ -56,6 +56,17 @@ void main() {
       expect(() => other + const Money(1, _Usd()), throwsArgumentError);
     });
   });
+
+  group('withoutTrailingPoint', () {
+    test('drops one trailing point only', () {
+      expect(withoutTrailingPoint('5,000.'), '5,000');
+      expect(withoutTrailingPoint('5,000.5'), '5,000.5');
+      expect(withoutTrailingPoint('12..'), '12.');
+      expect(withoutTrailingPoint(''), '');
+      // Money.tryParse itself stays strict.
+      expect(Money.tryParse('12.', Currency.thb), isNull);
+    });
+  });
 }
 
 /// Not registered in `Currency.supported`; exists only to test mixing.
