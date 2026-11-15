@@ -50,3 +50,9 @@ app.*.map.json
 # Real slips and their recorded OCR text: never commit.
 /bench/private/*
 !/bench/private/.gitkeep
+
+# Local secrets: the run script reads ~/.moneylens.env (outside the repo);
+# these keep a copy made inside the repo from being committed.
+.env
+.env.*
+*.env

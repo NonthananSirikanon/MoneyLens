@@ -42,6 +42,8 @@ flutter run -d emulator-5554 \
 
 - คีย์ `sb_publishable_...` ดูได้ที่ Supabase Dashboard → Project Settings → API Keys
   (เป็นคีย์สาธารณะที่ออกแบบให้ใส่ในแอปได้ แต่ **ห้ามใช้ `sb_secret_...` / `service_role`**)
+- ไม่อยากพิมพ์คีย์ทุกครั้ง: ใส่บรรทัด `SUPABASE_PUBLISHABLE_KEY=sb_publishable_...` ในไฟล์ `~/.moneylens.env` (อยู่นอก repo)
+  แล้วรัน `scripts/run_real.sh -d emulator-5554` (สคริปต์จะส่ง `--dart-define` ให้เอง)
 - **ต้องใส่ `--dart-define` ทุกครั้งที่รัน** ถ้าลืม แอปจะเข้าโหมดจำลอง (ดูหัวข้อ 4)
 - รอจน log ขึ้น `Supabase init completed` และ `Flutter run key commands`
 
