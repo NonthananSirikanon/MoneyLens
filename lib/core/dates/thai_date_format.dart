@@ -15,11 +15,28 @@ class AppDateFormat {
 
   String _month(DateTime d) => DateFormat.MMM(locale).format(d);
 
+  static const _thaiWeekdays = [
+    'จันทร์',
+    'อังคาร',
+    'พุธ',
+    'พฤหัสบดี',
+    'ศุกร์',
+    'เสาร์',
+    'อาทิตย์',
+  ];
+
+  // intl's abbreviated Thai weekdays are single letters ("จ."), too terse.
+  String _weekday(DateTime d) =>
+      _thai ? _thaiWeekdays[d.weekday - 1] : DateFormat.E(locale).format(d);
+
   /// `24 ต.ค. 2569`
   String dayMonthYear(DateTime d) => '${d.day} ${_month(d)} ${_year(d)}';
 
   /// `24 ต.ค.`
   String dayMonth(DateTime d) => '${d.day} ${_month(d)}';
+
+  /// `จันทร์ 2 พ.ย.` / `Mon 2 Nov` (no year).
+  String weekdayDayMonth(DateTime d) => '${_weekday(d)} ${dayMonth(d)}';
 
   /// `ต.ค. 2569`
   String monthYear(DateTime d) => '${_month(d)} ${_year(d)}';

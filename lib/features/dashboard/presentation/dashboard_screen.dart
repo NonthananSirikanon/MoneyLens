@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
@@ -16,7 +17,6 @@ import '../../../core/dates/clock.dart';
 import '../../../core/dates/reporting_time_zone.dart';
 import '../../../core/widgets/ml_badges.dart';
 import '../../../core/widgets/ml_button.dart';
-import '../../../core/widgets/ml_controls.dart';
 import '../../../core/widgets/ml_surfaces.dart';
 import '../../ledger/application/ledger.dart';
 import '../../../l10n/formatting.dart';
@@ -29,6 +29,7 @@ import '../../transactions/application/transaction_view_providers.dart';
 import '../../auth/application/session.dart';
 import '../../auth/domain/auth_models.dart';
 import '../application/home_view_providers.dart';
+import '../domain/greeting_band.dart';
 
 /// First name for the greeting: the first word of the Google name, or a
 /// neutral fallback.
@@ -57,12 +58,6 @@ class DashboardScreen extends ConsumerWidget {
     final pending = ref.watch(pendingScansProvider).length;
     final recent = ref.watch(recentTransactionViewsProvider);
 
-    final greeting = switch (now.hour) {
-      < 12 => l10n.greetingMorning,
-      < 17 => l10n.greetingAfternoon,
-      _ => l10n.greetingEvening,
-    };
-
     return ColoredBox(
       color: MlColors.bgApp,
       child: SafeArea(
@@ -70,52 +65,11 @@ class DashboardScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, MlSpace.navClearance),
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        greeting,
-                        style: MlText.title.copyWith(
-                          fontWeight: FontWeight.w400,
-                          color: MlColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              _firstName(
-                                ref.watch(sessionProvider).user,
-                                l10n.profileFallbackName,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              style: MlText.h1.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: MlSpace.xs),
-                          const Icon(
-                            MlIcons.sun,
-                            size: 22,
-                            color: MlColors.warning,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                MlPeriodButton(
-                  label: context.dateFormat.monthYear(now),
-                  onPressed: () =>
-                      _openAnalytics(context, ref, AnalyticsTab.breakdown),
-                ),
-              ],
+            _GreetingBlock(
+              name: _firstName(
+                ref.watch(sessionProvider).user,
+                l10n.profileFallbackName,
+              ),
             ),
             const SizedBox(height: 20),
             if (offline) ...[
@@ -190,6 +144,7 @@ class DashboardScreen extends ConsumerWidget {
             for (final v in recent)
               TransactionTile(
                 view: v,
+                trailing: TileTrailing.dateWeekday,
                 onPressed: () => context.push(AppRoutes.transaction(v.id)),
               ),
             const SizedBox(height: 20),
@@ -212,6 +167,116 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
+/// Greeting and its icon for the current Bangkok time of day. Re-evaluates
+/// when the app resumes and at the next band boundary, so it stays right
+/// while the app is open.
+class _GreetingBlock extends ConsumerStatefulWidget {
+  const _GreetingBlock({required this.name});
+
+  final String name;
+
+  @override
+  ConsumerState<_GreetingBlock> createState() => _GreetingBlockState();
+}
+
+class _GreetingBlockState extends ConsumerState<_GreetingBlock>
+    with WidgetsBindingObserver {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) setState(() {});
+  }
+
+  DateTime _wallClock() =>
+      ReportingTimeZone.bangkok.wallClock(ref.read(clockProvider).nowUtc());
+
+  void _schedule(DateTime wallClock) {
+    _timer?.cancel();
+    _timer = Timer(GreetingBand.untilNextChange(wallClock), () {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final wallClock = _wallClock();
+    _schedule(wallClock);
+    final (greeting, icon, color) = switch (GreetingBand.at(wallClock)) {
+      GreetingBand.morning => (
+        l10n.greetingMorning,
+        MlIcons.sunrise,
+        MlColors.warning,
+      ),
+      GreetingBand.afternoon => (
+        l10n.greetingAfternoon,
+        MlIcons.sun,
+        MlColors.warning,
+      ),
+      GreetingBand.evening => (
+        l10n.greetingEvening,
+        MlIcons.sunset,
+        MlColors.warning,
+      ),
+      GreetingBand.night => (
+        l10n.greetingNight,
+        MlIcons.moon,
+        MlColors.transfer,
+      ),
+    };
+    // Greeting and its time-of-day icon on the left, the name on the right.
+    // Both sides are loose, so spaceBetween pushes the name to the far edge.
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  greeting,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: MlText.h2.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: MlSpace.xs),
+              Icon(icon, size: 24, color: color),
+            ],
+          ),
+        ),
+        const SizedBox(width: MlSpace.md),
+        Flexible(
+          child: Text(
+            widget.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: MlText.h2.copyWith(
+              fontWeight: FontWeight.w800,
+              color: MlColors.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _BalanceCard extends ConsumerWidget {
   const _BalanceCard();
 
@@ -223,6 +288,9 @@ class _BalanceCard extends ConsumerWidget {
     );
     final balance = ref.watch(ledgerProvider.select((s) => s.totalBalance));
     final totals = ref.watch(monthTotalsProvider);
+    final month = ReportingTimeZone.bangkok.wallClock(
+      ref.watch(clockProvider).nowUtc(),
+    );
     final muted = MlText.caption.copyWith(color: MlColors.balanceMuted);
 
     Widget figure(IconData icon, String label, int minor) => Column(
@@ -295,7 +363,9 @@ class _BalanceCard extends ConsumerWidget {
                     style: MlText.amtHero,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
+                Text(context.dateFormat.monthYear(month), style: muted),
+                const SizedBox(height: 4),
                 Wrap(
                   spacing: 26,
                   runSpacing: 8,
